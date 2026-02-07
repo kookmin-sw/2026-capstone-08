@@ -4,21 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "MortisInputConfig.generated.h"
-
-
-USTRUCT(BlueprintType)
-struct FMortisInputActionConfig
-{
-	GENERATED_BODY()
-	
-};
+#include "MortisAbilitySetBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisInputConfig : public UDataAsset
+class ETERNALMORTIS_API UMortisAbilitySetBase : public UDataAsset
 {
 	GENERATED_BODY()
 	
