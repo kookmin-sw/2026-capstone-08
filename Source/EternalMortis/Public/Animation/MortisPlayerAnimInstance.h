@@ -6,6 +6,8 @@
 #include "Animation/MortisCharacterAnimInstanceBase.h"
 #include "MortisPlayerAnimInstance.generated.h"
 
+class AMortisPlayerCharacter;
+
 /**
  * 
  */
@@ -14,4 +16,11 @@ class ETERNALMORTIS_API UMortisPlayerAnimInstance : public UMortisCharacterAnimI
 {
 	GENERATED_BODY()
 	
+protected:
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData|References")
+	AMortisPlayerCharacter* OwningPlayerCharacter;
+
+public:
+	// UMortisCharacterAnimInstanceBase override
+	virtual void NativeInitializeAnimation() override;
 };

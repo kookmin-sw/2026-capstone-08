@@ -2,33 +2,48 @@
 
 
 #include "Character/MortisCharacterBase.h"
+#include "AbilitySystem/MortisAbilitySystemComponent.h"
+#include "AbilitySystem/Attributes/MortisAttributeSet.h"
 
 // Sets default values
 AMortisCharacterBase::AMortisCharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
+	GetMesh()->bReceivesDecals = false;
+
+	CreateMortisAbilitySystemComponent();
+	CreateMortisAttributeSet();
 }
 
-// Called when the game starts or when spawned
-void AMortisCharacterBase::BeginPlay()
+UAbilitySystemComponent* AMortisCharacterBase::GetAbilitySystemComponent() const
 {
-	Super::BeginPlay();
-	
+	return GetMortisAbilitySystemComponent();
 }
 
-// Called every frame
-void AMortisCharacterBase::Tick(float DeltaTime)
+void AMortisCharacterBase::PossessedBy(AController* NewController)
 {
-	Super::Tick(DeltaTime);
+	Super::PossessedBy(NewController);
 
+	if (MortisAbilitySystemComponent)
+	{
+		MortisAbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+		ensureMsgf(!CharacterAbilitySet.IsNull(), TEXT("Forgot to assign start up data to %s"), *GetName());
+	}
 }
 
-// Called to bind functionality to input
-void AMortisCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMortisCharacterBase::CreateMortisAbilitySystemComponent()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisAbilitySystemComponent>(TEXT("MortisAbilitySystemComponent"));
 }
+
+void AMortisCharacterBase::CreateMortisAttributeSet()
+{
+	MortisAttributeSet = CreateDefaultSubobject<UMortisAttributeSet>(TEXT("MortisAttributeSet"));
+}
+
+
 

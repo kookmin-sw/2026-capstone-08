@@ -2,14 +2,11 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "MortisStructTypes.generated.h"
 
-/**
- * 
- */
-class ETERNALMORTIS_API MortisStructTypes
+USTRUCT()
+struct FMortisPlayerWeaponData
 {
-public:
-	MortisStructTypes();
-	~MortisStructTypes();
+	GENERATED_BODY()
+
 };

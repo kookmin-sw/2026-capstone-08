@@ -2,14 +2,21 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "NativeGameplayTags.h"
 
-/**
- * 
- */
-class ETERNALMORTIS_API MortisGameplayTags
+namespace MortisGameplayTags
 {
-public:
-	MortisGameplayTags();
-	~MortisGameplayTags();
-};
+	// ====================		Input Tags		====================
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Move);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Look);
+
+	// ====================		Ability Tags	====================
+
+	// ====================		State Tags		====================
+
+	// ====================		Event Tags		====================
+
+	// ====================		Data Tags		====================
+
+	// ====================		Character Tags	====================
+}
