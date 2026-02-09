@@ -6,6 +6,11 @@
 #include "Character/MortisCharacterBase.h"
 #include "MortisPlayerCharacter.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+class UMortisInputConfig;
+struct FInputActionValue;
+
 /**
  * 
  */
@@ -14,4 +19,30 @@ class ETERNALMORTIS_API AMortisPlayerCharacter : public AMortisCharacterBase
 {
 	GENERATED_BODY()
 	
+public:
+	AMortisPlayerCharacter();
+
+protected:
+	// APawn Override
+	virtual void PossessedBy(AController* NewController) override;
+
+	// AMortisCharacterBase Override
+	virtual void CreateMortisAbilitySystemComponent() override;
+	virtual void CreateMortisAttributeSet() override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* CameraArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* FollowCamera;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
+	UMortisInputConfig* InputConfigDataAsset;
+
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_Look(const FInputActionValue& InputActionValue);
 };

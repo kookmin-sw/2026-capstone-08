@@ -3,10 +3,19 @@
 
 #include "MortisGameplayTags.h"
 
-MortisGameplayTags::MortisGameplayTags()
+namespace MortisGameplayTags
 {
-}
+	// ====================		Input Tags		====================
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "InputTag.Move");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Look, "InputTag.Look");
 
-MortisGameplayTags::~MortisGameplayTags()
-{
+	// ====================		Ability Tags	====================
+
+	// ====================		State Tags		====================
+
+	// ====================		Event Tags		====================
+
+	// ====================		Data Tags		====================
+
+	// ====================		Character Tags	====================
 }

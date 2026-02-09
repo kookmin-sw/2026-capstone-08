@@ -6,6 +6,9 @@
 #include "Animation/MortisAnimInstanceBase.h"
 #include "MortisCharacterAnimInstanceBase.generated.h"
 
+class AMortisCharacterBase;
+class UCharacterMovementComponent;
+
 /**
  * 
  */
@@ -14,4 +17,24 @@ class ETERNALMORTIS_API UMortisCharacterAnimInstanceBase : public UMortisAnimIns
 {
 	GENERATED_BODY()
 	
+protected:
+	UPROPERTY()
+	AMortisCharacterBase* OwningCharacter;
+
+	UPROPERTY()
+	UCharacterMovementComponent* OwningMovementComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData|LocomotionData")
+	float GroundSpeed;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData|LocomotionData")
+	bool bHasAcceleration;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData|LocomotionData")
+	float LocomotionDirection;
+
+public:
+	// UAnimInstance Override
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 };

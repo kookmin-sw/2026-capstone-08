@@ -19,8 +19,10 @@ public class EternalMortis : ModuleRules
 			"GameplayTasks",
 			"GameplayAbilities",
 			"AnimGraphRuntime",
-			"MotionWarping"
-		});
+			"MotionWarping",
+            "Niagara",
+            "NavigationSystem"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
