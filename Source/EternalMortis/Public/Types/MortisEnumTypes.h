@@ -2,14 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
-/**
- * 
- */
-class ETERNALMORTIS_API MortisEnumTypes
+UENUM()
+enum class EMortisTeam : uint8
 {
-public:
-	MortisEnumTypes();
-	~MortisEnumTypes();
+	Player = 0 UMETA(DisplayName = "Player"),
+	Enemy = 1 UMETA(DisplayName = "Enemy"),
+	Neutral = 2 UMETA(DisplayName = "Neutral"),
 };

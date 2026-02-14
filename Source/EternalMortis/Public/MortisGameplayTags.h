@@ -13,7 +13,8 @@ namespace MortisGameplayTags
 	// ====================		Ability Tags	====================
 
 	// ====================		State Tags		====================
-
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Dead);
+	
 	// ====================		Event Tags		====================
 
 	// ====================		Data Tags		====================
