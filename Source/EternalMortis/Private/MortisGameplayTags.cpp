@@ -12,6 +12,7 @@ namespace MortisGameplayTags
 	// ====================		Ability Tags	====================
 
 	// ====================		State Tags		====================
+	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
 
 	// ====================		Event Tags		====================
 

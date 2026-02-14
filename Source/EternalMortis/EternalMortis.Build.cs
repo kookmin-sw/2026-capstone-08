@@ -21,8 +21,9 @@ public class EternalMortis : ModuleRules
 			"AnimGraphRuntime",
 			"MotionWarping",
             "Niagara",
-            "NavigationSystem"
-        });
+            "NavigationSystem",
+            "AIModule"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

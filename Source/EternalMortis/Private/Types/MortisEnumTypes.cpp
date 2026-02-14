@@ -2,11 +2,3 @@
 
 
 #include "Types/MortisEnumTypes.h"
-
-MortisEnumTypes::MortisEnumTypes()
-{
-}
-
-MortisEnumTypes::~MortisEnumTypes()
-{
-}

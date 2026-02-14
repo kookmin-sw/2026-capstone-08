@@ -2,3 +2,5 @@
 
 
 #include "MortisDebugHelper.h"
+
+DEFINE_LOG_CATEGORY(LogMortis);
