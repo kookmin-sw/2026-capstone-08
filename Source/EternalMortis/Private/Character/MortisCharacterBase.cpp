@@ -6,7 +6,8 @@
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
 
 // Sets default values
-AMortisCharacterBase::AMortisCharacterBase()
+AMortisCharacterBase::AMortisCharacterBase(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -14,8 +15,8 @@ AMortisCharacterBase::AMortisCharacterBase()
 
 	GetMesh()->bReceivesDecals = false;
 
-	CreateMortisAbilitySystemComponent();
-	CreateMortisAttributeSet();
+	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisAbilitySystemComponent>(TEXT("MortisAbilitySystemComponent"));
+	MortisAttributeSet = CreateDefaultSubobject<UMortisAttributeSet>(TEXT("MortisAttributeSet"));
 }
 
 UAbilitySystemComponent* AMortisCharacterBase::GetAbilitySystemComponent() const
@@ -33,16 +34,6 @@ void AMortisCharacterBase::PossessedBy(AController* NewController)
 
 		ensureMsgf(!CharacterAbilitySet.IsNull(), TEXT("Forgot to assign start up data to %s"), *GetName());
 	}
-}
-
-void AMortisCharacterBase::CreateMortisAbilitySystemComponent()
-{
-	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisAbilitySystemComponent>(TEXT("MortisAbilitySystemComponent"));
-}
-
-void AMortisCharacterBase::CreateMortisAttributeSet()
-{
-	MortisAttributeSet = CreateDefaultSubobject<UMortisAttributeSet>(TEXT("MortisAttributeSet"));
 }
 
 

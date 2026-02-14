@@ -8,12 +8,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystem/Data/MortisAbilitySetBase.h"
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
-#include "AbilitySystem/MortisPlayerASC.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/Input/MortisInputComponent.h"
 #include "MortisGameplayTags.h"
 
-AMortisPlayerCharacter::AMortisPlayerCharacter()
+AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMortisPlayerAttributeSet>(TEXT("MortisAttributeSet")))
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 
@@ -48,16 +48,6 @@ void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 			LoadedData->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
 		}
 	}
-}
-
-void AMortisPlayerCharacter::CreateMortisAbilitySystemComponent()
-{
-	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisPlayerASC>(TEXT("MortisPlayerAbilitySystemComponent"));
-}
-
-void AMortisPlayerCharacter::CreateMortisAttributeSet()
-{
-	MortisAttributeSet = CreateDefaultSubobject<UMortisPlayerAttributeSet>(TEXT("MortisPlayerAttributeSet"));
 }
 
 void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

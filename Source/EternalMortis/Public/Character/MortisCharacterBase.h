@@ -18,7 +18,7 @@ class ETERNALMORTIS_API AMortisCharacterBase : public ACharacter, public IAbilit
 
 public:
 	// Sets default values for this character's properties
-	AMortisCharacterBase();
+	AMortisCharacterBase(const FObjectInitializer& ObjectInitializer);
 
 	// IAbilitySystemInterface Override
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -36,14 +36,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySystem")
 	TSoftObjectPtr<UMortisAbilitySetBase> CharacterAbilitySet;
 
-	// Base를 상속한 캐릭터들은 반드시 아래의 함수를 override 할 것
-	virtual void CreateMortisAbilitySystemComponent();
-	virtual void CreateMortisAttributeSet();
-
 
 public:
 	FORCEINLINE UMortisAbilitySystemComponent* GetMortisAbilitySystemComponent() const { return MortisAbilitySystemComponent; }
 	FORCEINLINE UMortisAttributeSet* GetMortisAttributeSet() const { return MortisAttributeSet; }
-
 
 };
