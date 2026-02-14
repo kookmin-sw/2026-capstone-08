@@ -10,6 +10,7 @@
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/Input/MortisInputComponent.h"
+#include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "MortisGameplayTags.h"
 
 AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -35,6 +36,8 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
+
+	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
 }
 
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)

@@ -9,6 +9,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UMortisInputConfig;
+class UMortisPlayerCombatComponent;
 struct FInputActionValue;
 
 /**
@@ -30,12 +31,16 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UMortisPlayerCombatComponent* MortisPlayerCombatComponent;
 
+	// Inputs
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
 	UMortisInputConfig* InputConfigDataAsset;
 
