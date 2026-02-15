@@ -18,7 +18,7 @@ class ETERNALMORTIS_API AMortisCharacterBase : public ACharacter, public IAbilit
 
 public:
 	// Sets default values for this character's properties
-	AMortisCharacterBase(const FObjectInitializer& ObjectInitializer);
+	AMortisCharacterBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// IAbilitySystemInterface Override
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
