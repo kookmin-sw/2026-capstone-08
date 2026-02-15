@@ -4,7 +4,7 @@
 
 #include "MortisStructTypes.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FMortisPlayerWeaponData
 {
 	GENERATED_BODY()

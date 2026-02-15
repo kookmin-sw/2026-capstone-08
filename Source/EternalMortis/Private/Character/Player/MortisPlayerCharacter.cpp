@@ -8,12 +8,13 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AbilitySystem/Data/MortisAbilitySetBase.h"
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
-#include "AbilitySystem/MortisPlayerASC.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/Input/MortisInputComponent.h"
+#include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "MortisGameplayTags.h"
 
-AMortisPlayerCharacter::AMortisPlayerCharacter()
+AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMortisPlayerAttributeSet>(TEXT("MortisAttributeSet")))
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 
@@ -35,6 +36,8 @@ AMortisPlayerCharacter::AMortisPlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
+
+	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
 }
 
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
@@ -48,16 +51,6 @@ void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 			LoadedData->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
 		}
 	}
-}
-
-void AMortisPlayerCharacter::CreateMortisAbilitySystemComponent()
-{
-	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisPlayerASC>(TEXT("MortisPlayerAbilitySystemComponent"));
-}
-
-void AMortisPlayerCharacter::CreateMortisAttributeSet()
-{
-	MortisAttributeSet = CreateDefaultSubobject<UMortisPlayerAttributeSet>(TEXT("MortisPlayerAttributeSet"));
 }
 
 void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

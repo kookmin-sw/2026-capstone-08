@@ -14,4 +14,6 @@ class ETERNALMORTIS_API UMortisAbilitySystemComponent : public UAbilitySystemCom
 {
 	GENERATED_BODY()
 	
+public:
+
 };

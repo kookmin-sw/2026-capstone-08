@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
+#include "Components/Combat/MortisCombatComponent.h"
 
 void UMortisGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
@@ -21,4 +22,9 @@ void UMortisGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 	if (ActorInfo && AbilityActivationPolicy == EMortisAbilityActivationPolicy::OnGiven)
 		ActorInfo->AbilitySystemComponent->ClearAbility(Handle);
+}
+
+UMortisCombatComponent* UMortisGameplayAbility::GetMortisCombatComponentFromActorInfo() const
+{
+	return GetAvatarActorFromActorInfo()->FindComponentByClass<UMortisCombatComponent>();
 }
