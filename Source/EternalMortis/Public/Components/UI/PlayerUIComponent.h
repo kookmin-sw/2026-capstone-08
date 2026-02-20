@@ -9,9 +9,13 @@
 /**
  * 
  */
-UCLASS()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
+
+UCLASS(BlueprintType, Blueprintable, ClassGroup=(UI), meta=(BlueprintSpawnableComponent))
 class ETERNALMORTIS_API UPlayerUIComponent : public UPawnUIComponent
 {
 	GENERATED_BODY()
-	
+public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnHealthChanged OnHealthChanged;
 };
