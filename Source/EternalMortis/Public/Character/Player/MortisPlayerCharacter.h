@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UMortisInputConfig;
 class UMortisPlayerCombatComponent;
+class UPlayerUIComponent;
 struct FInputActionValue;
 
 /**
@@ -41,6 +42,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UMortisPlayerCombatComponent* MortisPlayerCombatComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UPlayerUIComponent* PlayerUIComponent;
 	// Inputs
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
 	UMortisInputConfig* InputConfigDataAsset;

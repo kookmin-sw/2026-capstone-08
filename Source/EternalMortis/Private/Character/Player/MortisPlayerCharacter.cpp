@@ -12,6 +12,7 @@
 #include "Components/Input/MortisInputComponent.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
+#include "Components/UI/PlayerUIComponent.h"
 #include "MortisGameplayTags.h"
 
 AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -39,6 +40,8 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
+
+	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("HeroUIComponent"));
 }
 
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
