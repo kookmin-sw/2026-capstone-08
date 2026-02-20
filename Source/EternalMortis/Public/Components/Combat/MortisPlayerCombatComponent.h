@@ -6,6 +6,7 @@
 #include "Components/Combat/MortisCombatComponent.h"
 #include "MortisPlayerCombatComponent.generated.h"
 
+class AMortisPlayerWeapon;
 /**
  * 
  */
@@ -14,4 +15,13 @@ class ETERNALMORTIS_API UMortisPlayerCombatComponent : public UMortisCombatCompo
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
+	AMortisPlayerWeapon* GetPlayerCarriedWeaponByTag(FGameplayTag WeaponTag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
+	AMortisPlayerWeapon* GetPlayerCurrentEquippedWeapon() const;
+
+	virtual void OnHitTargetActor(AActor* HitActor) override;
+	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor) override;
 };

@@ -18,19 +18,19 @@ class ETERNALMORTIS_API UMortisCombatComponent : public UPawnExtensionComponentB
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCallable, Category = "Warrior|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	void RegisterSpawnedWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon);
 
-	UFUNCTION(BlueprintCallable, Category = "Warrior|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	AMortisWeaponBase* GetCharacterCarriedWeaponByTag(FGameplayTag InWeaponTagToGet) const;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Warrior|Combat")
+	UPROPERTY(BlueprintReadWrite, Category = "Mortis|Combat")
 	FGameplayTag CurrentEquippedWeaponTag;
 
-	UFUNCTION(BlueprintCallable, Category = "Warrior|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	AMortisWeaponBase* GetCharacterCurrentEquippedWeapon() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Warrior|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	void ToggleWeaponCollision(bool bShouldEnable);
 
 	// 아래 두 Functions는 자식 CombatComponent에서 구현

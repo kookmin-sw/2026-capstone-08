@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/MortisCharacterBase.h"
+#include "GameplayTagContainer.h"
 #include "MortisPlayerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -46,4 +47,10 @@ private:
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
+
+	void Input_AbilityInputPressed(FGameplayTag InputTag);
+	void Input_AbilityInputReleased(FGameplayTag InputTag);
+
+public:
+	FORCEINLINE UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent() const { return MortisPlayerCombatComponent; }
 };

@@ -2,4 +2,9 @@
 
 
 #include "Animation/MortisPlayerLinkedAnimLayer.h"
+#include "Animation/MortisPlayerAnimInstance.h"
 
+UMortisPlayerAnimInstance* UMortisPlayerLinkedAnimLayer::GetPlayerAnimInstance() const
+{
+	return Cast<UMortisPlayerAnimInstance>(GetOwningComponent()->GetAnimInstance());
+}

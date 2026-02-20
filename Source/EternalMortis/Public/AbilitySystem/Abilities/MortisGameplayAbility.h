@@ -29,8 +29,11 @@ protected:
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	UFUNCTION(BlueprintPure, Category = "Warrior|Ability")
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
 	UMortisCombatComponent* GetMortisCombatComponentFromActorInfo() const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	UMortisAbilitySystemComponent* GetMortisAbilitySystemComponentFromActorInfo() const;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "MortisAbility")
 	EMortisAbilityActivationPolicy AbilityActivationPolicy = EMortisAbilityActivationPolicy::OnTriggered;

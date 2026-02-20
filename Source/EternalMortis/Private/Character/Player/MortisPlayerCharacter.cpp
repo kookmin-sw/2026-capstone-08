@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/Input/MortisInputComponent.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
+#include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "MortisGameplayTags.h"
 
 AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -67,6 +68,8 @@ void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	UMortisInputComponent* MortisInputComponent = CastChecked<UMortisInputComponent>(PlayerInputComponent);
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+
+	MortisInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
 }
 
 void AMortisPlayerCharacter::BeginPlay()
@@ -105,4 +108,14 @@ void AMortisPlayerCharacter::Input_Look(const FInputActionValue& InputActionValu
 	{
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AMortisPlayerCharacter::Input_AbilityInputPressed(FGameplayTag InputTag)
+{
+	MortisAbilitySystemComponent->OnAbilityInputPressed(InputTag);
+}
+
+void AMortisPlayerCharacter::Input_AbilityInputReleased(FGameplayTag InputTag)
+{
+	MortisAbilitySystemComponent->OnAbilityInputReleased(InputTag);
 }

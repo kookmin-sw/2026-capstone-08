@@ -13,5 +13,6 @@ UCLASS()
 class ETERNALMORTIS_API UMortisPlayerLinkedAnimLayer : public UMortisAnimInstanceBase
 {
 	GENERATED_BODY()
-	
+	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe))
+	UMortisPlayerAnimInstance* GetPlayerAnimInstance() const;
 };

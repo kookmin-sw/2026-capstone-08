@@ -28,3 +28,8 @@ UMortisCombatComponent* UMortisGameplayAbility::GetMortisCombatComponentFromActo
 {
 	return GetAvatarActorFromActorInfo()->FindComponentByClass<UMortisCombatComponent>();
 }
+
+UMortisAbilitySystemComponent* UMortisGameplayAbility::GetMortisAbilitySystemComponentFromActorInfo() const
+{
+	return Cast<UMortisAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent);
+}

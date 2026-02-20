@@ -16,9 +16,7 @@ void UMortisCombatComponent::RegisterSpawnedWeapon(FGameplayTag WeaponTag, AMort
 	WeaponToRegister->OnWeaponPulledFromTarget.BindUObject(this, &ThisClass::OnWeaponPulledFromTargetActor);
 
 	if (bRegisterAsEquippedWeapon)
-	{
 		CurrentEquippedWeaponTag = WeaponTag;
-	}
 }
 
 AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedWeaponByTag(FGameplayTag WeaponTagToGet) const

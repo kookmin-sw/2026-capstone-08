@@ -6,6 +6,10 @@
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
 #include "MortisPlayerGameplayAbility.generated.h"
 
+class AMortisPlayerCharacter;
+class AMortisPlayerController;
+class UMortisPlayerCombatComponent;
+
 /**
  * 
  */
@@ -14,4 +18,19 @@ class ETERNALMORTIS_API UMortisPlayerGameplayAbility : public UMortisGameplayAbi
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	AMortisPlayerCharacter* GetMortisPlayerCharacterFromActorInfo();
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	AMortisPlayerController* GetMortisPlayerControllerFromActorInfo();
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent();
+
+
+private:
+	TWeakObjectPtr<AMortisPlayerCharacter> CachedMortisPlayerCharacter;
+	TWeakObjectPtr<AMortisPlayerController> CachedMortisPlayerController;
+
 };
