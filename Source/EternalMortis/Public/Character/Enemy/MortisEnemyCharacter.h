@@ -6,6 +6,7 @@
 #include "Character/MortisCharacterBase.h"
 #include "MortisEnemyCharacter.generated.h"
 
+class UMortisEnemyCombatComponent;
 class UMortisEnemyData;
 /**
  * 
@@ -25,13 +26,18 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
 
+public:
+	UMortisEnemyData* GetEnemyData() const;
+	
+	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
+protected:
 	void InitializeEnemyByData();
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 	TObjectPtr<UMortisEnemyData> EnemyData;
 
-public:
-	UMortisEnemyData* GetEnemyData() const;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	TObjectPtr<UMortisEnemyCombatComponent> EnemyCombatComponent;
 	
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

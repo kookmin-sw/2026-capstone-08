@@ -4,8 +4,9 @@
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/MortisPlayerGameplayAbility.h"
 #include "MortisGameplayTags.h"
+#include "MortisDebugHelper.h"
 
-// Player ¿ë
+// Player ï¿½ï¿½
 void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& InputTag)
 {
 	if (!InputTag.IsValid()) return;
@@ -14,7 +15,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& In
 	{
 		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
 			TryActivateAbility(AbilitySpec.Handle);
-		// break¸¦ ³ÖÀ»Áö ¸»Áö °í¹ÎÇØº¼ °Í
+		// breakï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Øºï¿½ ï¿½ï¿½
 	}
 }
 
@@ -26,7 +27,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputReleased(const FGameplayTag& I
 	{
 		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag) && AbilitySpec.IsActive())
 			CancelAbilityHandle(AbilitySpec.Handle);
-		// break¸¦ ³ÖÀ»Áö ¸»Áö °í¹ÎÇØº¼ °Í
+		// breakï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Øºï¿½ ï¿½ï¿½
 	}
 }
 
@@ -79,4 +80,15 @@ bool UMortisAbilitySystemComponent::TryActivateAbilityByTag(FGameplayTag Ability
 	}
 
 	return false;
+}
+
+TArray<FGameplayAbilitySpec*> UMortisAbilitySystemComponent::GetAbilitySpecsByTag(const FGameplayTag& InAbilityTag) const
+{
+	TArray<FGameplayAbilitySpec*> GameplaySpecs;
+	if (!InAbilityTag.IsValid())
+	{
+		MORTIS_LOG("%s is invalid!", *InAbilityTag.GetTagName().ToString());
+	}
+	GetActivatableGameplayAbilitySpecsByAllMatchingTags(InAbilityTag.GetSingleTagContainer(), GameplaySpecs);
+	return GameplaySpecs;
 }

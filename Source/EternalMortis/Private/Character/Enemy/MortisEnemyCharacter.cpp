@@ -4,9 +4,10 @@
 #include "Character/Enemy/MortisEnemyCharacter.h"
 
 #include "MortisDebugHelper.h"
-#include "AbilitySystem/Data/MortisAbilitySetBase.h"
+#include "AbilitySystem/Data/MortisEnemyAbilitySet.h"
 #include "Character/Enemy/MortisEnemyData.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/Combat/MortisEnemyCombatComponent.h"
 #include "Controllers/MortisAIController.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
@@ -21,6 +22,8 @@ AMortisEnemyCharacter::AMortisEnemyCharacter()
 
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	EnemyCombatComponent = CreateDefaultSubobject<UMortisEnemyCombatComponent>("EnemyCombatComponent");
 }
 
 void AMortisEnemyCharacter::BeginPlay()
@@ -41,6 +44,7 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 	MORTIS_LOG("");
 	if (!EnemyData)
 	{
+		MORTIS_LOG("Enemy data is null");
 		return;
 	}
 	
@@ -51,16 +55,39 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 	GetCharacterMovement()->RotationRate = EnemyData->RotationRate;
 	GetCharacterMovement()->MaxWalkSpeed = EnemyData->MaxWalkSpeed;
 	GetCharacterMovement()->BrakingDecelerationWalking = EnemyData->BrakingDecelerationWalking;
-	
-	// if (EnemyData->AbilitySet)
-	// {
-	// 	EnemyData->AbilitySet->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
-	// }
+
+
+	//
+	if (GetWorld() && GetWorld()->IsGameWorld())
+	{
+		if (EnemyData->AbilitySet)
+		{
+			EnemyData->AbilitySet->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
+		}
+
+		if (EnemyData->AttackPatternData)
+		{
+			if (EnemyCombatComponent)
+			{
+				EnemyCombatComponent->SetAttackPattern(EnemyData->AttackPatternData);
+			}
+		}
+	}
 }
 
 UMortisEnemyData* AMortisEnemyCharacter::GetEnemyData() const
 {
 	return EnemyData;
+}
+
+UMortisCombatComponent* AMortisEnemyCharacter::GetCombatComponent() const
+{
+	return EnemyCombatComponent;
+}
+
+UMortisEnemyCombatComponent* AMortisEnemyCharacter::GetEnemyCombatComponent() const
+{
+	return EnemyCombatComponent;
 }
 
 #if WITH_EDITOR
@@ -73,9 +100,7 @@ void AMortisEnemyCharacter::PostEditChangeProperty(FPropertyChangedEvent& Proper
 	{
 		if (EnemyData)
 		{
-			GetCapsuleComponent()->InitCapsuleSize(EnemyData->CapsuleRadius, EnemyData->CapsuleHalfHeight);
-			GetMesh()->SetSkeletalMesh(EnemyData->EnemyMesh);
-			GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -EnemyData->CapsuleHalfHeight));
+			InitializeEnemyByData();
 		}
 	}
 }

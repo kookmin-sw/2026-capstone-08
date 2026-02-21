@@ -15,7 +15,6 @@ void UMortisCharacterAnimInstanceBase::NativeInitializeAnimation()
 
 void UMortisCharacterAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
-	UE_LOG(LogTemp, Display, TEXT("OwningCharacter : %d | OwningMovementComponent : %d"), OwningCharacter, OwningMovementComponent);
 	if (!OwningCharacter || !OwningMovementComponent) return;
 
 	GroundSpeed = OwningCharacter->GetVelocity().Size2D();

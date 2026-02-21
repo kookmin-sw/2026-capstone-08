@@ -29,4 +29,6 @@ public:
 	// Shared
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
 	bool TryActivateAbilityByTag(FGameplayTag AbilityTagToActivate);
+
+	TArray<FGameplayAbilitySpec*> GetAbilitySpecsByTag(const FGameplayTag& InAbilityTag) const;
 };

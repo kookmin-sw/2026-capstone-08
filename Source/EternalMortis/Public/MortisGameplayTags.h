@@ -17,7 +17,7 @@ namespace MortisGameplayTags
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_LightAttack);
 
-	// ====================		Ability Tags	====================
+	// ====================		Ability Tags	====================	
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Run);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Roll);
 
@@ -26,11 +26,22 @@ namespace MortisGameplayTags
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Light);
 
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Melee);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Ranged);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Pattern);
+	
 	// ====================		State Tags		====================
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Dead);
+
+
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Enemy_Phase_1);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Enemy_Phase_2);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Enemy_Phase_3);
 	
 	// ====================		Event Tags		====================
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_SwitchWeapon);
+	
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Request_ExecutePattern);
 
 	// ====================		Data Tags		====================
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Weapon_DefaultSword);

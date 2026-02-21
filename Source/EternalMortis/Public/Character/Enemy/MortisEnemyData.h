@@ -3,10 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "Types/MortisEnumTypes.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisEnemyData.generated.h"
 
+class UMortisEnemyAbilitySet;
 class AMortisEnemyCharacter;
 class UBlackboardData;
 class UBehaviorTree;
@@ -14,8 +17,19 @@ class UMortisAbilitySetBase;
 /**
  * 
  */
+
 UCLASS()
-class ETERNALMORTIS_API UMortisEnemyData : public UDataAsset
+class ETERNALMORTIS_API UMortisAttackPatternData : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FMortisAttackPattern> AttackPatterns;
+};
+ 
+UCLASS()
+class ETERNALMORTIS_API UMortisEnemyData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
@@ -41,7 +55,7 @@ public:
 	
 	/* Ability system */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystem")
-	TObjectPtr<UMortisAbilitySetBase> AbilitySet;
+	TObjectPtr<UMortisEnemyAbilitySet> AbilitySet;
 
 	/* AI */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -69,5 +83,11 @@ public:
 	float AvoidanceQueryRange = 600.f;
 
 	/* Team Agent */
-	EMortisTeam Affiliation = EMortisTeam::Enemy; 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	EMortisTeam Affiliation = EMortisTeam::Enemy;
+
+	/* Attack Pattern */
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<UMortisAttackPatternData> AttackPatternData;
+	
 };
