@@ -28,7 +28,10 @@ protected:
 
 public:
 	UMortisEnemyData* GetEnemyData() const;
-	
+
+	//~ Begin IMortisCombatInterface
+	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override;
+	//~ End IMortisCombatInterfac
 	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
 protected:
 	void InitializeEnemyByData();
