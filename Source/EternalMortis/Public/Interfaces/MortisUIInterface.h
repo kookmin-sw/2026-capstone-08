@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "MortisPawnUIInterface.generated.h"
+#include "MortisUIInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UMortisPawnUIInterface : public UInterface
+class UMortisUIInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,7 +16,7 @@ class UMortisPawnUIInterface : public UInterface
 /**
  * 
  */
-class ETERNALMORTIS_API IMortisPawnUIInterface
+class ETERNALMORTIS_API IMortisUIInterface
 {
 	GENERATED_BODY()
 

@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "MortisCombatInterface.generated.h"
 
+class UMortisCombatComponent;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UMortisCombatInterface : public UInterface
@@ -22,4 +23,5 @@ class ETERNALMORTIS_API IMortisCombatInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	virtual UMortisCombatComponent* GetCombatComponent() const = 0;
 };

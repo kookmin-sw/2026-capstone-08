@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+
+#include "Interfaces/MortisCombatInterface.h"
 #include "MortisCharacterBase.generated.h"
 
 class UMortisAbilitySystemComponent;
@@ -12,7 +14,7 @@ class UMortisAttributeSet;
 class UMortisAbilitySetBase;
 
 UCLASS()
-class ETERNALMORTIS_API AMortisCharacterBase : public ACharacter, public IAbilitySystemInterface
+class ETERNALMORTIS_API AMortisCharacterBase : public ACharacter, public IAbilitySystemInterface, public IMortisCombatInterface
 {
 	GENERATED_BODY()
 
@@ -23,6 +25,9 @@ public:
 	// IAbilitySystemInterface Override
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	// IMortisCombatInterface Override
+	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override { return nullptr; }
+	
 protected:
 	// APawn Override
 	virtual void PossessedBy(AController* NewController) override;
@@ -40,5 +45,4 @@ protected:
 public:
 	FORCEINLINE UMortisAbilitySystemComponent* GetMortisAbilitySystemComponent() const { return MortisAbilitySystemComponent; }
 	FORCEINLINE UMortisAttributeSet* GetMortisAttributeSet() const { return MortisAttributeSet; }
-
 };
