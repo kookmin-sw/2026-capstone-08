@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/UI/PawnUIComponent.h"
-#include "PlayerUIComponent.generated.h"
+#include "Components/UI/MortisUIComponent.h"
+#include "MortisPlayerUIComponent.generated.h"
 
 /**
  * 
@@ -12,7 +12,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup=(UI), meta=(BlueprintSpawnableComponent))
-class ETERNALMORTIS_API UPlayerUIComponent : public UPawnUIComponent
+class ETERNALMORTIS_API UMortisPlayerUIComponent : public UMortisUIComponent
 {
 	GENERATED_BODY()
 public:

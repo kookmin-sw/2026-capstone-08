@@ -12,7 +12,7 @@
 #include "Components/Input/MortisInputComponent.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
-#include "Components/UI/PlayerUIComponent.h"
+#include "Components/UI/MortisPlayerUIComponent.h"
 #include "MortisGameplayTags.h"
 
 AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -41,7 +41,7 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 
 	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
 
-	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("HeroUIComponent"));
+	PlayerUIComponent = CreateDefaultSubobject<UMortisPlayerUIComponent>(TEXT("HeroUIComponent"));
 }
 
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)

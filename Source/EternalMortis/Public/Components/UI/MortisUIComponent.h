@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/PawnExtensionComponentBase.h"
-#include "PawnUIComponent.generated.h"
+#include "MortisUIComponent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UPawnUIComponent : public UPawnExtensionComponentBase
+class ETERNALMORTIS_API UMortisUIComponent : public UPawnExtensionComponentBase
 {
 	GENERATED_BODY()
 	
