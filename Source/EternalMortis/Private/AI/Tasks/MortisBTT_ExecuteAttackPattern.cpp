@@ -15,6 +15,26 @@
 
 UMortisBTT_ExecuteAttackPattern::UMortisBTT_ExecuteAttackPattern()
 {
+	TargetActorKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetActorKey), AActor::StaticClass());
+	TargetDistanceKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetDistanceKey));
+}
+
+void UMortisBTT_ExecuteAttackPattern::InitializeFromAsset(UBehaviorTree& Asset)
+{
+	Super::InitializeFromAsset(Asset);
+
+	if (UBlackboardData* BBAsset = GetBlackboardAsset())
+	{
+		TargetActorKey.ResolveSelectedKey(*BBAsset);
+		TargetDistanceKey.ResolveSelectedKey(*BBAsset);
+	}
+}
+
+FString UMortisBTT_ExecuteAttackPattern::GetStaticDescription() const
+{
+	const FString KeyDescription = TargetActorKey.SelectedKeyName.ToString();
+
+	return FString::Printf(TEXT("Execute attack pattern to attack %s."), *KeyDescription);
 }
 
 EBTNodeResult::Type UMortisBTT_ExecuteAttackPattern::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -25,7 +45,7 @@ EBTNodeResult::Type UMortisBTT_ExecuteAttackPattern::ExecuteTask(UBehaviorTreeCo
 		MORTIS_LOG("BBComp is null");
 		return EBTNodeResult::Failed;
 	}
-	float DistanceToTarget = BBComp->GetValueAsFloat(TargetDistanceKey);
+	float DistanceToTarget = BBComp->GetValueAsFloat(TargetDistanceKey.SelectedKeyName);
 	// TODO: Calculate AngleToTarget
 	float AngleToTarget = 0.f;
 	
@@ -55,7 +75,9 @@ EBTNodeResult::Type UMortisBTT_ExecuteAttackPattern::ExecuteTask(UBehaviorTreeCo
 		return EBTNodeResult::Failed;
 	}
 
+	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
 	FGameplayEventData Payload;
+	Payload.Target = TargetActor;
 	Payload.EventTag = MortisGameplayTags::Event_Request_ExecutePattern;
 	Payload.EventMagnitude = static_cast<float>(PatternIndex);
 	
@@ -71,7 +93,7 @@ EBTNodeResult::Type UMortisBTT_ExecuteAttackPattern::ExecuteTask(UBehaviorTreeCo
 	FGameplayAbilitySpec* Spec = nullptr;
 	for (FGameplayAbilitySpec& AbilitySpec : CachedASC->GetActivatableAbilities())
 	{
-		if (AbilitySpec.IsActive() && AbilitySpec.Ability && AbilitySpec.Ability->AbilityTags.HasTagExact(MortisGameplayTags::Ability_Action_Attack_Pattern))
+		if (/*AbilitySpec.IsActive() && */AbilitySpec.Ability && AbilitySpec.Ability->GetAssetTags().HasTagExact(MortisGameplayTags::Ability_Action_Attack_Pattern))
 		{
 			MORTIS_LOG("Spec Found");
 			Spec = &AbilitySpec;

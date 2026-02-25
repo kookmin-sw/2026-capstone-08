@@ -60,6 +60,12 @@ struct FMortisAttackPatternStep
 
 	UPROPERTY(EditDefaultsOnly)
 	float DelayAfterStep = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bUseMotionWarping = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName WarpTargetName = NAME_None;
 };
 
 USTRUCT(BlueprintType)
@@ -77,10 +83,10 @@ struct FMortisAttackPattern
 	float MaxRange = 300.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MinAngle = -3.14f;
+	float MinAngle = -180.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxAngle = 3.14f;
+	float MaxAngle = 180.f;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTagContainer RequiredPhases;

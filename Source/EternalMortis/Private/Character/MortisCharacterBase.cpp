@@ -2,6 +2,8 @@
 
 
 #include "Character/MortisCharacterBase.h"
+
+#include "MotionWarpingComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
 
@@ -17,6 +19,7 @@ AMortisCharacterBase::AMortisCharacterBase(const FObjectInitializer& ObjectIniti
 
 	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisAbilitySystemComponent>(TEXT("MortisAbilitySystemComponent"));
 	MortisAttributeSet = CreateDefaultSubobject<UMortisAttributeSet>(TEXT("MortisAttributeSet"));
+	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>("MotionWarpingComponent");
 }
 
 UAbilitySystemComponent* AMortisCharacterBase::GetAbilitySystemComponent() const

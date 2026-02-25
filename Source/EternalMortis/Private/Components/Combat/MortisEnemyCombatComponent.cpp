@@ -37,16 +37,17 @@ int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, f
 	float TotalWeight = 0.f;
 	for (int32 i = 0; i < AttackPatterns.Num(); i++)
 	{
-		MORTIS_LOG("DistanceToTarget: %f, AngleToTarget: %f, RequiredPhase: %s",
-			DistanceToTarget,
-			AngleToTarget,
-			AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
+		// MORTIS_LOG("DistanceToTarget: %f, AngleToTarget: %f, RequiredPhase: %s",
+		// 	DistanceToTarget,
+		// 	AngleToTarget,
+		// 	AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
 		if (DistanceToTarget >= AttackPatterns[i].MinRange &&
 			DistanceToTarget <= AttackPatterns[i].MaxRange &&
 			AngleToTarget >= AttackPatterns[i].MinAngle &&
 			AngleToTarget <= AttackPatterns[i].MaxAngle &&
 			AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase))
 		{
+			// MORTIS_LOG("Add: %d", i);
 			ValidIndices.Add(i);
 			TotalWeight += AttackPatterns[i].Weight;
 		}

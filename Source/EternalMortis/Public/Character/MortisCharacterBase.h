@@ -9,6 +9,7 @@
 #include "Interfaces/MortisCombatInterface.h"
 #include "MortisCharacterBase.generated.h"
 
+class UMotionWarpingComponent;
 class UMortisAbilitySystemComponent;
 class UMortisAttributeSet;
 class UMortisAbilitySetBase;
@@ -41,6 +42,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySystem")
 	TSoftObjectPtr<UMortisAbilitySetBase> CharacterAbilitySet;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MotionWarping")
+	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 
 public:
 	FORCEINLINE UMortisAbilitySystemComponent* GetMortisAbilitySystemComponent() const { return MortisAbilitySystemComponent; }

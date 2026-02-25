@@ -6,6 +6,8 @@
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
 #include "MortisEnemyGameplayAbility.generated.h"
 
+class AMortisAIController;
+class AMortisEnemyCharacter;
 /**
  * 
  */
@@ -13,5 +15,9 @@ UCLASS()
 class ETERNALMORTIS_API UMortisEnemyGameplayAbility : public UMortisGameplayAbility
 {
 	GENERATED_BODY()
-	
+
+public:
+	AMortisEnemyCharacter* GetEnemyCharacterFromActorInfo() const;
+
+	AMortisAIController* GetAIControllerFromActorInfo() const;
 };

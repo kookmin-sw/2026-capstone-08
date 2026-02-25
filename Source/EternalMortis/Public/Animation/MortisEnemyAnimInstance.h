@@ -13,5 +13,7 @@ UCLASS()
 class ETERNALMORTIS_API UMortisEnemyAnimInstance : public UMortisCharacterAnimInstanceBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 };

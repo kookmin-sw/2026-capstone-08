@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTService.h"
-#include "MortisBTS_CalculateDistance.generated.h"
+#include "MortisBTS_UpdateTargetContext.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisBTS_CalculateDistance : public UBTService
+class ETERNALMORTIS_API UMortisBTS_UpdateTargetContext : public UBTService
 {
 	GENERATED_BODY()
 
 public:
-	UMortisBTS_CalculateDistance();
+	UMortisBTS_UpdateTargetContext();
 
 	//~ Begin UBTNode Interface
 	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
@@ -27,7 +27,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector TargetActorKey;
-
+	
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector DistanceKey;
+	
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector DotToTargetKey;
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector IsTargetOnRightKey;
 };

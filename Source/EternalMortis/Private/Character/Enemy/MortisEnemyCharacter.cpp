@@ -2,14 +2,12 @@
 
 
 #include "Character/Enemy/MortisEnemyCharacter.h"
-
 #include "MortisDebugHelper.h"
 #include "AbilitySystem/Data/MortisEnemyAbilitySet.h"
 #include "Character/Enemy/MortisEnemyData.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
-#include "Controllers/MortisAIController.h"
 
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMortisEnemyCharacter::AMortisEnemyCharacter()
@@ -22,7 +20,7 @@ AMortisEnemyCharacter::AMortisEnemyCharacter()
 
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-
+	
 	EnemyCombatComponent = CreateDefaultSubobject<UMortisEnemyCombatComponent>("EnemyCombatComponent");
 }
 

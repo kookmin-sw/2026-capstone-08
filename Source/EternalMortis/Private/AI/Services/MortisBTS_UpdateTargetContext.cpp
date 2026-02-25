@@ -1,13 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/Services/MortisBTS_CalculateDistance.h"
+#include "AI/Services/MortisBTS_UpdateTargetContext.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BlackboardData.h"
+#include "Kismet/KismetMathLibrary.h"
 
-UMortisBTS_CalculateDistance::UMortisBTS_CalculateDistance()
+UMortisBTS_UpdateTargetContext::UMortisBTS_UpdateTargetContext()
 {
 	NodeName = TEXT("Calculate Target Distance");
 
@@ -18,27 +19,32 @@ UMortisBTS_CalculateDistance::UMortisBTS_CalculateDistance()
 
 	TargetActorKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetActorKey), AActor::StaticClass());
 	DistanceKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DistanceKey));
+	DotToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DotToTargetKey));
+	IsTargetOnRightKey.AddBoolFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, IsTargetOnRightKey));
 }
 
-void UMortisBTS_CalculateDistance::InitializeFromAsset(UBehaviorTree& Asset)
+void UMortisBTS_UpdateTargetContext::InitializeFromAsset(UBehaviorTree& Asset)
 {
 	Super::InitializeFromAsset(Asset);
 
 	if (UBlackboardData* BBAsset = GetBlackboardAsset())
 	{
 		TargetActorKey.ResolveSelectedKey(*BBAsset);
+		DistanceKey.ResolveSelectedKey(*BBAsset);
+		DotToTargetKey.ResolveSelectedKey(*BBAsset);
+		IsTargetOnRightKey.ResolveSelectedKey(*BBAsset);
 	}
 }
 
-FString UMortisBTS_CalculateDistance::GetStaticDescription() const
+FString UMortisBTS_UpdateTargetContext::GetStaticDescription() const
 {
-	return FString::Printf(TEXT("Calculate distance to %s Key %s"),
+	return FString::Printf(TEXT("Update %s Context %s"),
 		*TargetActorKey.SelectedKeyName.ToString(),
 		*GetStaticServiceDescription()
 	);
 }
 
-void UMortisBTS_CalculateDistance::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UMortisBTS_UpdateTargetContext::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
@@ -55,5 +61,14 @@ void UMortisBTS_CalculateDistance::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	{
 		float Distance = FVector::Dist(AIC->GetPawn()->GetActorLocation(), TargetActor->GetActorLocation());
 		BBComp->SetValueAsFloat(DistanceKey.SelectedKeyName, Distance);
+
+		FVector EnemyForward = AIC->GetPawn()->GetActorForwardVector();
+		FVector TargetForward = TargetActor->GetActorForwardVector();
+		
+		float DotToTarget = FVector::DotProduct(EnemyForward, TargetForward);
+		BBComp->SetValueAsFloat(DotToTargetKey.SelectedKeyName, DotToTarget);
+
+		bool bIsTargetOnRight = FVector::CrossProduct(EnemyForward, TargetForward).Z > 0.f;
+		BBComp->SetValueAsBool(IsTargetOnRightKey.SelectedKeyName, bIsTargetOnRight);
 	}
 }

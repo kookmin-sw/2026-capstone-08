@@ -13,7 +13,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& In
 
 	for (const FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 			TryActivateAbility(AbilitySpec.Handle);
 		// break�� ������ ���� ����غ� ��
 	}
@@ -25,7 +25,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputReleased(const FGameplayTag& I
 
 	for (const FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag) && AbilitySpec.IsActive())
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag) && AbilitySpec.IsActive())
 			CancelAbilityHandle(AbilitySpec.Handle);
 		// break�� ������ ���� ����غ� ��
 	}
@@ -42,7 +42,7 @@ void UMortisAbilitySystemComponent::GrantPlayerWeaponAbilities(const TArray<FMor
 		FGameplayAbilitySpec AbilitySpec(WeaponAbility.AbilityToGrant);
 		AbilitySpec.SourceObject = GetAvatarActor();
 		AbilitySpec.Level = ApplyLevel;
-		AbilitySpec.DynamicAbilityTags.AddTag(WeaponAbility.InputTag);
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(WeaponAbility.InputTag);
 
 		GrantedAbilitySpecHandles.AddUnique(GiveAbility(AbilitySpec));
 	}

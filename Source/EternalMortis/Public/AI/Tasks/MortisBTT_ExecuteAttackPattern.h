@@ -24,14 +24,24 @@ class ETERNALMORTIS_API UMortisBTT_ExecuteAttackPattern : public UBTTaskNode
 public:
 	UMortisBTT_ExecuteAttackPattern();
 
+
+	//~ Begin UBTNode Interface 
+	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+	virtual FString GetStaticDescription() const override;
+	//~ Begin UBTNode Interface
+	
 	//~ Begin UBTTaskNode Interface 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
-	//~ Begin UBTTaskNode Interface 
+	//~ Begin UBTTaskNode Interface	
 
 protected:
 	UPROPERTY(EditAnywhere)
-	FName TargetDistanceKey;
+	// FName TargetDistanceKey;
+	FBlackboardKeySelector TargetDistanceKey;
+
+	UPROPERTY(EditAnywhere)
+	FBlackboardKeySelector TargetActorKey;
 
 private:
 	UPROPERTY()

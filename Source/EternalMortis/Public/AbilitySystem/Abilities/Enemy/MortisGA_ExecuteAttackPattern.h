@@ -24,6 +24,9 @@ protected:
 	//~ End GameplayAbility Interface
 
 protected:
+	UPROPERTY(EditAnywhere)
+	FName WarpTargetName;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FMortisAttackPattern AttackPattern;
 	
@@ -38,6 +41,7 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	void OnStepFinished(bool bInterrupted);
+	
 private:
 	UPROPERTY(VisibleAnywhere)
 	int32 CurrentStepIndex = 0;

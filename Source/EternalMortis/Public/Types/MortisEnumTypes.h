@@ -2,6 +2,14 @@
 
 #pragma once
 
+
+UENUM()
+enum class EMortisValidType : uint8
+{
+	Valid,
+	InValid
+};
+
 UENUM()
 enum class EMortisTeam : uint8
 {
