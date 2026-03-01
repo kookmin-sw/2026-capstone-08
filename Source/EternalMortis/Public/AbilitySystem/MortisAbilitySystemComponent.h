@@ -16,7 +16,7 @@ class ETERNALMORTIS_API UMortisAbilitySystemComponent : public UAbilitySystemCom
 	GENERATED_BODY()
 	
 public:
-	// Player ¿ë
+	// Player ï¿½ï¿½
 	void OnAbilityInputPressed(const FGameplayTag& InputTag);
 	void OnAbilityInputReleased(const FGameplayTag& InputTag);
 
@@ -29,6 +29,4 @@ public:
 	// Shared
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
 	bool TryActivateAbilityByTag(FGameplayTag AbilityTagToActivate);
-
-	TArray<FGameplayAbilitySpec*> GetAbilitySpecsByTag(const FGameplayTag& InAbilityTag) const;
 };

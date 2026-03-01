@@ -28,17 +28,24 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Melee, "Ability.Action.Attack.Melee");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Ranged, "Ability.Action.Attack.Ranged");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Pattern, "Ability.Action.Attack.Pattern");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Turn, "Ability.Action.Turn");
 
 	// ====================		State Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
 
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attacking, "State.Action.Attacking");
+
+	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Turning, "State.Movement.Turning");
+	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Strafing, "State.Movement.Strafing");
 	
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_1, "State.Enemy.Phase.1");
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_2, "State.Enemy.Phase.2");
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_3, "State.Enemy.Phase.3");
 	// ====================		Event Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_SwitchWeapon, "Event.Player.SwitchWeapon");
+	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Request_ExecutePattern, "Event.Request.ExecutePattern");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Request_Turn, "Event.Request.Turn");
 
 	// ====================		Data Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DefaultSword, "Data.Weapon.DefaultSword");

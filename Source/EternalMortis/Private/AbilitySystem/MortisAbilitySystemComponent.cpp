@@ -81,14 +81,3 @@ bool UMortisAbilitySystemComponent::TryActivateAbilityByTag(FGameplayTag Ability
 
 	return false;
 }
-
-TArray<FGameplayAbilitySpec*> UMortisAbilitySystemComponent::GetAbilitySpecsByTag(const FGameplayTag& InAbilityTag) const
-{
-	TArray<FGameplayAbilitySpec*> GameplaySpecs;
-	if (!InAbilityTag.IsValid())
-	{
-		MORTIS_LOG("%s is invalid!", *InAbilityTag.GetTagName().ToString());
-	}
-	GetActivatableGameplayAbilitySpecsByAllMatchingTags(InAbilityTag.GetSingleTagContainer(), GameplaySpecs);
-	return GameplaySpecs;
-}

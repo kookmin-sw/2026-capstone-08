@@ -12,7 +12,7 @@ void UMortisEnemyAbilitySet::GiveToAbilitySystemComponent(UMortisAbilitySystemCo
 {
 	Super::GiveToAbilitySystemComponent(ASCToGive, ApplyLevel);
 
-	MORTIS_LOG("");
+	// MORTIS_LOG("");
 	for (const TSubclassOf<UMortisEnemyGameplayAbility>& Ability : EnemyAbilities)
 	{
 		if (!Ability)

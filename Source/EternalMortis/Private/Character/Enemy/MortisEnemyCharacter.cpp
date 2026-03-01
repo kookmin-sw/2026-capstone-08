@@ -39,7 +39,6 @@ void AMortisEnemyCharacter::PossessedBy(AController* NewController)
 
 void AMortisEnemyCharacter::InitializeEnemyByData()
 {
-	MORTIS_LOG("");
 	if (!EnemyData)
 	{
 		MORTIS_LOG("Enemy data is null");

@@ -33,6 +33,6 @@ public:
 	void SetAttackPattern(UMortisAttackPatternData* PatternData);
 	
 	FORCEINLINE const TArray<FMortisAttackPattern>& GetAttackPatterns() const { return AttackPatterns; }
-	FORCEINLINE const FMortisAttackPattern* GetAttackPatternByIndex(int32 InIndex) const;
+	FORCEINLINE const FMortisAttackPattern* GetAttackPatternByIndex(int32 Index) const;
 	int32 SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const;
 };

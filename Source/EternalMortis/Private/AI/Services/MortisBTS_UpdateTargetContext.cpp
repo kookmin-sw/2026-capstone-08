@@ -18,9 +18,8 @@ UMortisBTS_UpdateTargetContext::UMortisBTS_UpdateTargetContext()
 	RandomDeviation = 0.05f;
 
 	TargetActorKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetActorKey), AActor::StaticClass());
-	DistanceKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DistanceKey));
-	DotToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DotToTargetKey));
-	IsTargetOnRightKey.AddBoolFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, IsTargetOnRightKey));
+	DistToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DistToTargetKey));
+	AngleToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, AngleToTargetKey));
 }
 
 void UMortisBTS_UpdateTargetContext::InitializeFromAsset(UBehaviorTree& Asset)
@@ -30,9 +29,8 @@ void UMortisBTS_UpdateTargetContext::InitializeFromAsset(UBehaviorTree& Asset)
 	if (UBlackboardData* BBAsset = GetBlackboardAsset())
 	{
 		TargetActorKey.ResolveSelectedKey(*BBAsset);
-		DistanceKey.ResolveSelectedKey(*BBAsset);
-		DotToTargetKey.ResolveSelectedKey(*BBAsset);
-		IsTargetOnRightKey.ResolveSelectedKey(*BBAsset);
+		DistToTargetKey.ResolveSelectedKey(*BBAsset);
+		AngleToTargetKey.ResolveSelectedKey(*BBAsset);
 	}
 }
 
@@ -60,15 +58,14 @@ void UMortisBTS_UpdateTargetContext::TickNode(UBehaviorTreeComponent& OwnerComp,
 	if (TargetActor)
 	{
 		float Distance = FVector::Dist(AIC->GetPawn()->GetActorLocation(), TargetActor->GetActorLocation());
-		BBComp->SetValueAsFloat(DistanceKey.SelectedKeyName, Distance);
+		BBComp->SetValueAsFloat(DistToTargetKey.SelectedKeyName, Distance);
 
 		FVector EnemyForward = AIC->GetPawn()->GetActorForwardVector();
-		FVector TargetForward = TargetActor->GetActorForwardVector();
+		FVector EnemyToTarget = TargetActor->GetActorLocation() - AIC->GetPawn()->GetActorLocation();
 		
-		float DotToTarget = FVector::DotProduct(EnemyForward, TargetForward);
-		BBComp->SetValueAsFloat(DotToTargetKey.SelectedKeyName, DotToTarget);
-
-		bool bIsTargetOnRight = FVector::CrossProduct(EnemyForward, TargetForward).Z > 0.f;
-		BBComp->SetValueAsBool(IsTargetOnRightKey.SelectedKeyName, bIsTargetOnRight);
+		float Dot = FVector::DotProduct(EnemyForward, EnemyToTarget);
+		float CrossZ = FVector::CrossProduct(EnemyForward, EnemyToTarget).Z;
+		float AngleToTarget = FMath::RadiansToDegrees(FMath::Atan2(CrossZ, Dot));
+		BBComp->SetValueAsFloat(AngleToTargetKey.SelectedKeyName, AngleToTarget);
 	}
 }

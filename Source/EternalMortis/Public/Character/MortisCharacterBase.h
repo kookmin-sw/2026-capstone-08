@@ -48,4 +48,5 @@ protected:
 public:
 	FORCEINLINE UMortisAbilitySystemComponent* GetMortisAbilitySystemComponent() const { return MortisAbilitySystemComponent; }
 	FORCEINLINE UMortisAttributeSet* GetMortisAttributeSet() const { return MortisAttributeSet; }
+	FORCEINLINE UMotionWarpingComponent* GetMotionWarpingComponent() const { return MotionWarpingComponent; }
 };

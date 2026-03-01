@@ -20,44 +20,47 @@ UMortisAT_UpdateWarpTarget* UMortisAT_UpdateWarpTarget::UpdateWarpTarget(UGamepl
 void UMortisAT_UpdateWarpTarget::Activate()
 {
 	Super::Activate();
-
-	MORTIS_LOG("");
-	if (CachedTarget.IsValid())
+	
+	if (!CachedTarget.IsValid())
 	{
-		CachedMWC = GetAvatarActor()->FindComponentByClass<UMotionWarpingComponent>();
+		MORTIS_LOG("Target is invalid.");
+		EndTask();
 	}
+	CachedMWC = GetAvatarActor()->FindComponentByClass<UMotionWarpingComponent>();
 
 	if (!CachedMWC.IsValid())
 	{
 		MORTIS_LOG("MotionWarpingComponent is invalid.");
+		EndTask();
 		return;
 	}
 
 	UpdateTarget();
+}
 
-	if (UpdateInterval > 0.f)
+
+void UMortisAT_UpdateWarpTarget::TickTask(float DeltaTime)
+{
+	Super::TickTask(DeltaTime);
+
+	TimeSinceLastUpdate += DeltaTime;
+	if (TimeSinceLastUpdate > UpdateInterval)
 	{
-		GetWorld()->GetTimerManager().SetTimer(
-			TimerHandle,
-			this,
-			&ThisClass::UpdateTarget,
-			UpdateInterval,
-			true
-		);
+		TimeSinceLastUpdate = 0.f;
+		UpdateTarget();
 	}
 }
 
 void UMortisAT_UpdateWarpTarget::OnDestroy(bool bInOwnerFinished)
 {
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-
 	if (CachedMWC.IsValid())
 	{
 		CachedMWC->RemoveWarpTarget(WarpTargetName);
 	}
-		
+	
 	Super::OnDestroy(bInOwnerFinished);
 }
+
 
 void UMortisAT_UpdateWarpTarget::UpdateTarget()
 {

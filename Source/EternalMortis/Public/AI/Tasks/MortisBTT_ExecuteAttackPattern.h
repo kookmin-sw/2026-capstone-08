@@ -6,6 +6,7 @@
 #include "Types/MortisStructTypes.h"
 
 #include "GameplayAbilitySpecHandle.h"
+#include "MortisBTT_Base.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "Delegates/IDelegateInstance.h"
 
@@ -17,7 +18,7 @@ class UAbilitySystemComponent;
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisBTT_ExecuteAttackPattern : public UBTTaskNode
+class ETERNALMORTIS_API UMortisBTT_ExecuteAttackPattern : public UMortisBTT_Base
 {
 	GENERATED_BODY()
 

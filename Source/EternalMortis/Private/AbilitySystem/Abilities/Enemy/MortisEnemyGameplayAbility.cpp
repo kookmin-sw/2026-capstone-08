@@ -8,18 +8,23 @@
 
 AMortisEnemyCharacter* UMortisEnemyGameplayAbility::GetEnemyCharacterFromActorInfo() const
 {
-	return CurrentActorInfo ? Cast<AMortisEnemyCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr;
+	return Cast<AMortisEnemyCharacter>(GetAvatarActorFromActorInfo());
 }
 
 AMortisAIController* UMortisEnemyGameplayAbility::GetAIControllerFromActorInfo() const
 {
-	if (!CurrentActorInfo)
+	if (AMortisEnemyCharacter* EnemyCharacter = GetEnemyCharacterFromActorInfo())
 	{
-		AActor* OwningActor = CurrentActorInfo->OwnerActor.Get();
-		if (APawn* OwningPawn = Cast<APawn>(OwningActor))
-		{
-			return Cast<AMortisAIController>(OwningPawn->GetController());
-		}
+		return Cast<AMortisAIController>(EnemyCharacter->GetController()); 
+	}
+	return nullptr;
+}
+
+UMortisEnemyCombatComponent* UMortisEnemyGameplayAbility::GetEnemyCombatComponent() const
+{
+	if (AMortisEnemyCharacter* EnemyCharacter = GetEnemyCharacterFromActorInfo())
+	{
+		return EnemyCharacter->GetEnemyCombatComponent();	
 	}
 	return nullptr;
 }

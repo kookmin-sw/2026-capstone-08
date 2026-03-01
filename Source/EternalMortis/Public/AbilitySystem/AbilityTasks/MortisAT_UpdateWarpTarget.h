@@ -19,17 +19,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability|Task", meta = (HidePin = "OwningAbility", DefaultToOwningAbility = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UMortisAT_UpdateWarpTarget* UpdateWarpTarget(UGameplayAbility* OwningAbility, FName WarpTargetName, AActor* TargetActor, float UpdateInterval = 0.1f);
 
+	//~ Begin UGameplayTask Interface
 	virtual void Activate() override;
+	virtual void TickTask(float DeltaTime) override;
+	//~ End UGameplayTask Interface
+
+	//~ Begin UAbilityTask Interface
 	virtual void OnDestroy(bool bInOwnerFinished) override;
+	//~ End UAbilityTask Interface
+
 
 private:
 	void UpdateTarget();
 
 	FName WarpTargetName;
-	float UpdateInterval;
+	float UpdateInterval = 0.1f;
+	float TimeSinceLastUpdate = 0.1f;
 	
 	TWeakObjectPtr<AActor> CachedTarget;
 	TWeakObjectPtr<UMotionWarpingComponent> CachedMWC;
-
-	FTimerHandle TimerHandle;	
 };

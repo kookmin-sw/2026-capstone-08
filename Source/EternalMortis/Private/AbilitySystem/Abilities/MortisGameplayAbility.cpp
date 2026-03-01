@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
+#include "Character/MortisCharacterBase.h"
 #include "Components/Combat/MortisCombatComponent.h"
 
 void UMortisGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -32,4 +33,18 @@ UMortisCombatComponent* UMortisGameplayAbility::GetMortisCombatComponentFromActo
 UMortisAbilitySystemComponent* UMortisGameplayAbility::GetMortisAbilitySystemComponentFromActorInfo() const
 {
 	return Cast<UMortisAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent);
+}
+
+AMortisCharacterBase* UMortisGameplayAbility::GetMortisCharacterFromActorInfo() const
+{
+	return Cast<AMortisCharacterBase>(GetAvatarActorFromActorInfo());
+}
+
+UMotionWarpingComponent* UMortisGameplayAbility::GetMotionWarpingComponent() const
+{
+	if (const AMortisCharacterBase* Character = GetMortisCharacterFromActorInfo())
+	{
+		return Character->GetMotionWarpingComponent();
+	}
+	return nullptr;
 }

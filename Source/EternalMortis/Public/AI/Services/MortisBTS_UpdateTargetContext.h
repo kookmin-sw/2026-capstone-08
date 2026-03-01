@@ -29,11 +29,8 @@ protected:
 	FBlackboardKeySelector TargetActorKey;
 	
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector DistanceKey;
+	FBlackboardKeySelector DistToTargetKey;
 	
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector DotToTargetKey;
-
-	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector IsTargetOnRightKey;
+	FBlackboardKeySelector AngleToTargetKey;
 };

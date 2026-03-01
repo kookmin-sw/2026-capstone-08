@@ -65,7 +65,10 @@ struct FMortisAttackPatternStep
 	bool bUseMotionWarping = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	FName WarpTargetName = NAME_None;
+	FName WarpTargetName = TEXT("AttackTarget");
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bContinuousWarpUpdate = false;
 };
 
 USTRUCT(BlueprintType)

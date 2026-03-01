@@ -2,4 +2,13 @@
 
 
 #include "Animation/MortisAnimInstanceBase.h"
+#include "MortisFunctionLibrary.h"
 
+bool UMortisAnimInstanceBase::DoesOwnerHaveTag(const FGameplayTag& GameplayTag) const
+{
+	if (APawn* OwningPawn = TryGetPawnOwner())
+	{
+		return UMortisFunctionLibrary::HasGameplayTag(OwningPawn, GameplayTag);
+	}
+	return false;
+}

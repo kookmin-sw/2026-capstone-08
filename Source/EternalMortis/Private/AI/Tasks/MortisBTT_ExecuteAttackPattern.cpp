@@ -15,6 +15,7 @@
 
 UMortisBTT_ExecuteAttackPattern::UMortisBTT_ExecuteAttackPattern()
 {
+	NodeName = TEXT("Execute Attack Pattern");
 	TargetActorKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetActorKey), AActor::StaticClass());
 	TargetDistanceKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetDistanceKey));
 }

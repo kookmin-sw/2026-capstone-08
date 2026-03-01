@@ -7,6 +7,7 @@
 #include "Types/MortisStructTypes.h"
 #include "MortisGA_ExecuteAttackPattern.generated.h"
 
+class UMortisAT_UpdateWarpTarget;
 /**
  * 
  */
@@ -17,20 +18,15 @@ class ETERNALMORTIS_API UMortisGA_ExecuteAttackPattern : public UMortisEnemyGame
 
 public:
 	UMortisGA_ExecuteAttackPattern();
-	
-protected:
-	//~ Begin GameplayAbility Interface
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	//~ End GameplayAbility Interface
 
 protected:
-	UPROPERTY(EditAnywhere)
-	FName WarpTargetName;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FMortisAttackPattern AttackPattern;
-	
-	UFUNCTION(BlueprintCallable)
+	//~ Begin UGameplayAbility Interface
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	//~ End UGameplayAbility Interface
+
+protected:
+	UFUNCTION()
 	void ExecuteNextStep();
 
 	UFUNCTION()
@@ -45,4 +41,10 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 	int32 CurrentStepIndex = 0;
+
+	const FMortisAttackPattern* AttackPattern;
+	
+	TWeakObjectPtr<UMotionWarpingComponent> CachedMotionWarpingComp;
+	TWeakObjectPtr<AActor> CachedTargetActor; 
+	TWeakObjectPtr<UMortisAT_UpdateWarpTarget> UpdateWarpTargetTask;
 };

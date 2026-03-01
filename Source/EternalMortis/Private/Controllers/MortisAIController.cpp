@@ -28,7 +28,6 @@ AMortisAIController::AMortisAIController(const FObjectInitializer& ObjectInitial
 
 ETeamAttitude::Type AMortisAIController::GetTeamAttitudeTowards(const AActor& Other) const
 {
-	MORTIS_LOG("");
 	if (const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(&Other))
 	{
 		if (GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId())
@@ -47,7 +46,6 @@ ETeamAttitude::Type AMortisAIController::GetTeamAttitudeTowards(const AActor& Ot
 
 void AMortisAIController::ConfigurePerceptionFromData(const UMortisEnemyData* EnemyData)
 {
-	MORTIS_LOG("");
 	if (!EnemyData || !SightConfig)
 	{
 		return;
@@ -75,7 +73,7 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 
 	if (AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(InPawn))
 	{
-		MORTIS_LOG("AIController Possess: %s", *InPawn->GetActorNameOrLabel());
+		// MORTIS_LOG("AIController Possess: %s", *InPawn->GetActorNameOrLabel());
 		if (const UMortisEnemyData* Data = EnemyCharacter->GetEnemyData())
 		{
 			ConfigurePerceptionFromData(Data);
@@ -83,7 +81,7 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 			if (Data->BehaviorTree)
 			{
 				bool Result = RunBehaviorTree(Data->BehaviorTree);
-				MORTIS_LOG("Run behavior tree %s", Result ? *FString("Success") : *FString("Fail"));
+				// MORTIS_LOG("Run behavior tree %s", Result ? *FString("Success") : *FString("Fail"));
 			}
 			
 		}
@@ -92,7 +90,6 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 
 void AMortisAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	MORTIS_LOG("");
 	if (UBlackboardComponent* BBComp = GetBlackboardComponent())
 	{
 		if (!BBComp->GetValueAsObject(TargetActorKey))
@@ -100,7 +97,7 @@ void AMortisAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimul
 			if (Actor && Stimulus.WasSuccessfullySensed())
 			{
 				BBComp->SetValueAsObject(TargetActorKey, Actor);
-				MORTIS_LOG("Set TargetActor: %s", *Actor->GetActorNameOrLabel());
+				// MORTIS_LOG("Set TargetActor: %s", *Actor->GetActorNameOrLabel());
 			}
 		}
 	}

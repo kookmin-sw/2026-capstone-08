@@ -2,18 +2,15 @@
 
 
 #include "AbilitySystem/Abilities/Enemy/MortisGA_ExecuteAttackPattern.h"
+#include "Components/Combat/MortisEnemyCombatComponent.h"
+#include "MortisDebugHelper.h"
 
 #include "AIController.h"
-#include "MortisDebugHelper.h"
 #include "MotionWarpingComponent.h"
 #include "RootMotionModifier.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "AbilitySystem/AbilityTasks/MortisAT_UpdateWarpTarget.h"
-#include "Character/Enemy/MortisEnemyCharacter.h"
-#include "Components/Combat/MortisEnemyCombatComponent.h"
-#include "Controllers/MortisAIController.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UMortisGA_ExecuteAttackPattern::UMortisGA_ExecuteAttackPattern()
@@ -26,80 +23,104 @@ void UMortisGA_ExecuteAttackPattern::ActivateAbility(const FGameplayAbilitySpecH
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	MORTIS_LOG("");
-	if (UMortisEnemyCombatComponent* CombatComp = Cast<UMortisEnemyCombatComponent>(GetMortisCombatComponentFromActorInfo()))
+	// MORTIS_LOG("");
+
+	if (!ActorInfo || !TriggerEventData)
 	{
-		if (!TriggerEventData)
-		{
-			MORTIS_LOG("TriggerEventData is null!");
-			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-			return;
-		}
-
-		int32 PatternIndex = static_cast<int32>(TriggerEventData->EventMagnitude);
-		if (const FMortisAttackPattern* Pattern = CombatComp->GetAttackPatternByIndex(PatternIndex))
-		{
-			AttackPattern = *Pattern;
-		}
-
-		AActor* TargetActor = const_cast<AActor*>(TriggerEventData->Target.Get());
-		if (!TargetActor)
-		{
-			MORTIS_LOG("Target Actor is null");
-			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		}
-		// UMortisAT_UpdateWarpTarget* UpdateWarpTargetTask = UMortisAT_UpdateWarpTarget::UpdateWarpTarget(
-		// 	this,
-		// 	WarpTargetName,
-		// 	TargetActor
-		// );
-		// UpdateWarpTargetTask->ReadyForActivation();
-
-		UMotionWarpingComponent* MotionWarpingComp = ActorInfo->AvatarActor->FindComponentByClass<UMotionWarpingComponent>();
-		if (!MotionWarpingComp)
-		{
-			MORTIS_LOG("MotionWarpingComp is null");
-			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		}
-
-		GetEnemyCharacterFromActorInfo()->GetCharacterMovement()->GravityScale = 0.f;
-		GetEnemyCharacterFromActorInfo()->GetCharacterMovement()->Velocity.Z = 0.f;
-		
-		FVector TargetLocation = TargetActor->GetActorLocation();
-		TargetLocation.Z = ActorInfo->AvatarActor->GetActorLocation().Z;
-		FMotionWarpingTarget WarpTarget;
-		WarpTarget.Name = WarpTargetName;
-		WarpTarget.Location = TargetLocation;
-		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
-			ActorInfo->AvatarActor->GetActorLocation(), 
-			TargetActor->GetActorLocation()
-		);
-		WarpTarget.Rotation = LookAtRot;
-		MotionWarpingComp->AddOrUpdateWarpTarget(WarpTarget);
-
-		CurrentStepIndex = 0;
-		
-		ExecuteNextStep();
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
 	}
+	
+	UMortisEnemyCombatComponent* CombatComp = GetEnemyCombatComponent();
+	if (!CombatComp)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	int32 PatternIndex = static_cast<int32>(TriggerEventData->EventMagnitude);
+
+	AttackPattern = CombatComp->GetAttackPatternByIndex(PatternIndex);
+	if (!AttackPattern)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	
+	CachedTargetActor = const_cast<AActor*>(TriggerEventData->Target.Get());
+	if (!CachedTargetActor.IsValid())
+	{
+		MORTIS_LOG("Target Actor is null");
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	CurrentStepIndex = 0;
+
+	CachedMotionWarpingComp = GetMotionWarpingComponent();
+	if (!CachedMotionWarpingComp.IsValid())
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	
+	ExecuteNextStep();
 }
 
+
+void UMortisGA_ExecuteAttackPattern::EndAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility, bool bWasCancelled)
+{
+	if (UpdateWarpTargetTask.IsValid())
+	{
+		UpdateWarpTargetTask->EndTask();
+	}
+	AttackPattern = nullptr;
+	
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
 void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 {
 	// MORTIS_LOG("");
-	if (!AttackPattern.Steps.IsValidIndex(CurrentStepIndex))
+	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex) || !CurrentActorInfo)
 	{
-		MORTIS_LOG("Current Step Index is invalid");
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 		return;
 	}
-	// MORTIS_LOG("Current Step Index is %d", CurrentStepIndex);
 
-	const FMortisAttackPatternStep& Step = AttackPattern.Steps[CurrentStepIndex];
-
-	if (!Step.Montage)
+	const FMortisAttackPatternStep& Step = AttackPattern->Steps[CurrentStepIndex];
+	if (!Step.Montage || !CachedTargetActor.IsValid())
 	{
-		MORTIS_LOG("Montage is null");
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+		return;
 	}
+	if (Step.bContinuousWarpUpdate)
+	{
+		UpdateWarpTargetTask = UMortisAT_UpdateWarpTarget::UpdateWarpTarget(
+			this,
+			Step.WarpTargetName,
+			CachedTargetActor.Get()
+		);
+		UpdateWarpTargetTask->ReadyForActivation();
+	}
+	else
+	{
+		if (!CachedMotionWarpingComp.IsValid())
+		{
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+			return;
+		}
+		FMotionWarpingTarget WarpTarget;
+		WarpTarget.Name = Step.WarpTargetName;
+		WarpTarget.Location = CachedTargetActor->GetActorLocation();
+		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
+			CurrentActorInfo->AvatarActor->GetActorLocation(), 
+			CachedTargetActor->GetActorLocation()
+		);
+		WarpTarget.Rotation = LookAtRot;
+		CachedMotionWarpingComp->AddOrUpdateWarpTarget(WarpTarget);
+	}
+
 	
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, 
@@ -113,6 +134,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		MontageTask->OnCompleted.AddDynamic(this, &ThisClass::OnStepMontageCompleted);
 		MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
 		MontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
+		MontageTask->OnBlendOut.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
 		
 		MontageTask->ReadyForActivation();
 	}
@@ -136,26 +158,25 @@ void UMortisGA_ExecuteAttackPattern::OnStepMontageInterrupted()
 
 void UMortisGA_ExecuteAttackPattern::OnStepFinished(bool bInterrupted)
 {
-	if (bInterrupted)
+	if (bInterrupted || !AttackPattern)
 	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo,
-				   CurrentActivationInfo, true, true);
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		return;
 	}
 	
-	const FMortisAttackPatternStep& Step = AttackPattern.Steps[CurrentStepIndex];
+	const FMortisAttackPatternStep& Step = AttackPattern->Steps[CurrentStepIndex];
 	CurrentStepIndex++;
 
+	if (UpdateWarpTargetTask.IsValid())
+	{
+		UpdateWarpTargetTask->EndTask();
+		UpdateWarpTargetTask.Reset();
+	}
 	if (Step.DelayAfterStep > 0.0f)
 	{
-		// MORTIS_LOG("");
-		FTimerHandle DelayHandle;
-		GetWorld()->GetTimerManager().SetTimer(
-			DelayHandle,
-			this,
-			&ThisClass::ExecuteNextStep,
-			Step.DelayAfterStep,
-			false);
+		UAbilityTask_WaitDelay* DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Step.DelayAfterStep);
+		DelayTask->OnFinish.AddDynamic(this, &ThisClass::ExecuteNextStep);
+		DelayTask->ReadyForActivation();
 	}
 	else
 	{

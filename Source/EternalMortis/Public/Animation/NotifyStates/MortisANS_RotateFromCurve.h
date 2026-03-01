@@ -4,22 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "MortisANS_ToggleWeaponCollision.generated.h"
+#include "MortisANS_RotateFromCurve.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisANS_ToggleWeaponCollision : public UAnimNotifyState
+class ETERNALMORTIS_API UMortisANS_RotateFromCurve : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
 	//~ Begin UAnimNotifyState Interface
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
+	virtual void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 	//~ End UAnimNotifyState Interface
 
+protected:
+	UPROPERTY(EditAnywhere)
+	FName CurveName = TEXT("DistanceCurve");
+
 private:
-	void ToggleWeaponCollisionForMesh(const USkeletalMeshComponent* MeshComp, bool bEnable) const;
+	TMap<TWeakObjectPtr<USkeletalMeshComponent>, float> LastCurveValues;
 };

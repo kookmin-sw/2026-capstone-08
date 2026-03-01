@@ -21,14 +21,14 @@ void UMortisEnemyCombatComponent::SetAttackPattern(UMortisAttackPatternData* Pat
 	}
 }
 
-const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex(int32 InIndex) const
+const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex(int32 Index) const
 {
-	if (!AttackPatterns.IsValidIndex(InIndex))
+	if (!AttackPatterns.IsValidIndex(Index))
 	{
-		MORTIS_LOG("%d is Invalid index", InIndex);
+		MORTIS_LOG("%d is Invalid index", Index);
 		return nullptr;
 	}
-	return &AttackPatterns[InIndex];
+	return &AttackPatterns[Index];
 }
 
 int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const
