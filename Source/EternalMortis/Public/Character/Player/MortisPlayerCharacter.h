@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,6 +25,13 @@ class ETERNALMORTIS_API AMortisPlayerCharacter : public AMortisCharacterBase
 public:
 	AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
+	// Attack Recovery Animations
+	UFUNCTION(BlueprintCallable, Category = "Mortis|AttackRecovery")
+	void SetRecoveryMontage(UAnimMontage* InMontage);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|AttackRecovery")
+	void StopRecoveryMontage(float BlendOutTime = 0.1f);
+
 protected:
 	// APawn Override
 	virtual void PossessedBy(AController* NewController) override;
@@ -47,6 +54,12 @@ private:
 	// Inputs
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
 	UMortisInputConfig* InputConfigDataAsset;
+	// Attack Recovery Animations
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> CurrentRecoveryMontage = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|AttackRecovery", meta = (AllowPrivateAccess = "true"))
+	float RecoveryBlendOutTime = 0.1f;
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);

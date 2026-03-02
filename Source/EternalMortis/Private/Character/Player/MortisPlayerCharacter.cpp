@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/Player/MortisPlayerCharacter.h"
@@ -13,10 +13,13 @@
 #include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "Components/UI/MortisPlayerUIComponent.h"
+#include "Components/Movement/MortisPlayerMovementComponent.h"
 #include "MortisGameplayTags.h"
 
 AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMortisPlayerAttributeSet>(TEXT("MortisAttributeSet")))
+	: Super(ObjectInitializer
+		.SetDefaultSubobjectClass<UMortisPlayerMovementComponent>(ACharacter::CharacterMovementComponentName)
+		.SetDefaultSubobjectClass<UMortisPlayerAttributeSet>(TEXT("MortisAttributeSet")))
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 
@@ -42,6 +45,24 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
 
 	PlayerUIComponent = CreateDefaultSubobject<UMortisPlayerUIComponent>(TEXT("HeroUIComponent"));
+}
+
+void AMortisPlayerCharacter::SetRecoveryMontage(UAnimMontage* InMontage)
+{
+	CurrentRecoveryMontage = InMontage;
+}
+
+void AMortisPlayerCharacter::StopRecoveryMontage(float BlendOutTime)
+{
+	if (!CurrentRecoveryMontage) return;
+
+	if (UAnimInstance* Anim = GetMesh()->GetAnimInstance())
+	{
+		if (Anim->Montage_IsPlaying(CurrentRecoveryMontage))
+			Anim->Montage_Stop(BlendOutTime, CurrentRecoveryMontage);
+	}
+
+	CurrentRecoveryMontage = nullptr;
 }
 
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
@@ -84,6 +105,8 @@ void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValu
 {
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
+
+	if (MovementVector.SizeSquared() > 0.01f) { StopRecoveryMontage(RecoveryBlendOutTime); }
 
 	if (MovementVector.Y != 0.0f)
 	{

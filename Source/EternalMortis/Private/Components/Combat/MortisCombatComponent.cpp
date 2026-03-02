@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Components/Combat/MortisCombatComponent.h"
@@ -54,7 +54,7 @@ void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEn
 	}
 }
 
-// ÀÚ½Ä¿¡¼­ Override
+// ìì‹ì—ì„œ Override
 void UMortisCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
 }

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -16,7 +16,7 @@ class ETERNALMORTIS_API UMortisAbilitySystemComponent : public UAbilitySystemCom
 	GENERATED_BODY()
 	
 public:
-	// Player ��
+	// Player 용
 	void OnAbilityInputPressed(const FGameplayTag& InputTag);
 	void OnAbilityInputReleased(const FGameplayTag& InputTag);
 

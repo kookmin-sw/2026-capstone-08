@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
@@ -6,7 +6,7 @@
 #include "MortisGameplayTags.h"
 #include "MortisDebugHelper.h"
 
-// Player ��
+// Player 용
 void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& InputTag)
 {
 	if (!InputTag.IsValid()) return;
@@ -15,7 +15,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& In
 	{
 		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 			TryActivateAbility(AbilitySpec.Handle);
-		// break�� ������ ���� ����غ� ��
+		// break를 넣을지 말지 고민해볼 것
 	}
 }
 
@@ -27,7 +27,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputReleased(const FGameplayTag& I
 	{
 		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag) && AbilitySpec.IsActive())
 			CancelAbilityHandle(AbilitySpec.Handle);
-		// break�� ������ ���� ����غ� ��
+		// break를 넣을지 말지 고민해볼 것
 	}
 }
 

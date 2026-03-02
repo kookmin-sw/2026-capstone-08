@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -33,7 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	void ToggleWeaponCollision(bool bShouldEnable);
 
-	// �Ʒ� �� Functions�� �ڽ� CombatComponent���� ����
+	// 아래의 두 Functions은 상속한 CombatComponent에서 구현하기
 	virtual void OnHitTargetActor(AActor* HitActor);
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor);
 

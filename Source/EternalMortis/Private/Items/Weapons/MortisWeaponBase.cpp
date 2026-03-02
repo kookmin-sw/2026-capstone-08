@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Items/Weapons/MortisWeaponBase.h"
@@ -29,7 +29,7 @@ void AMortisWeaponBase::OnCollisionBoxBeginOverlap(UPrimitiveComponent* Overlapp
 
 	if (APawn* HitPawn = Cast<APawn>(OtherActor))
 	{
-		// TODO : Merge ÈÄ Enemyµµ Team ÇÒ´çÇßÀ¸¸é ÁÖ¼® ÇØÁ¦
+		// TODO : Merge í›„ Enemyë„ Team í• ë‹¹í–ˆìœ¼ë©´ ì£¼ì„ í•´ì œ
 		/*if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
 			OnWeaponHitTarget.ExecuteIfBound(OtherActor);*/
 	}
@@ -42,7 +42,7 @@ void AMortisWeaponBase::OnCollisionBoxEndOverlap(UPrimitiveComponent* Overlapped
 
 	if (APawn* HitPawn = Cast<APawn>(OtherActor))
 	{
-		// TODO : Merge ÈÄ Enemyµµ Team ÇÒ´çÇßÀ¸¸é ÁÖ¼® ÇØÁ¦
+		// TODO : Merge í›„ Enemyë„ Team í• ë‹¹í–ˆìœ¼ë©´ ì£¼ì„ í•´ì œ
 		/*if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
 			OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);*/
 	}

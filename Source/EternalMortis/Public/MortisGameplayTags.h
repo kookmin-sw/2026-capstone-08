@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -12,13 +12,13 @@ namespace MortisGameplayTags
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Hold);
 
-	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Hold_Ability_Run);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Hold_Ability_Sprint);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_Roll);
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_LightAttack);
 
 	// ====================		Ability Tags	====================	
-	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Run);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Sprint);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Roll);
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_EquipWeapon);
@@ -45,6 +45,7 @@ namespace MortisGameplayTags
 	
 	// ====================		Event Tags		====================
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_SwitchWeapon);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_Move);
 	
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Request_ExecutePattern);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Request_Turn);

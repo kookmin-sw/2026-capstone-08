@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MortisGameplayTags.h"
@@ -11,13 +11,13 @@ namespace MortisGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold, "InputTag.Hold");
 
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Run, "InputTag.Hold.Ability.Run");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Run, "InputTag.Hold.Ability.Sprint");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Roll, "InputTag.Ability.Roll");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_LightAttack, "InputTag.Ability.LightAttack");
 
 	// ====================		Ability Tags	====================
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Run, "Ability.Run");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Run, "Ability.Sprint");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Roll, "Ability.Roll");
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_EquipWeapon, "Ability.EquipWeapon");
