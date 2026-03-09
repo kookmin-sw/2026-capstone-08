@@ -7,6 +7,24 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "MortisBTT_SendGameplayEvent.generated.h"
 
+class UAbilitySystemComponent;
+
+struct FBTSendGameplayEventTaskMemory
+{
+	TWeakObjectPtr<AActor> CachedReceiver;
+	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
+
+	bool IsValid()
+	{
+		return CachedReceiver.IsValid() && CachedASC.IsValid();
+	}
+
+	void Reset()
+	{
+		CachedReceiver.Reset();
+		CachedASC.Reset();
+	}
+};
 /**
  * 
  */
@@ -20,6 +38,7 @@ public:
 
 	//~ Begin UBTNode Interface 
 	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+	virtual uint16 GetInstanceMemorySize() const override;
 	//~ End UBTNode Interface 
 
 	//~ Begin UBTTaskNode Interface
@@ -35,7 +54,10 @@ protected:
 	FGameplayTag StateTagToWait; 
 
 	UPROPERTY(EditAnywhere)
-	FBlackboardKeySelector TargetActorKey;
+	FBlackboardKeySelector EventReceiverKey;
+	
+	UPROPERTY(EditAnywhere)
+	FBlackboardKeySelector PayloadTargetKey;
 
 	UPROPERTY(EditAnywhere)
 	FBlackboardKeySelector EventMagnitude;

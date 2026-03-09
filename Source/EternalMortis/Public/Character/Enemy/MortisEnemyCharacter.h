@@ -36,10 +36,10 @@ public:
 protected:
 	void InitializeEnemyByData();
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Data")
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Data")
 	TObjectPtr<UMortisEnemyData> EnemyData;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
 	TObjectPtr<UMortisEnemyCombatComponent> EnemyCombatComponent;
 	
 #if WITH_EDITOR

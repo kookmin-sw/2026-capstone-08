@@ -16,8 +16,12 @@ class ETERNALMORTIS_API UMortisAT_UpdateWarpTarget : public UAbilityTask
 	GENERATED_BODY()
 
 public:
+	/*
+	 * @Param WarpUpdateDuration default value is -1. Warp update for anim montage 
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability|Task", meta = (HidePin = "OwningAbility", DefaultToOwningAbility = "OwningAbility", BlueprintInternalUseOnly = "true"))
-	static UMortisAT_UpdateWarpTarget* UpdateWarpTarget(UGameplayAbility* OwningAbility, FName WarpTargetName, AActor* TargetActor, float UpdateInterval = 0.1f);
+	static UMortisAT_UpdateWarpTarget* UpdateWarpTarget(UGameplayAbility* OwningAbility, FName WarpTargetName, AActor* TargetActor, float UpdateInterval = 0.1f, float
+		WarpUpdateDuration = -1.f);
 
 	//~ Begin UGameplayTask Interface
 	virtual void Activate() override;
@@ -25,7 +29,7 @@ public:
 	//~ End UGameplayTask Interface
 
 	//~ Begin UAbilityTask Interface
-	virtual void OnDestroy(bool bInOwnerFinished) override;
+	// virtual void OnDestroy(bool bInOwnerFinished) override;
 	//~ End UAbilityTask Interface
 
 
@@ -34,7 +38,12 @@ private:
 
 	FName WarpTargetName;
 	float UpdateInterval = 0.1f;
+	float WarpUpdateDuration = -1.f;
+	
 	float TimeSinceLastUpdate = 0.1f;
+	float TotalElapsedTime = 0.f;
+
+	bool bIsUpdateFinished = false;
 	
 	TWeakObjectPtr<AActor> CachedTarget;
 	TWeakObjectPtr<UMotionWarpingComponent> CachedMWC;

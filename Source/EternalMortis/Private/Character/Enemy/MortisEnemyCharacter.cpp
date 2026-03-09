@@ -42,21 +42,29 @@ void AMortisEnemyCharacter::PossessedBy(AController* NewController)
 
 void AMortisEnemyCharacter::InitializeEnemyByData()
 {
+	MORTIS_LOG("");
 	if (!EnemyData)
 	{
 		MORTIS_LOG("Enemy data is null");
 		return;
 	}
+
+	if (!GetCapsuleComponent() || !GetMesh() || !GetCharacterMovement())
+	{
+		return;
+	}
 	
 	GetCapsuleComponent()->InitCapsuleSize(EnemyData->CapsuleRadius, EnemyData->CapsuleHalfHeight);
 	GetMesh()->SetSkeletalMesh(EnemyData->EnemyMesh);
+	GetMesh()->SetRelativeScale3D(EnemyData->MeshScale);
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -EnemyData->CapsuleHalfHeight));
-
+	GetMesh()->SetRelativeRotation(EnemyData->MeshRotation);
+	GetMesh()->SetAnimInstanceClass(EnemyData->AnimClass);
+	
 	GetCharacterMovement()->RotationRate = EnemyData->RotationRate;
 	GetCharacterMovement()->MaxWalkSpeed = EnemyData->MaxWalkSpeed;
 	GetCharacterMovement()->BrakingDecelerationWalking = EnemyData->BrakingDecelerationWalking;
-
-
+	
 	//
 	if (GetWorld() && GetWorld()->IsGameWorld())
 	{

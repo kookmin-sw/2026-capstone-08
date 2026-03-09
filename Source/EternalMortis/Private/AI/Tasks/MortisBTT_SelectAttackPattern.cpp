@@ -3,6 +3,7 @@
 
 #include "AI/Tasks/MortisBTT_SelectAttackPattern.h"
 
+#include "MortisDebugHelper.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
@@ -13,8 +14,8 @@ UMortisBTT_SelectAttackPattern::UMortisBTT_SelectAttackPattern()
 	bNotifyTaskFinished = false;
 	bCreateNodeInstance = false;
 	
-	TargetDistanceKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetDistanceKey));
-	DotToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DotToTargetKey));
+	DistToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, DistToTargetKey));
+	AngleToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, AngleToTargetKey));
 	AttackPatternIndexKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, AttackPatternIndexKey));
 }
 
@@ -24,8 +25,8 @@ void UMortisBTT_SelectAttackPattern::InitializeFromAsset(UBehaviorTree& Asset)
 
 	if (UBlackboardData* BBAsset = GetBlackboardAsset())
 	{
-		TargetDistanceKey.ResolveSelectedKey(*BBAsset);
-		DotToTargetKey.ResolveSelectedKey(*BBAsset);
+		DistToTargetKey.ResolveSelectedKey(*BBAsset);
+		AngleToTargetKey.ResolveSelectedKey(*BBAsset);
 		AttackPatternIndexKey.ResolveSelectedKey(*BBAsset);
 	}
 }
@@ -43,12 +44,13 @@ EBTNodeResult::Type UMortisBTT_SelectAttackPattern::ExecuteTask(UBehaviorTreeCom
 	{
 		if (UMortisEnemyCombatComponent* CombatComp = EnemyCharacter->GetEnemyCombatComponent())
 		{
-			float TargetDistance = BBComp->GetValueAsFloat(TargetDistanceKey.SelectedKeyName);
-			float DotToTarget = BBComp->GetValueAsFloat(DotToTargetKey.SelectedKeyName);
-			int32 AttackPatternIndex = CombatComp->SelectAttackPattern(TargetDistance, DotToTarget);
+			float DistToTarget = BBComp->GetValueAsFloat(DistToTargetKey.SelectedKeyName);
+			float AngleToTarget = BBComp->GetValueAsFloat(AngleToTargetKey.SelectedKeyName);
+			int32 AttackPatternIndex = CombatComp->SelectAttackPattern(DistToTarget, AngleToTarget);
 
 			if (AttackPatternIndex != INDEX_NONE)
 			{
+				MORTIS_LOG("AttackPatternIndex: %d", AttackPatternIndex);
 				BBComp->SetValueAsFloat(AttackPatternIndexKey.SelectedKeyName, AttackPatternIndex);
 				return EBTNodeResult::Succeeded;
 			}

@@ -29,10 +29,10 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere)
-	FBlackboardKeySelector TargetDistanceKey;
+	FBlackboardKeySelector DistToTargetKey;
 
 	UPROPERTY(EditAnywhere)
-	FBlackboardKeySelector DotToTargetKey;
+	FBlackboardKeySelector AngleToTargetKey;
 	
 	UPROPERTY(EditAnywhere)
 	FBlackboardKeySelector AttackPatternIndexKey;

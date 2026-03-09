@@ -79,9 +79,9 @@ void UMortisGA_ExecuteAttackPattern::EndAbility(const FGameplayAbilitySpecHandle
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
+
 void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 {
-	// MORTIS_LOG("");
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex) || !CurrentActorInfo)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
@@ -94,33 +94,38 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 		return;
 	}
-	if (Step.bContinuousWarpUpdate)
+	if (Step.bUseMotionWarping)
 	{
-		UpdateWarpTargetTask = UMortisAT_UpdateWarpTarget::UpdateWarpTarget(
-			this,
-			Step.WarpTargetName,
-			CachedTargetActor.Get()
-		);
-		UpdateWarpTargetTask->ReadyForActivation();
-	}
-	else
-	{
-		if (!CachedMotionWarpingComp.IsValid())
+		if (Step.bContinuousWarpUpdate)
 		{
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-			return;
+			UpdateWarpTargetTask = UMortisAT_UpdateWarpTarget::UpdateWarpTarget(
+				this,
+				Step.WarpTargetName,
+				CachedTargetActor.Get(),
+				0.1f,
+				Step.WarpUpdateDuration
+			);
+			UpdateWarpTargetTask->ReadyForActivation();
 		}
-		FMotionWarpingTarget WarpTarget;
-		WarpTarget.Name = Step.WarpTargetName;
-		WarpTarget.Location = CachedTargetActor->GetActorLocation();
-		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
-			CurrentActorInfo->AvatarActor->GetActorLocation(), 
-			CachedTargetActor->GetActorLocation()
-		);
-		WarpTarget.Rotation = LookAtRot;
-		CachedMotionWarpingComp->AddOrUpdateWarpTarget(WarpTarget);
+		else
+		{
+			if (!CachedMotionWarpingComp.IsValid())
+			{
+				EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+				return;
+			}
+			FMotionWarpingTarget WarpTarget;
+			WarpTarget.Name = Step.WarpTargetName;
+			WarpTarget.Location = CachedTargetActor->GetActorLocation();
+			FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
+				CurrentActorInfo->AvatarActor->GetActorLocation(), 
+				CachedTargetActor->GetActorLocation()
+			);
+			WarpTarget.Rotation = LookAtRot;
+			CachedMotionWarpingComp->AddOrUpdateWarpTarget(WarpTarget);
+		}
+		LastWarpTargetName = Step.WarpTargetName;
 	}
-
 	
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, 
@@ -128,13 +133,12 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		Step.Montage, 
 		Step.PlayRate
 	);
-
+	
 	if (MontageTask)
 	{
 		MontageTask->OnCompleted.AddDynamic(this, &ThisClass::OnStepMontageCompleted);
 		MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
-		MontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
-		MontageTask->OnBlendOut.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
+		MontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnStepMontageCancelled);
 		
 		MontageTask->ReadyForActivation();
 	}
@@ -146,13 +150,16 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 
 void UMortisGA_ExecuteAttackPattern::OnStepMontageCompleted()
 {
-	// MORTIS_LOG("");
 	OnStepFinished(false);
 }
 
 void UMortisGA_ExecuteAttackPattern::OnStepMontageInterrupted()
 {
-	// MORTIS_LOG("");
+	OnStepFinished(true);
+}
+
+void UMortisGA_ExecuteAttackPattern::OnStepMontageCancelled()
+{
 	OnStepFinished(true);
 }
 
@@ -163,10 +170,15 @@ void UMortisGA_ExecuteAttackPattern::OnStepFinished(bool bInterrupted)
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		return;
 	}
-	
+
+	if (CachedMotionWarpingComp.IsValid() && LastWarpTargetName != NAME_None)
+	{
+		CachedMotionWarpingComp->RemoveWarpTarget(LastWarpTargetName);
+	}
 	const FMortisAttackPatternStep& Step = AttackPattern->Steps[CurrentStepIndex];
 	CurrentStepIndex++;
 
+	
 	if (UpdateWarpTargetTask.IsValid())
 	{
 		UpdateWarpTargetTask->EndTask();

@@ -34,15 +34,27 @@ class ETERNALMORTIS_API UMortisEnemyData : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
+	/* Mesh */
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 	TObjectPtr<USkeletalMesh> EnemyMesh;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
+	FVector MeshScale = FVector::OneVector;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
+	FRotator MeshRotation = FRotator(0.f, -90.f, 0.f);
+	
+	/* Capsule Component */
 	UPROPERTY(EditDefaultsOnly, Category = "Collision")
 	float CapsuleRadius = 35.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Collision")
 	float CapsuleHalfHeight = 90.f;
 
+	/* Animation */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TSubclassOf<UAnimInstance> AnimClass;
+	
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	FRotator RotationRate = FRotator(0.f, 180.f, 0.f);
@@ -60,9 +72,6 @@ public:
 	/* AI */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
-
-	// UPROPERTY(EditDefaultsOnly, Category = "AI")
-	// TObjectPtr<UBlackboardData> BlackboardData;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SightRadius = 5000.f;

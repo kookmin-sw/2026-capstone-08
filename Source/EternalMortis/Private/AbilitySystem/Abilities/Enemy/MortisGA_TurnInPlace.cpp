@@ -19,6 +19,8 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	// MORTIS_LOG("");
+	
 	if (!ActorInfo || !ActorInfo->AvatarActor.IsValid() || !TriggerEventData)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -28,8 +30,9 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	AMortisEnemyCharacter* Enemy = GetEnemyCharacterFromActorInfo();
 	if (!Enemy)
 	{
-		MORTIS_LOG("MotionWarpingComp is null");
+		MORTIS_LOG("Enemy is null");
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
 	}
 	
 	UAnimMontage* TurnMontage = SelectBestMontage(TriggerEventData->EventMagnitude);
@@ -38,29 +41,33 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	// MORTIS_LOG("TurnMontage: %s", *TurnMontage->GetName());
-	UMotionWarpingComponent* MotionWarpingComp = GetMotionWarpingComponent();
-	if (!MotionWarpingComp)
-	{
-		MORTIS_LOG("MotionWarpingComp is null");
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-	}
+	MORTIS_LOG("TurnMontage: %s", *TurnMontage->GetName());
 
-	if (!TriggerEventData->Target)
+	if (bUseMotionWarping)
 	{
-		MORTIS_LOG("Target is null");
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-	}
+		UMotionWarpingComponent* MotionWarpingComp = GetMotionWarpingComponent();
+		if (!MotionWarpingComp)
+		{
+			MORTIS_LOG("MotionWarpingComp is null");
+			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		}
+
+		if (!TriggerEventData->Target)
+		{
+			MORTIS_LOG("Target is null");
+			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		}
 	
-	FMotionWarpingTarget WarpTarget;
-	WarpTarget.Name = WarpTargetName;
-	WarpTarget.Location = TriggerEventData->Target->GetActorLocation();
-	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
-		ActorInfo->AvatarActor->GetActorLocation(), 
-		TriggerEventData->Target->GetActorLocation()
-	);
-	WarpTarget.Rotation = LookAtRot;
-	MotionWarpingComp->AddOrUpdateWarpTarget(WarpTarget);
+		FMotionWarpingTarget WarpTarget;
+		WarpTarget.Name = WarpTargetName;
+		WarpTarget.Location = TriggerEventData->Target->GetActorLocation();
+		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
+			ActorInfo->AvatarActor->GetActorLocation(), 
+			TriggerEventData->Target->GetActorLocation()
+		);
+		WarpTarget.Rotation = LookAtRot;
+		MotionWarpingComp->AddOrUpdateWarpTarget(WarpTarget);
+	}
 	
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this,
@@ -80,17 +87,23 @@ UAnimMontage* UMortisGA_TurnInPlace::SelectBestMontage(float AngleToTarget)
 	// MORTIS_LOG("AngleToTarget: %f", AngleToTarget);
 	const float AbsAngle = FMath::Abs(AngleToTarget);
 	
-	if (AbsAngle < Turn90Threshold) return nullptr;
-
-	if (AngleToTarget >= 0.f)
+	if (AbsAngle < Turn90Threshold)
 	{
-		return (AbsAngle >= Turn180Threshold) ? MontageTurnRight180 : MontageTurnRight90;
+		return nullptr;
 	}
-	return (AbsAngle >= Turn180Threshold) ? MontageTurnLeft180 : MontageTurnLeft90;
+
+	if (AbsAngle >= Turn180Threshold)
+	{
+		return AngleToTarget >= 0.f ? MontageTurnRight180 : MontageTurnLeft180;
+	}
+	if (AbsAngle >= Turn135Threshold)
+	{
+		return AngleToTarget >= 0.f ? MontageTurnRight135 : MontageTurnLeft135;
+	}
+	return AngleToTarget >= 0.f ? MontageTurnRight90 : MontageTurnLeft90;
 }
 
 void UMortisGA_TurnInPlace::OnMontageCompleted()
 {
-	MORTIS_LOG("Turn Completed");
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

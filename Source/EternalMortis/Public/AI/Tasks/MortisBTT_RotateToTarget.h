@@ -7,7 +7,7 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "MortisBTT_RotateToTarget.generated.h"
 
-struct FRotateToTargetTaskMemory
+struct FBTRotateToTargetMemory
 {
 	TWeakObjectPtr<APawn> OwningPawn;
 	TWeakObjectPtr<AActor> TargetActor;

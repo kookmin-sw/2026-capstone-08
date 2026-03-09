@@ -14,12 +14,11 @@
 UMortisBTT_SendGameplayEvent::UMortisBTT_SendGameplayEvent()
 {
 	NodeName = TEXT("Send Gameplay Event");
-
-	bNotifyTick = true;
 	
 	INIT_TASK_NODE_NOTIFY_FLAGS();
-	
-	TargetActorKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, TargetActorKey), AActor::StaticClass());
+
+	EventReceiverKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, EventReceiverKey), AActor::StaticClass());
+	PayloadTargetKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, PayloadTargetKey), AActor::StaticClass());
 	EventMagnitude.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, EventMagnitude));
 }
 
@@ -29,42 +28,76 @@ void UMortisBTT_SendGameplayEvent::InitializeFromAsset(UBehaviorTree& Asset)
 
 	if (UBlackboardData* BBAsset = GetBlackboardAsset())
 	{
-		TargetActorKey.ResolveSelectedKey(*BBAsset);
+		EventReceiverKey.ResolveSelectedKey(*BBAsset);
+		PayloadTargetKey.ResolveSelectedKey(*BBAsset);
 		EventMagnitude.ResolveSelectedKey(*BBAsset);
 	}
 }
 
+uint16 UMortisBTT_SendGameplayEvent::GetInstanceMemorySize() const
+{
+	return sizeof(FBTSendGameplayEventTaskMemory);
+}
+
 EBTNodeResult::Type UMortisBTT_SendGameplayEvent::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AMortisEnemyCharacter* EnemyCharacter = GetEnemyCharacter(OwnerComp);
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-	if (EnemyCharacter && BBComp && EventTag.IsValid())
+	if (!BBComp || !EventTag.IsValid())
 	{
-		FGameplayEventData EventData;
-		EventData.EventTag = EventTag;
-		EventData.Instigator = EnemyCharacter;
-		EventData.Target = Cast<AActor>(BBComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
-		EventData.EventMagnitude = BBComp->GetValueAsFloat(EventMagnitude.SelectedKeyName); 
-
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(EnemyCharacter, EventTag, EventData);
-
-		if (!StateTagToWait.IsValid())
-		{
-			MORTIS_LOG("Succeeded");
-			return EBTNodeResult::Succeeded;
-		}
-		return EBTNodeResult::InProgress;
+		MORTIS_LOG("BBComp or EventTag is invalid");
+		return EBTNodeResult::Failed;
 	}
-	return EBTNodeResult::Failed;
+	
+	AActor* ReceiverActor = Cast<AActor>(BBComp->GetValueAsObject(EventReceiverKey.SelectedKeyName));
+	if (!ReceiverActor)
+	{
+		MORTIS_LOG("ReceiverActor is null");
+		return EBTNodeResult::Failed;
+	}
+
+	FBTSendGameplayEventTaskMemory* Memory = CastInstanceNodeMemory<FBTSendGameplayEventTaskMemory>(NodeMemory);
+	Memory->Reset();
+	if (!Memory)
+	{
+		MORTIS_LOG("memory failed");
+		return EBTNodeResult::Failed;
+	}
+	FGameplayEventData EventData;
+	EventData.EventTag = EventTag;
+	EventData.Instigator = GetEnemyCharacter(OwnerComp);
+	EventData.Target = Cast<AActor>(BBComp->GetValueAsObject(PayloadTargetKey.SelectedKeyName));
+	EventData.EventMagnitude = BBComp->GetValueAsFloat(EventMagnitude.SelectedKeyName); 
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ReceiverActor, EventTag, EventData);
+
+	if (!StateTagToWait.IsValid())
+	{
+		MORTIS_LOG("state tag to wait is invalid");
+		return EBTNodeResult::Succeeded;
+	}
+	
+	Memory->CachedReceiver = ReceiverActor;
+	Memory->CachedASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(ReceiverActor);
+	
+	return EBTNodeResult::InProgress;
 }
 
 void UMortisBTT_SendGameplayEvent::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
-
-	UMortisAbilitySystemComponent* ASC = GetMortisASC(OwnerComp);
-	if (ASC && !ASC->HasMatchingGameplayTag(StateTagToWait))
+	
+	FBTSendGameplayEventTaskMemory* Memory = CastInstanceNodeMemory<FBTSendGameplayEventTaskMemory>(NodeMemory);
+	if (!Memory || !Memory->IsValid())
 	{
+		MORTIS_LOG("Memory is invalid");
+		Memory->Reset();
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
+	
+	if (!Memory->CachedASC->HasMatchingGameplayTag(StateTagToWait))
+	{
+		Memory->Reset();
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }

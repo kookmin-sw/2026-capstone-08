@@ -22,22 +22,34 @@ protected:
 	TObjectPtr<UAnimMontage> MontageTurnRight90;
 
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimMontage> MontageTurnRight135;
+	
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<UAnimMontage> MontageTurnRight180;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UAnimMontage> MontageTurnLeft90;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UAnimMontage> MontageTurnLeft180;
+	TObjectPtr<UAnimMontage> MontageTurnLeft135;
 	
 	UPROPERTY(EditAnywhere)
-	FName WarpTargetName;
+	TObjectPtr<UAnimMontage> MontageTurnLeft180;
+
+	UPROPERTY(EditAnywhere)
+	bool bUseMotionWarping = true;
+	
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "bUseMotionWarping"))
+	FName WarpTargetName = NAME_None;
 
 	UPROPERTY(EditAnywhere)
 	float Turn90Threshold = 60.f;
 
 	UPROPERTY(EditAnywhere)
-	float Turn180Threshold = 120;
+	float Turn135Threshold = 112.f;
+	
+	UPROPERTY(EditAnywhere)
+	float Turn180Threshold = 157;
 	
 private:
 	UAnimMontage* SelectBestMontage(float AngleToTarget);

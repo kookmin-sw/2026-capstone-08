@@ -34,6 +34,9 @@ protected:
 
 	UFUNCTION()
 	void OnStepMontageInterrupted();
+
+	UFUNCTION()
+	void OnStepMontageCancelled();
 	
 	UFUNCTION(BlueprintCallable)
 	void OnStepFinished(bool bInterrupted);
@@ -47,4 +50,6 @@ private:
 	TWeakObjectPtr<UMotionWarpingComponent> CachedMotionWarpingComp;
 	TWeakObjectPtr<AActor> CachedTargetActor; 
 	TWeakObjectPtr<UMortisAT_UpdateWarpTarget> UpdateWarpTargetTask;
+
+	FName LastWarpTargetName = NAME_None;
 };

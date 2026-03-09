@@ -32,7 +32,7 @@ void UMortisBTT_RotateToTarget::InitializeFromAsset(UBehaviorTree& Asset)
 
 uint16 UMortisBTT_RotateToTarget::GetInstanceMemorySize() const
 {
-	return sizeof(FRotateToTargetTaskMemory);
+	return sizeof(FBTRotateToTargetMemory);
 }
 
 FString UMortisBTT_RotateToTarget::GetStaticDescription() const
@@ -53,7 +53,7 @@ EBTNodeResult::Type UMortisBTT_RotateToTarget::ExecuteTask(UBehaviorTreeComponen
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(TargetToFaceKey.SelectedKeyName));
 	APawn* OwningPawn = OwnerComp.GetAIOwner()->GetPawn();
 
-	FRotateToTargetTaskMemory* Memory = CastInstanceNodeMemory<FRotateToTargetTaskMemory>(NodeMemory);
+	FBTRotateToTargetMemory* Memory = CastInstanceNodeMemory<FBTRotateToTargetMemory>(NodeMemory);
 	if (!Memory)
 	{
 		return EBTNodeResult::Failed;
@@ -76,7 +76,7 @@ EBTNodeResult::Type UMortisBTT_RotateToTarget::ExecuteTask(UBehaviorTreeComponen
 
 void UMortisBTT_RotateToTarget::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	FRotateToTargetTaskMemory* Memory = CastInstanceNodeMemory<FRotateToTargetTaskMemory>(NodeMemory);
+	FBTRotateToTargetMemory* Memory = CastInstanceNodeMemory<FBTRotateToTargetMemory>(NodeMemory);
 
 	if (!Memory->IsValid())
 	{

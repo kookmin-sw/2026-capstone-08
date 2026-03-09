@@ -33,13 +33,14 @@ const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex
 
 int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const
 {
+	// MORTIS_LOG("");
 	TArray<int32> ValidIndices;
 	float TotalWeight = 0.f;
 	for (int32 i = 0; i < AttackPatterns.Num(); i++)
 	{
-		// MORTIS_LOG("DistanceToTarget: %f, AngleToTarget: %f, RequiredPhase: %s",
-		// 	DistanceToTarget,
-		// 	AngleToTarget,
+		// MORTIS_LOG("DistanceToTarget: %s, AngleToTarget: %s, RequiredPhase: %s",
+		// 	(DistanceToTarget >= AttackPatterns[i].MinRange && DistanceToTarget <= AttackPatterns[i].MaxRange) ? TEXT("true") : TEXT("false"), 
+		// 	(AngleToTarget >= AttackPatterns[i].MinAngle && AngleToTarget <= AttackPatterns[i].MaxAngle) ? TEXT("true") : TEXT("false"), 
 		// 	AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
 		if (DistanceToTarget >= AttackPatterns[i].MinRange &&
 			DistanceToTarget <= AttackPatterns[i].MaxRange &&
