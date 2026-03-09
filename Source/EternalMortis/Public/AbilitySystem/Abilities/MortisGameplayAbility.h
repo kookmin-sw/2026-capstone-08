@@ -1,23 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "Types/MortisEnumTypes.h"
 #include "MortisGameplayAbility.generated.h"
 
 class AMortisCharacterBase;
 class UMotionWarpingComponent;
 class UMortisAbilitySystemComponent;
 class UMortisCombatComponent;
-
-// ���� ����� �̰� Ability�� ����ϴ� ��쿡�� �ʿ��� ENUM�̶�, ���Ŀ� StructTypes�� ����ȭ �ϰų� �׳� MortisStructTypes�� ���Խ�ų�� �������̴�.
-UENUM(BlueprintType)
-enum class EMortisAbilityActivationPolicy : uint8
-{
-	OnTriggered,
-	OnGiven
-};
 
 /**
  * 
@@ -32,6 +25,14 @@ protected:
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	FActiveGameplayEffectHandle NativeApplyEffectSpecHandleToTarget(AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability", meta = (DisplayName = "Apply Gameplay Effect Spec Handle To Target Actor", ExpandEnumAsExecs = "OutSuccessType"))
+	FActiveGameplayEffectHandle BP_ApplyEffectSpecHandleToTarget(AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle, EMortisSuccessType& OutSuccessType);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
+	void ApplyGameplayEffectSpecHandleToHitResults(const FGameplayEffectSpecHandle& SpecHandle, const TArray<FHitResult>& HitResults);
+
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
 	UMortisCombatComponent* GetMortisCombatComponentFromActorInfo() const;
 
@@ -44,6 +45,6 @@ protected:
 	UFUNCTION(BlueprintPure, Category = "Mortis")
 	UMotionWarpingComponent* GetMotionWarpingComponent() const;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "MortisAbility")
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Ability")
 	EMortisAbilityActivationPolicy AbilityActivationPolicy = EMortisAbilityActivationPolicy::OnTriggered;
 };

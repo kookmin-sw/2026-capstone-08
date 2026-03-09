@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,7 +17,7 @@ class ETERNALMORTIS_API AMortisEnemyCharacter : public AMortisCharacterBase
 	GENERATED_BODY()
 
 public:
-	AMortisEnemyCharacter();
+	AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;

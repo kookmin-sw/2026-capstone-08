@@ -1,9 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "AbilitySystem/Data/MortisAbilitySetBase.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
+#include "GameplayEffect.h"
 
 void UMortisAbilitySetBase::GiveToAbilitySystemComponent(UMortisAbilitySystemComponent* ASCToGive, int32 ApplyLevel)
 {
@@ -11,6 +12,16 @@ void UMortisAbilitySetBase::GiveToAbilitySystemComponent(UMortisAbilitySystemCom
 
 	GrantAbilities(ActivateOnGivenAbilities, ASCToGive, ApplyLevel);
 	GrantAbilities(ReactiveAbilities, ASCToGive, ApplyLevel);
+
+	for (const TSubclassOf<UGameplayEffect>& EffectSubclass : ActivateOnGivenEffects)
+	{
+		UGameplayEffect* EffectToActivate = EffectSubclass->GetDefaultObject<UGameplayEffect>();
+		ASCToGive->ApplyGameplayEffectToSelf(
+			EffectToActivate,
+			ApplyLevel,
+			ASCToGive->MakeEffectContext()
+		);
+	}
 }
 
 void UMortisAbilitySetBase::GrantAbilities(const TArray<TSubclassOf<UMortisGameplayAbility>>& AbilitySet, UMortisAbilitySystemComponent* ASCToGive, int32 ApplyLevel)

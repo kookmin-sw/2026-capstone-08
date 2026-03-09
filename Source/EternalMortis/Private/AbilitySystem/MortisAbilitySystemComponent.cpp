@@ -2,7 +2,7 @@
 
 
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
-#include "AbilitySystem/Abilities/MortisPlayerGameplayAbility.h"
+#include "AbilitySystem/Abilities/Player/MortisPlayerGameplayAbility.h"
 #include "MortisGameplayTags.h"
 #include "MortisDebugHelper.h"
 

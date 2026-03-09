@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 #include "GameplayTagContainer.h"
@@ -10,6 +10,7 @@
 class UMortisPlayerLinkedAnimLayer;
 class UInputMappingContext;
 class UMortisPlayerGameplayAbility;
+enum class EMortisStatGrade : uint8;
 
 USTRUCT(BlueprintType)
 struct FMortisAbilityInputBinding
@@ -39,6 +40,15 @@ struct FMortisPlayerWeaponData
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (TitleProperty = "InputTag"))
 	TArray<FMortisAbilityInputBinding> DefaultWeaponAbilities;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float WeaponDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	EMortisStatGrade StrGrade;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	EMortisStatGrade DexGrade;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	EMortisStatGrade IntGrade;
 };
 
 USTRUCT(BlueprintType)

@@ -1,10 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Animation/NotifyStates/MortisANS_ToggleWeaponCollision.h"
 
 #include "Components/Combat/MortisCombatComponent.h"
 #include "Interfaces/MortisCombatInterface.h"
+
+#include "MortisDebugHelper.h"
 
 void UMortisANS_ToggleWeaponCollision::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -37,7 +39,7 @@ void UMortisANS_ToggleWeaponCollision::ToggleWeaponCollisionForMesh(const USkele
 	{
 		if (UMortisCombatComponent* CombatComp = CombatInterface->GetCombatComponent())
 		{
-			CombatComp->ToggleWeaponCollision(bEnable);
+			CombatComp->ToggleDamageCollision(bEnable, TagToToggle, ToggleDamageType);
 		}
 	}
 }

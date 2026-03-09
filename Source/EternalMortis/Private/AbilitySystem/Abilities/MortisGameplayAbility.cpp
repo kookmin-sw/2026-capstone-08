@@ -1,10 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "Character/MortisCharacterBase.h"
 #include "Components/Combat/MortisCombatComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "MortisFunctionLibrary.h"
 
 void UMortisGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
@@ -23,6 +25,47 @@ void UMortisGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 	if (ActorInfo && AbilityActivationPolicy == EMortisAbilityActivationPolicy::OnGiven)
 		ActorInfo->AbilitySystemComponent->ClearAbility(Handle);
+}
+
+FActiveGameplayEffectHandle UMortisGameplayAbility::NativeApplyEffectSpecHandleToTarget(AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle)
+{
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+	check(TargetASC && SpecHandle.IsValid());
+	return GetMortisAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(
+		*SpecHandle.Data,
+		TargetASC
+	);
+}
+
+FActiveGameplayEffectHandle UMortisGameplayAbility::BP_ApplyEffectSpecHandleToTarget(AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle, EMortisSuccessType& OutSuccessType)
+{
+	FActiveGameplayEffectHandle ActiveGameplayEffectHandle = NativeApplyEffectSpecHandleToTarget(TargetActor, SpecHandle);
+	OutSuccessType = ActiveGameplayEffectHandle.WasSuccessfullyApplied() ? EMortisSuccessType::Success : EMortisSuccessType::Failed;
+
+	return ActiveGameplayEffectHandle;
+}
+
+void UMortisGameplayAbility::ApplyGameplayEffectSpecHandleToHitResults(const FGameplayEffectSpecHandle& SpecHandle, const TArray<FHitResult>& HitResults)
+{
+	if (HitResults.IsEmpty()) return;
+
+	APawn* OwningPawn = CastChecked<APawn>(GetAvatarActorFromActorInfo());
+
+	for (const FHitResult& Hit : HitResults)
+	{
+		if (APawn* HitPawn = Cast<APawn>(Hit.GetActor()))
+		{
+			if (UMortisFunctionLibrary::IsTargetPawnHostile(OwningPawn, HitPawn))
+			{
+				FActiveGameplayEffectHandle ActiveGameplayEffectHandle = NativeApplyEffectSpecHandleToTarget(HitPawn, SpecHandle);
+
+				if (ActiveGameplayEffectHandle.WasSuccessfullyApplied())
+				{
+					// 타격 이벤트 보내기
+				}
+			}
+		}
+	}
 }
 
 UMortisCombatComponent* UMortisGameplayAbility::GetMortisCombatComponentFromActorInfo() const

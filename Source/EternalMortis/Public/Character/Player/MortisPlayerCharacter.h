@@ -21,7 +21,7 @@ UCLASS()
 class ETERNALMORTIS_API AMortisPlayerCharacter : public AMortisCharacterBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -31,6 +31,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|AttackRecovery")
 	void StopRecoveryMontage(float BlendOutTime = 0.1f);
+
+	// IMortisCombatInterface Override
+	virtual UMortisCombatComponent* GetCombatComponent() const override;
 
 protected:
 	// APawn Override

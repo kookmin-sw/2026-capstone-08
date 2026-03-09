@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -28,4 +28,17 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData CurrentHealth;
 	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, CurrentHealth)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData BaseDamage;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, BaseDamage)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, IncomingDamage)
+
+	UMortisAttributeSet();
+
+	// UAttributeSet Override
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 };

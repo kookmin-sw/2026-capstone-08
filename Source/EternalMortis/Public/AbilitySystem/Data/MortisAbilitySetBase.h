@@ -8,6 +8,7 @@
 
 class UMortisGameplayAbility;
 class UMortisAbilitySystemComponent;
+class UGameplayEffect;
 
 /**
  * 
@@ -23,6 +24,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "InitData")
 	TArray<TSubclassOf<UMortisGameplayAbility>> ReactiveAbilities;
+
+	UPROPERTY(EditDefaultsOnly, Category = "InitData")
+	TArray<TSubclassOf<UGameplayEffect>> ActivateOnGivenEffects;
 
 	void GrantAbilities(const TArray<TSubclassOf<UMortisGameplayAbility>>& AbilitySet, UMortisAbilitySystemComponent* ASCToGive, int32 ApplyLevel = 1);
 

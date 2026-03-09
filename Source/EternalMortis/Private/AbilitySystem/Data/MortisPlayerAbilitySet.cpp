@@ -3,7 +3,7 @@
 
 #include "AbilitySystem/Data/MortisPlayerAbilitySet.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
-#include "AbilitySystem/Abilities/MortisPlayerGameplayAbility.h"
+#include "AbilitySystem/Abilities/Player/MortisPlayerGameplayAbility.h"
 
 void UMortisPlayerAbilitySet::GiveToAbilitySystemComponent(UMortisAbilitySystemComponent* ASCToGive, int32 ApplyLevel)
 {
@@ -16,7 +16,7 @@ void UMortisPlayerAbilitySet::GiveToAbilitySystemComponent(UMortisAbilitySystemC
 		FGameplayAbilitySpec AbilitySpec(InputAbilitySet.AbilityToGrant);
 		AbilitySpec.SourceObject = ASCToGive->GetAvatarActor();
 		AbilitySpec.Level = ApplyLevel;
-		AbilitySpec.DynamicAbilityTags.AddTag(InputAbilitySet.InputTag);
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(InputAbilitySet.InputTag);
 
 		ASCToGive->GiveAbility(AbilitySpec);
 	}

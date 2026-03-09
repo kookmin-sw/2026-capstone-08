@@ -65,6 +65,11 @@ void AMortisPlayerCharacter::StopRecoveryMontage(float BlendOutTime)
 	CurrentRecoveryMontage = nullptr;
 }
 
+UMortisCombatComponent* AMortisPlayerCharacter::GetCombatComponent() const
+{
+	return MortisPlayerCombatComponent;
+}
+
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,6 +7,7 @@
 #include "MortisPlayerCombatComponent.generated.h"
 
 class AMortisPlayerWeapon;
+struct FMortisPlayerWeaponData;
 /**
  * 
  */
@@ -21,6 +22,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	AMortisPlayerWeapon* GetPlayerCurrentEquippedWeapon() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
+	FMortisPlayerWeaponData GetPlayerCurrentWeaponData() const;
 
 	virtual void OnHitTargetActor(AActor* HitActor) override;
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor) override;

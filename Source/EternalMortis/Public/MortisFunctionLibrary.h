@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,6 +20,12 @@ class ETERNALMORTIS_API UMortisFunctionLibrary : public UBlueprintFunctionLibrar
 public:
 	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
 	static bool IsTargetPawnHostile(APawn* QueryPawn, APawn* TargetPawn);
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
+	static float GetGradeCoef(EMortisStatGrade Grade);
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
+	static FString GetGradeText(EMortisStatGrade Grade);
 
 	/* Combat */
 	static UMortisCombatComponent* GetCombatComponent(const AActor* Actor);

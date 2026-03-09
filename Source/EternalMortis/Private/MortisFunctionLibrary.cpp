@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MortisFunctionLibrary.h"
@@ -21,6 +21,34 @@ bool UMortisFunctionLibrary::IsTargetPawnHostile(APawn* QueryPawn, APawn* Target
 	}
 
 	return false;
+}
+
+float UMortisFunctionLibrary::GetGradeCoef(EMortisStatGrade Grade)
+{
+	switch (Grade)
+	{
+	case EMortisStatGrade::S: return 1.5f;
+	case EMortisStatGrade::A: return 1.25f;
+	case EMortisStatGrade::B: return 1.0f;
+	case EMortisStatGrade::C: return 0.75f;
+	case EMortisStatGrade::D: return 0.5f;
+	case EMortisStatGrade::F: return 0.0f;
+	default: return 0.0f;
+	}
+}
+
+FString UMortisFunctionLibrary::GetGradeText(EMortisStatGrade Grade)
+{
+	switch (Grade)
+	{
+	case EMortisStatGrade::S: return TEXT("S");
+	case EMortisStatGrade::A: return TEXT("A");
+	case EMortisStatGrade::B: return TEXT("B");
+	case EMortisStatGrade::C: return TEXT("C");
+	case EMortisStatGrade::D: return TEXT("D");
+	case EMortisStatGrade::F: return TEXT("F");
+	default: return TEXT("F");
+	}
 }
 
 UMortisCombatComponent* UMortisFunctionLibrary::GetCombatComponent(const AActor* Actor)

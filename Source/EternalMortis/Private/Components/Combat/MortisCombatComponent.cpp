@@ -35,23 +35,32 @@ AMortisWeaponBase* UMortisCombatComponent::GetCharacterCurrentEquippedWeapon() c
 	return GetCharacterCarriedWeaponByTag(CurrentEquippedWeaponTag);
 }
 
-void UMortisCombatComponent::ToggleWeaponCollision(bool bShouldEnable)
+void UMortisCombatComponent::ToggleDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle, EToggleCollisionType ToggleDamageType)
 {
-	ToggleCurrentEquippedWeaponCollision(bShouldEnable);
+	checkf(TagToToggle.IsValid(), TEXT("TagToToggle Is Not Valid! Check AnimNotifyState On Your Attack Animation!"))
+	if (ToggleDamageType == EToggleCollisionType::CurrentWeapon)
+		ToggleCurrentEquippedWeaponCollision(bShouldEnable, TagToToggle);
+	else
+		ToggleBodyDamageCollision(bShouldEnable, TagToToggle);
 }
 
-void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable)
+void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)
 {
 	AMortisWeaponBase* WeaponToToggle = GetCharacterCurrentEquippedWeapon();
 	check(WeaponToToggle);
 	if (bShouldEnable)
-		WeaponToToggle->GetWeaponCollisionBox()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		WeaponToToggle->GetWeaponCollisionBox(TagToToggle)->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	else
 	{
-		WeaponToToggle->GetWeaponCollisionBox()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WeaponToToggle->GetWeaponCollisionBox(TagToToggle)->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		OverlappedActors.Empty();
 	}
+}
+
+void UMortisCombatComponent::ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle)
+{
+
 }
 
 // 자식에서 Override

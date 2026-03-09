@@ -2,8 +2,11 @@
 
 
 #include "Items/Weapons/MortisWeaponBase.h"
-#include "Components/BoxComponent.h"
+#include "Components/Collisions/MortisBoxComponent.h"
+#include "MortisGameplayTags.h"
 #include "MortisFunctionLibrary.h"
+
+#include "MortisDebugHelper.h"
 
 // Sets default values
 AMortisWeaponBase::AMortisWeaponBase()
@@ -15,11 +18,37 @@ AMortisWeaponBase::AMortisWeaponBase()
 	SetRootComponent(WeaponMesh);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	WeaponCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponCollisionBox"));
+	WeaponCollisionBox = CreateDefaultSubobject<UMortisBoxComponent>(TEXT("WeaponCollisionBox"));
 	WeaponCollisionBox->SetupAttachment(GetRootComponent());
 	WeaponCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponCollisionBox->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnCollisionBoxBeginOverlap);
 	WeaponCollisionBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::OnCollisionBoxEndOverlap);
+	WeaponCollisionBox->CollisionTag = MortisGameplayTags::Data_CollisionType_Weapon_Normal;
+}
+
+UBoxComponent* AMortisWeaponBase::GetWeaponCollisionBox(FGameplayTag TagToToggle)
+{
+	if (const TObjectPtr<UMortisBoxComponent>* Found = CollisionCache.Find(TagToToggle))
+		return Found->Get();
+	return nullptr;
+}
+
+void AMortisWeaponBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CollisionCache.Reset();
+
+	TArray<UMortisBoxComponent*> Hitboxes;
+	GetComponents<UMortisBoxComponent>(Hitboxes);
+
+	for (UMortisBoxComponent* Hitbox : Hitboxes)
+	{
+		if (!Hitbox || !Hitbox->CollisionTag.IsValid())
+			continue;
+
+		CollisionCache.Add(Hitbox->CollisionTag, Hitbox);
+	}
 }
 
 void AMortisWeaponBase::OnCollisionBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -27,11 +56,11 @@ void AMortisWeaponBase::OnCollisionBoxBeginOverlap(UPrimitiveComponent* Overlapp
 	APawn* WeaponOwningPawn = GetInstigator<APawn>();
 	checkf(WeaponOwningPawn, TEXT("Forgot to assign an instigator as the owning pawn for the weapon: %s"), *GetName());
 
+
 	if (APawn* HitPawn = Cast<APawn>(OtherActor))
 	{
-		// TODO : Merge 후 Enemy도 Team 할당했으면 주석 해제
-		/*if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
-			OnWeaponHitTarget.ExecuteIfBound(OtherActor);*/
+		if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
+			OnWeaponHitTarget.ExecuteIfBound(OtherActor);
 	}
 }
 
@@ -40,10 +69,10 @@ void AMortisWeaponBase::OnCollisionBoxEndOverlap(UPrimitiveComponent* Overlapped
 	APawn* WeaponOwningPawn = GetInstigator<APawn>();
 	checkf(WeaponOwningPawn, TEXT("Forgot to assign an instigator as the owning pawn for the weapon: %s"), *GetName());
 
+
 	if (APawn* HitPawn = Cast<APawn>(OtherActor))
 	{
-		// TODO : Merge 후 Enemy도 Team 할당했으면 주석 해제
-		/*if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
-			OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);*/
+		if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
+			OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);
 	}
 }

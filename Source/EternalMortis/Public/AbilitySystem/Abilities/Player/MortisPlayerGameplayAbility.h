@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -27,6 +27,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
 	UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent();
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef);
 
 
 private:

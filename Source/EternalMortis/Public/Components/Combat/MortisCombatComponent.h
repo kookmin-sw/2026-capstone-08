@@ -9,6 +9,14 @@
 
 class AMortisWeaponBase;
 
+// 무기, 신체 구분 후 따로 처리
+// 상세한 부위는 Tag로 처리하면 됨
+UENUM(BlueprintType)
+enum class EToggleCollisionType : uint8
+{
+	CurrentWeapon,
+	Body
+};
 /**
  * 
  */
@@ -31,7 +39,7 @@ public:
 	AMortisWeaponBase* GetCharacterCurrentEquippedWeapon() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
-	void ToggleWeaponCollision(bool bShouldEnable);
+	void ToggleDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle, EToggleCollisionType ToggleDamageType = EToggleCollisionType::CurrentWeapon);
 
 	// 아래의 두 Functions은 상속한 CombatComponent에서 구현하기
 	virtual void OnHitTargetActor(AActor* HitActor);
@@ -43,7 +51,8 @@ public:
 	void EndAttackTrace();
 	
 protected:
-	virtual void ToggleCurrentEquippedWeaponCollision(bool bShouldEnable);
+	virtual void ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle);
+	virtual void ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis")
 	TArray<AActor*> OverlappedActors;
