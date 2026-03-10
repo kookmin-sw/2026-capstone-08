@@ -29,7 +29,7 @@ public:
 	UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent();
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
-	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef);
+	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef, FGameplayTag AttackType);
 
 
 private:

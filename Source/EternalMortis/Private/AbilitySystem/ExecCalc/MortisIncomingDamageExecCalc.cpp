@@ -72,7 +72,7 @@ void UMortisIncomingDamageExecCalc::Execute_Implementation(const FGameplayEffect
 	if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Pierce))      Resist = ResistPierce;
 	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Blunt))  Resist = ResistBlunt;
 	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Slash))  Resist = ResistSlash;
-	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Slash))  Resist = ResistMagic;
+	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Magic))  Resist = ResistMagic;
 
 	float IncomingDamage = BaseDamage * MotionCoef * (1.0f - Resist);
 	IncomingDamage = FMath::Max(0.0f, IncomingDamage);

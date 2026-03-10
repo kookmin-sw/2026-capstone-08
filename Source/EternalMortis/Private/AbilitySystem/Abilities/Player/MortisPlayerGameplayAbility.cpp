@@ -28,7 +28,7 @@ UMortisPlayerCombatComponent* UMortisPlayerGameplayAbility::GetMortisPlayerComba
 	return GetMortisPlayerCharacterFromActorInfo()->GetMortisPlayerCombatComponent();
 }
 
-FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef)
+FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef, FGameplayTag AttackType)
 {
 	check(EffectClass);
 
@@ -62,6 +62,9 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 		MortisGameplayTags::Data_Player_Stat_Coefficient_Intelligence,
 		IntCoef
 	);
+
+	if (!AttackType.IsValid()) AttackType = MortisGameplayTags::Data_AttackType_Slash;
+	EffectSpecHandle.Data->AddDynamicAssetTag(AttackType);
 
 	return EffectSpecHandle;
 }
