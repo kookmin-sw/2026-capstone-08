@@ -16,6 +16,8 @@
 #include "Components/Movement/MortisPlayerMovementComponent.h"
 #include "MortisGameplayTags.h"
 
+#include "MortisDebugHelper.h"
+
 AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer
 		.SetDefaultSubobjectClass<UMortisPlayerMovementComponent>(ACharacter::CharacterMovementComponentName)
@@ -29,7 +31,7 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 
 	CameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraArm->SetupAttachment(GetRootComponent());
-	CameraArm->TargetArmLength = 200.0f;
+	CameraArm->TargetArmLength = TargetZoomLength;
 	CameraArm->SocketOffset = FVector(0.0f, 55.0f, 65.0f);
 	CameraArm->bUsePawnControlRotation = true;
 
@@ -45,6 +47,9 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
 
 	PlayerUIComponent = CreateDefaultSubobject<UMortisPlayerUIComponent>(TEXT("HeroUIComponent"));
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 void AMortisPlayerCharacter::SetRecoveryMontage(UAnimMontage* InMontage)
@@ -63,6 +68,14 @@ void AMortisPlayerCharacter::StopRecoveryMontage(float BlendOutTime)
 	}
 
 	CurrentRecoveryMontage = nullptr;
+}
+
+void AMortisPlayerCharacter::ExecuteBufferedAbility()
+{
+	if (!BufferedInputTag.IsValid()) return;
+
+	MortisAbilitySystemComponent->OnAbilityInputPressed(BufferedInputTag);
+	BufferedInputTag = FGameplayTag::EmptyTag;
 }
 
 UMortisCombatComponent* AMortisPlayerCharacter::GetCombatComponent() const
@@ -97,6 +110,7 @@ void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	UMortisInputComponent* MortisInputComponent = CastChecked<UMortisInputComponent>(PlayerInputComponent);
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Zoom, ETriggerEvent::Triggered, this, &ThisClass::Input_Zoom);
 
 	MortisInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
 }
@@ -104,6 +118,19 @@ void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 void AMortisPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+}
+
+void AMortisPlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	CameraArm->TargetArmLength = FMath::FInterpTo(
+		CameraArm->TargetArmLength,
+		TargetZoomLength,
+		DeltaTime,
+		ZoomInterpSpeed
+	);
 }
 
 void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
@@ -141,12 +168,38 @@ void AMortisPlayerCharacter::Input_Look(const FInputActionValue& InputActionValu
 	}
 }
 
+void AMortisPlayerCharacter::Input_Zoom(const FInputActionValue& InputActionValue)
+{
+	const float AxisValue = InputActionValue.Get<float>();
+	if (FMath::IsNearlyZero(AxisValue)) return;
+
+	TargetZoomLength = FMath::Clamp(
+		TargetZoomLength - AxisValue * ZoomStep,
+		MinZoomLength,
+		MaxZoomLength
+	);
+}
+
 void AMortisPlayerCharacter::Input_AbilityInputPressed(FGameplayTag InputTag)
 {
+	if (bCanBufferInput && IsBufferableAbility(InputTag))
+	{
+		BufferedInputTag = InputTag;
+		return;
+	}
+
 	MortisAbilitySystemComponent->OnAbilityInputPressed(InputTag);
 }
 
 void AMortisPlayerCharacter::Input_AbilityInputReleased(FGameplayTag InputTag)
 {
 	MortisAbilitySystemComponent->OnAbilityInputReleased(InputTag);
+}
+
+bool AMortisPlayerCharacter::IsBufferableAbility(FGameplayTag AbilityTag)
+{
+	return 
+		AbilityTag.MatchesTagExact(MortisGameplayTags::InputTag_Ability_Roll)
+		|| AbilityTag.MatchesTagExact(MortisGameplayTags::InputTag_Ability_LightAttack)
+		|| AbilityTag.MatchesTag(MortisGameplayTags::InputTag_Ability_WeaponSkill);
 }
