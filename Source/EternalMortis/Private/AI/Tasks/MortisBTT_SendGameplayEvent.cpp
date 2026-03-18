@@ -3,11 +3,11 @@
 
 #include "AI/Tasks/MortisBTT_SendGameplayEvent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
+#include "MortisFunctionLibrary.h"
 #include "MortisDebugHelper.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -64,7 +64,7 @@ EBTNodeResult::Type UMortisBTT_SendGameplayEvent::ExecuteTask(UBehaviorTreeCompo
 	}
 	FGameplayEventData EventData;
 	EventData.EventTag = EventTag;
-	EventData.Instigator = GetEnemyCharacter(OwnerComp);
+	EventData.Instigator = UMortisFunctionLibrary::GetEnemyCharacter(OwnerComp);
 	EventData.Target = Cast<AActor>(BBComp->GetValueAsObject(PayloadTargetKey.SelectedKeyName));
 	EventData.EventMagnitude = BBComp->GetValueAsFloat(EventMagnitude.SelectedKeyName); 
 

@@ -63,6 +63,15 @@ public:
 	float MaxWalkSpeed = 300.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float IdleMaxWalkSpeed;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float StrafingMaxWalkSpeed;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float ChasingMaxWalkSpeed;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float BrakingDecelerationWalking = 1000.f;
 	
 	/* Ability system */

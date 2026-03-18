@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MortisBTT_Base.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "MortisBTT_SelectAttackPattern.generated.h"
 
@@ -11,7 +10,7 @@
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisBTT_SelectAttackPattern : public UMortisBTT_Base
+class ETERNALMORTIS_API UMortisBTT_SelectAttackPattern : public UBTTaskNode
 {
 	GENERATED_BODY()
 

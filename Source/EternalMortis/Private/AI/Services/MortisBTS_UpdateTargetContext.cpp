@@ -10,7 +10,7 @@
 
 UMortisBTS_UpdateTargetContext::UMortisBTS_UpdateTargetContext()
 {
-	NodeName = TEXT("Calculate Target Distance");
+	NodeName = TEXT("Update Target Context");
 
 	INIT_SERVICE_NODE_NOTIFY_FLAGS();
 
@@ -42,6 +42,22 @@ FString UMortisBTS_UpdateTargetContext::GetStaticDescription() const
 	);
 }
 
+void UMortisBTS_UpdateTargetContext::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+
+	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
+	AAIController* AIC = OwnerComp.GetAIOwner();
+
+	if (!BBComp || !AIC)
+	{
+		return;
+	}
+
+	const AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
+	UpdateTargetContext(BBComp, AIC->GetPawn(), TargetActor);
+}
+
 void UMortisBTS_UpdateTargetContext::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
@@ -49,23 +65,30 @@ void UMortisBTS_UpdateTargetContext::TickNode(UBehaviorTreeComponent& OwnerComp,
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	AAIController* AIC = OwnerComp.GetAIOwner();
 
-	if (!BBComp || !AIC || !AIC->GetPawn())
+	if (!BBComp || !AIC)
 	{
 		return;
 	}
 	
 	const AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
-	if (TargetActor)
-	{
-		float Distance = FVector::Dist(AIC->GetPawn()->GetActorLocation(), TargetActor->GetActorLocation());
-		BBComp->SetValueAsFloat(DistToTargetKey.SelectedKeyName, Distance);
+	UpdateTargetContext(BBComp, AIC->GetPawn(), TargetActor);
+}
 
-		FVector EnemyForward = AIC->GetPawn()->GetActorForwardVector();
-		FVector EnemyToTarget = TargetActor->GetActorLocation() - AIC->GetPawn()->GetActorLocation();
-		
-		float Dot = FVector::DotProduct(EnemyForward, EnemyToTarget);
-		float CrossZ = FVector::CrossProduct(EnemyForward, EnemyToTarget).Z;
-		float AngleToTarget = FMath::RadiansToDegrees(FMath::Atan2(CrossZ, Dot));
-		BBComp->SetValueAsFloat(AngleToTargetKey.SelectedKeyName, AngleToTarget);
+void UMortisBTS_UpdateTargetContext::UpdateTargetContext(UBlackboardComponent* BBComp, const AActor* OwnerActor, const AActor* TargetActor)
+{
+	if (!BBComp || !OwnerActor || !TargetActor)
+	{
+		return;
 	}
+
+	float Distance = FVector::Dist(OwnerActor->GetActorLocation(), TargetActor->GetActorLocation());
+	BBComp->SetValueAsFloat(DistToTargetKey.SelectedKeyName, Distance);
+
+	FVector EnemyForward = OwnerActor->GetActorForwardVector();
+	FVector EnemyToTarget = TargetActor->GetActorLocation() - OwnerActor->GetActorLocation();
+		
+	float Dot = FVector::DotProduct(EnemyForward, EnemyToTarget);
+	float CrossZ = FVector::CrossProduct(EnemyForward, EnemyToTarget).Z;
+	float AngleToTarget = FMath::RadiansToDegrees(FMath::Atan2(CrossZ, Dot));
+	BBComp->SetValueAsFloat(AngleToTargetKey.SelectedKeyName, AngleToTarget);
 }

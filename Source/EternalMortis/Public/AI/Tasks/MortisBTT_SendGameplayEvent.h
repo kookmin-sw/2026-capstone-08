@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MortisBTT_Base.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "MortisBTT_SendGameplayEvent.generated.h"
 
@@ -29,7 +28,7 @@ struct FBTSendGameplayEventTaskMemory
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisBTT_SendGameplayEvent : public UMortisBTT_Base
+class ETERNALMORTIS_API UMortisBTT_SendGameplayEvent : public UBTTaskNode
 {
 	GENERATED_BODY()
 

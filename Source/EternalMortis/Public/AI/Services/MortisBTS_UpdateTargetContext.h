@@ -23,8 +23,15 @@ public:
 	//~ End UBTNode Interface
 	
 protected:
+	//~ Begin UBTService Interface
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	//~ End UBTService Interface 
 
+private:
+	void UpdateTargetContext(UBlackboardComponent* BBComp, const AActor* OwnerActor, const AActor* TargetActor);
+	
+protected:
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector TargetActorKey;
 	

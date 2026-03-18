@@ -17,5 +17,5 @@ class ETERNALMORTIS_API UMortisAnimInstanceBase : public UAnimInstance
 
 public:
 	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
-	bool DoesOwnerHaveTag(const FGameplayTag& GameplayTag) const;
+	bool DoesOwnerHaveTag(FGameplayTag GameplayTag) const;
 };

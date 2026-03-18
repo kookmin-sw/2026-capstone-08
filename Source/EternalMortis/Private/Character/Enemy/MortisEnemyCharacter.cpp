@@ -3,6 +3,7 @@
 
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "MortisDebugHelper.h"
+#include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Data/MortisEnemyAbilitySet.h"
 #include "Character/Enemy/MortisEnemyData.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
@@ -12,8 +13,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMortisEnemyCharacter::AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer
-		.SetDefaultSubobjectClass<UMortisEnemyAttributeSet>(TEXT("MortisAttributeSet")))
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMortisEnemyAttributeSet>(TEXT("MortisAttributeSet")))
 {
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
@@ -32,12 +32,12 @@ void AMortisEnemyCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	InitializeEnemyByData();
+	RegisterStateTagEvent();
 }
 
 void AMortisEnemyCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	
 }
 
 void AMortisEnemyCharacter::InitializeEnemyByData()
@@ -64,10 +64,15 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 	GetCharacterMovement()->RotationRate = EnemyData->RotationRate;
 	GetCharacterMovement()->MaxWalkSpeed = EnemyData->MaxWalkSpeed;
 	GetCharacterMovement()->BrakingDecelerationWalking = EnemyData->BrakingDecelerationWalking;
-	
+
+	CharacterAbilitySet = EnemyData->AbilitySet;
 	//
 	if (GetWorld() && GetWorld()->IsGameWorld())
 	{
+		IdleMaxWalkSpeed = EnemyData->IdleMaxWalkSpeed;
+		StrafingMaxWalkSpeed = EnemyData->StrafingMaxWalkSpeed;
+		ChasingMaxWalkSpeed = EnemyData->ChasingMaxWalkSpeed;
+		
 		if (EnemyData->AbilitySet)
 		{
 			EnemyData->AbilitySet->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
@@ -114,3 +119,37 @@ void AMortisEnemyCharacter::PostEditChangeProperty(FPropertyChangedEvent& Proper
 }
 #endif
 
+void AMortisEnemyCharacter::RegisterStateTagEvent()
+{
+	if (!MortisAbilitySystemComponent)
+	{
+		return;
+	}
+	
+	MortisAbilitySystemComponent->RegisterGameplayTagEvent(
+		MortisGameplayTags::State_Movement_Strafing,
+		EGameplayTagEventType::NewOrRemoved
+	).AddUObject(this, &ThisClass::OnStrafingStateChanged);
+
+	MortisAbilitySystemComponent->RegisterGameplayTagEvent(
+		MortisGameplayTags::State_Movement_Chasing,
+		EGameplayTagEventType::NewOrRemoved
+	).AddUObject(this, &ThisClass::OnChasingStateChanged);
+}
+
+void AMortisEnemyCharacter::OnStrafingStateChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	// MORTIS_LOG("Strafing %s", NewCount > 0 ? TEXT("Begin") : TEXT("End"));
+	bool bStrafing = NewCount > 0;
+	bUseControllerRotationYaw = bStrafing;
+	GetCharacterMovement()->bOrientRotationToMovement = !bStrafing;
+	GetCharacterMovement()->bUseControllerDesiredRotation = bStrafing;
+	GetCharacterMovement()->MaxWalkSpeed = bStrafing ? StrafingMaxWalkSpeed : IdleMaxWalkSpeed;
+}
+
+void AMortisEnemyCharacter::OnChasingStateChanged(FGameplayTag Tag, int32 NewCount) const
+{
+	// MORTIS_LOG("Chasing %s", NewCount > 0 ? TEXT("Begin") : TEXT("End"));
+	bool bChasing = NewCount > 0;
+	GetCharacterMovement()->MaxWalkSpeed = bChasing ? ChasingMaxWalkSpeed : IdleMaxWalkSpeed;
+}

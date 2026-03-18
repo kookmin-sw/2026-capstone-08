@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types/MortisEnumTypes.h"
 #include "Abilities/Tasks/AbilityTask.h"
 #include "MortisAT_UpdateWarpTarget.generated.h"
 
@@ -20,7 +21,8 @@ public:
 	 * @Param WarpUpdateDuration default value is -1. Warp update for anim montage 
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability|Task", meta = (HidePin = "OwningAbility", DefaultToOwningAbility = "OwningAbility", BlueprintInternalUseOnly = "true"))
-	static UMortisAT_UpdateWarpTarget* UpdateWarpTarget(UGameplayAbility* OwningAbility, FName WarpTargetName, AActor* TargetActor, float UpdateInterval = 0.1f, float
+	static UMortisAT_UpdateWarpTarget* UpdateWarpTarget(UGameplayAbility* OwningAbility, FName WarpTargetName, AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float
+		DesiredDistance, float UpdateInterval = 0.1f, float
 		WarpUpdateDuration = -1.f);
 
 	//~ Begin UGameplayTask Interface
@@ -31,14 +33,16 @@ public:
 	//~ Begin UAbilityTask Interface
 	// virtual void OnDestroy(bool bInOwnerFinished) override;
 	//~ End UAbilityTask Interface
-
-
+	
 private:
 	void UpdateTarget();
-
+	FVector CalculateWarpTargetLocation();
 	FName WarpTargetName;
-	float UpdateInterval = 0.1f;
+	EMortisWarpTargetMode WarpTargetMode;
+	float DesiredDistance = 0.f;
 	float WarpUpdateDuration = -1.f;
+	
+	float UpdateInterval = 0.1f;
 	
 	float TimeSinceLastUpdate = 0.1f;
 	float TotalElapsedTime = 0.f;

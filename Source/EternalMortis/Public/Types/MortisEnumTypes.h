@@ -36,3 +36,11 @@ enum class EMortisStatGrade : uint8
 {
 	S, A, B, C, D, F
 };
+
+UENUM(BlueprintType)
+enum class EMortisWarpTargetMode : uint8
+{
+	ActorLocation UMETA(DisplayName = "Actor Location"),
+	OffsetFromSelf UMETA(DisplayName = "Offset From Self"),
+	OffsetFromTarget UMETA(DisplayName = "Offset From Target")
+};

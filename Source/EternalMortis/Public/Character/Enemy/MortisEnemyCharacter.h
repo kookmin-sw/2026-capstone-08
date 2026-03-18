@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Character/MortisCharacterBase.h"
 #include "MortisEnemyCharacter.generated.h"
 
@@ -33,6 +34,7 @@ public:
 	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override;
 	//~ End IMortisCombatInterfac
 	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
+	
 protected:
 	void InitializeEnemyByData();
 	
@@ -45,5 +47,13 @@ protected:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
-	
+
+private:
+	void RegisterStateTagEvent();
+	void OnStrafingStateChanged(FGameplayTag Tag, int32 NewCount);
+	void OnChasingStateChanged(FGameplayTag Tag, int32 NewCount) const;
+
+	float IdleMaxWalkSpeed;
+	float StrafingMaxWalkSpeed;
+	float ChasingMaxWalkSpeed;	
 };

@@ -6,8 +6,13 @@
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Types/MortisEnumTypes.h"
+
+#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "MortisFunctionLibrary.generated.h"
 
+class UMortisAbilitySystemComponent;
+class AMortisAIController;
+class AMortisEnemyCharacter;
 class UMortisCombatComponent;
 /**
  * 
@@ -41,5 +46,10 @@ public:
 	static void AddGameplayTag(AActor* Actor, const FGameplayTag& Tag);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|GameplayTag")
-	static void RemoveGameplayTag(AActor* Actor, const FGameplayTag& Tag);	
+	static void RemoveGameplayTag(AActor* Actor, const FGameplayTag& Tag);
+
+	/* AI */
+	static AMortisEnemyCharacter* GetEnemyCharacter(UBehaviorTreeComponent& OwnerComp);
+	static AMortisAIController* GetMortisAIController(UBehaviorTreeComponent& OwnerComp);
+	static UMortisAbilitySystemComponent* GetMortisASC(UBehaviorTreeComponent& OwnerComp);
 };

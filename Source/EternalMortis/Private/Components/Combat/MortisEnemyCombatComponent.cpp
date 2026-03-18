@@ -46,7 +46,7 @@ int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, f
 			DistanceToTarget <= AttackPatterns[i].MaxRange &&
 			AngleToTarget >= AttackPatterns[i].MinAngle &&
 			AngleToTarget <= AttackPatterns[i].MaxAngle &&
-			AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase))
+			(!AttackPatterns[i].RequiredPhases.IsValid() || AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase)))
 		{
 			// MORTIS_LOG("Add: %d", i);
 			ValidIndices.Add(i);

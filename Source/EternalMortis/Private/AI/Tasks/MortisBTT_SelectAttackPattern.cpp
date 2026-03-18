@@ -4,6 +4,7 @@
 #include "AI/Tasks/MortisBTT_SelectAttackPattern.h"
 
 #include "MortisDebugHelper.h"
+#include "MortisFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
@@ -38,7 +39,7 @@ FString UMortisBTT_SelectAttackPattern::GetStaticDescription() const
 
 EBTNodeResult::Type UMortisBTT_SelectAttackPattern::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AMortisEnemyCharacter* EnemyCharacter = GetEnemyCharacter(OwnerComp);
+	AMortisEnemyCharacter* EnemyCharacter = UMortisFunctionLibrary::GetEnemyCharacter(OwnerComp);
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	if (EnemyCharacter && BBComp)
 	{

@@ -102,6 +102,8 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 				this,
 				Step.WarpTargetName,
 				CachedTargetActor.Get(),
+				Step.WarpTargetMode,
+				Step.DesiredDistance,
 				0.1f,
 				Step.WarpUpdateDuration
 			);

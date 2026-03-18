@@ -37,9 +37,11 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attacking, "State.Action.Attacking");
-
-	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Turning, "State.Movement.Turning");
+	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Turning, "State.Action.Turning");
+	
+	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Idle, "State.Movement.Idle");
 	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Strafing, "State.Movement.Strafing");
+	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Chasing, "State.Movement.Chasing");
 	
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_1, "State.Enemy.Phase.1");
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_2, "State.Enemy.Phase.2");

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MortisBTT_Base.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "MortisBTT_RotateToTarget.generated.h"
 
@@ -27,7 +26,7 @@ struct FBTRotateToTargetMemory
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisBTT_RotateToTarget : public UMortisBTT_Base
+class ETERNALMORTIS_API UMortisBTT_RotateToTarget : public UBTTaskNode
 {
 	GENERATED_BODY()
 

@@ -5,8 +5,10 @@
 #include "MortisGameplayTags.h"
 
 #include "GameplayTagContainer.h"
+#include "MortisEnumTypes.h"
 #include "MortisStructTypes.generated.h"
 
+class UGameplayEffect;
 class UMortisPlayerLinkedAnimLayer;
 class UInputMappingContext;
 class UMortisPlayerGameplayAbility;
@@ -62,9 +64,9 @@ struct FMortisAttackPatternStep
 	UPROPERTY(EditDefaultsOnly)
 	float PlayRate = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag HitEventTag;
-	
+	// UPROPERTY(EditDefaultsOnly)
+	// FGameplayTag HitEventTag;
+
 	UPROPERTY(EditDefaultsOnly)
 	float DamageMultiplier = 1.0f;
 
@@ -77,6 +79,12 @@ struct FMortisAttackPatternStep
 	UPROPERTY(EditDefaultsOnly)
 	FName WarpTargetName = TEXT("AttackTarget");
 
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseMotionWarping"))
+	EMortisWarpTargetMode WarpTargetMode = EMortisWarpTargetMode::ActorLocation;
+
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseMotionWarping"))
+	float DesiredDistance = 100.f;
+	
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseMotionWarping"))
 	bool bContinuousWarpUpdate = false;
 
@@ -109,5 +117,17 @@ struct FMortisAttackPattern
 	
 	UPROPERTY(EditDefaultsOnly)
 	float Weight = 1.0f;
+};
+
+USTRUCT(BlueprintType)
+struct FMortisTagToBoolMapping
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mappping")
+	FGameplayTag Tag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mappping")
+	FName BoolPropertyName;
 };
 

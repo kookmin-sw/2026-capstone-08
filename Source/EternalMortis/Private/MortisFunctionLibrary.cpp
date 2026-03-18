@@ -2,11 +2,14 @@
 
 
 #include "MortisFunctionLibrary.h"
+#include "Character/Enemy/MortisEnemyCharacter.h"
+#include "Controllers/MortisAIController.h"
+#include "Interfaces/MortisCombatInterface.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AIController.h"
 #include "GenericTeamAgentInterface.h"
-#include "Interfaces/MortisCombatInterface.h"
 
 bool UMortisFunctionLibrary::IsTargetPawnHostile(APawn* QueryPawn, APawn* TargetPawn)
 {
@@ -92,4 +95,21 @@ void UMortisFunctionLibrary::RemoveGameplayTag(AActor* Actor, const FGameplayTag
 	{
 		ASC->RemoveLooseGameplayTag(Tag);
 	}
+}
+
+AMortisEnemyCharacter* UMortisFunctionLibrary::GetEnemyCharacter(UBehaviorTreeComponent& OwnerComp)
+{
+	AAIController* AIC = OwnerComp.GetAIOwner();
+	return AIC ? Cast<AMortisEnemyCharacter>(AIC->GetPawn()) : nullptr;
+}
+
+AMortisAIController* UMortisFunctionLibrary::GetMortisAIController(UBehaviorTreeComponent& OwnerComp)
+{
+	return Cast<AMortisAIController>(OwnerComp.GetAIOwner());
+}
+
+UMortisAbilitySystemComponent* UMortisFunctionLibrary::GetMortisASC(UBehaviorTreeComponent& OwnerComp)
+{
+	AMortisEnemyCharacter* Enemy = GetEnemyCharacter(OwnerComp);
+	return Enemy ? Enemy->GetMortisAbilitySystemComponent() : nullptr;
 }
