@@ -78,6 +78,9 @@ namespace MortisGameplayTags
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Player_Stat_Coefficient_Dexterity);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Player_Stat_Coefficient_Intelligence);
 
+	// ====================		RuneSet Tags	====================
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Rune_Set_Slashing);
+
 	// ====================		Character Tags	====================
 
 }

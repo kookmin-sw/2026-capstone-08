@@ -73,5 +73,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Coefficient_Dexterity, "Data.Player.Stat.Coefficient.Dexterity");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Coefficient_Intelligence, "Data.Player.Stat.Coefficient.Intelligence");
 
+	// ====================		RuneSet Tags	====================
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Slashing, "Rune.Set.Slashing");
+
 	// ====================		Character Tags	====================
 }

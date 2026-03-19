@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "MortisInventorySubsystem.generated.h"
+#include "MortisWeaponInventorySubsystem.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API UMortisInventorySubsystem : public UGameInstanceSubsystem
+class ETERNALMORTIS_API UMortisWeaponInventorySubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 	
