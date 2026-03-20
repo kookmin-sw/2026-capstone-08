@@ -20,7 +20,7 @@ bool UMortisRuneInventorySubsystem::AddRune(const FMortisRuneInstance& NewRune)
     }
 
     OwningRunes.Add(NewRune);
-    OnOwningRunesChanged.Broadcast();
+    OnOwningRuneAdded.Broadcast(NewRune);
 
     return true;
 }
@@ -36,20 +36,13 @@ bool UMortisRuneInventorySubsystem::EquipRune(int32 SlotIndex, const FMortisRune
     // 장착할 룬 인벤에서 제거
     OwningRunes.RemoveAt(InventoryIndex);
 
-    // 장착된 룬 인벤으로 이동
-    if (EquippedRunes[SlotIndex].InstanceId.IsValid())
-    {
-        OwningRunes.Add(EquippedRunes[SlotIndex]);
-        UpdateSetCount(EquippedRunes[SlotIndex].SetTag, -1);
-    }
-
-    //룬 장착
+    // 룬 장착 및 세트효과 갱신
     EquippedRunes[SlotIndex] = RuneInstance;
     UpdateSetCount(EquippedRunes[SlotIndex].SetTag, 1);
 
-    OnOwningRunesChanged.Broadcast();
-    OnEquippedRunesChanged.Broadcast();
-    OnActivatedRuneSetsChanged.Broadcast();
+    OnEquippedRuneAdded.Broadcast(SlotIndex, RuneInstance);
+    OnOwningRuneRemoved.Broadcast(RuneInstance);
+    OnActivatedRuneSetsChanged.Broadcast(GetActiveRuneSets());
 
     return true;
 }
@@ -62,11 +55,12 @@ bool UMortisRuneInventorySubsystem::UnequipRune(int32 SlotIndex)
     // 룬 인벤토리로 이동 및 세트효과 갱신
     OwningRunes.Add(EquippedRunes[SlotIndex]);
     UpdateSetCount(EquippedRunes[SlotIndex].SetTag, -1);
+
+    OnOwningRuneAdded.Broadcast(EquippedRunes[SlotIndex]);
+    OnEquippedRuneRemoved.Broadcast(SlotIndex, EquippedRunes[SlotIndex]);
     EquippedRunes[SlotIndex] = FMortisRuneInstance();       // 빈 슬롯으로 만들기
 
-    OnOwningRunesChanged.Broadcast();
-    OnEquippedRunesChanged.Broadcast();
-    OnActivatedRuneSetsChanged.Broadcast();
+    OnActivatedRuneSetsChanged.Broadcast(GetActiveRuneSets());
 
     return true;
 }

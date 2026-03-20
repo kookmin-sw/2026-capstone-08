@@ -8,12 +8,14 @@
 #include "GameplayTagContainer.h"
 #include "MortisRuneInventorySubsystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMortisOnOwningRunesChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMortisOnEquippedRunesChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMortisOnActivatedRuneSetsChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnDurationTimeUpdated, FGameplayTag, TagToUpdate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnCoolTimeUpdated, FGameplayTag, TagToUpdate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnStackUpdated, FGameplayTag, TagToUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnActivatedRuneSetsChanged, const TArray<FGameplayTag>&, ActiveRuneSetTags);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnOwningRuneAdded, const FMortisRuneInstance&, RuneToAdd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnOwningRuneRemoved, const FMortisRuneInstance&, RuneToRemove);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnEquippedRuneAdded, const int32, SlotIndex, const FMortisRuneInstance&, RuneToAdd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnEquippedRuneRemoved, const int32, SlotIndex, const FMortisRuneInstance&, RuneToRemove);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnDurationTimeUpdated, const FGameplayTag&, TagToUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnCoolTimeUpdated, const FGameplayTag&, TagToUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnStackUpdated, const FGameplayTag&, TagToUpdate);
 
 
 struct FMortisRuneSetRow;
@@ -32,9 +34,13 @@ public:
 
     // 혹시 몰라 룬 획득, 장착 및 해제, 세트 갱신마다 델리게이트를 등록해놓았으니, 필요하면 쓸 것
     UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
-    FMortisOnOwningRunesChanged OnOwningRunesChanged;
+    FMortisOnOwningRuneAdded OnOwningRuneAdded;
     UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
-    FMortisOnEquippedRunesChanged OnEquippedRunesChanged;
+    FMortisOnOwningRuneRemoved OnOwningRuneRemoved;
+    UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
+    FMortisOnEquippedRuneAdded OnEquippedRuneAdded;
+    UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
+    FMortisOnEquippedRuneRemoved OnEquippedRuneRemoved;
     UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
     FMortisOnActivatedRuneSetsChanged OnActivatedRuneSetsChanged;
     UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
