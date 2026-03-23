@@ -2,7 +2,20 @@
 
 
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
+#include "Character/Player/MortisPlayerCharacter.h"
+#include "Components/UI/MortisPlayerUIComponent.h"
 #include "GameplayEffectExtension.h"
+
+namespace
+{
+	UMortisPlayerUIComponent* GetPlayerUIComponentFromPlayerAttributeData(const FGameplayEffectModCallbackData& Data)
+	{
+		const AActor* OwningActor = Data.Target.GetAvatarActor();
+		const AMortisPlayerCharacter* PlayerCharacter = Cast<AMortisPlayerCharacter>(OwningActor);
+
+		return PlayerCharacter ? PlayerCharacter->FindComponentByClass<UMortisPlayerUIComponent>() : nullptr;
+	}
+}
 
 UMortisPlayerAttributeSet::UMortisPlayerAttributeSet()
 {
@@ -26,6 +39,9 @@ void UMortisPlayerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectM
 		const float NewCurrentStamina = FMath::Clamp(GetCurrentStamina(), 0, GetMaxStamina());
 		SetCurrentStamina(NewCurrentStamina);
 
-		// TODO:: Player UI 컴포넌트의 Delegate에 Broadcast
+		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromPlayerAttributeData(Data))
+		{
+			PlayerUIComponent->OnStaminaChanged.Broadcast(NewCurrentStamina, GetMaxStamina());
+		}
 	}
 }

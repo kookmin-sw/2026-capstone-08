@@ -2,7 +2,21 @@
 
 
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
+#include "Character/Player/MortisPlayerCharacter.h"
+#include "Components/UI/MortisPlayerUIComponent.h"
 #include "GameplayEffectExtension.h"
+#include "MortisDebugHelper.h"
+
+namespace
+{
+	UMortisPlayerUIComponent* GetPlayerUIComponentFromAttributeData(const FGameplayEffectModCallbackData& Data)
+	{
+		const AActor* OwningActor = Data.Target.GetAvatarActor();
+		const AMortisPlayerCharacter* PlayerCharacter = Cast<AMortisPlayerCharacter>(OwningActor);
+
+		return PlayerCharacter -> GetPlayerUIComponent();
+	}
+}
 
 UMortisAttributeSet::UMortisAttributeSet()
 {
@@ -13,13 +27,19 @@ UMortisAttributeSet::UMortisAttributeSet()
 
 void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
+	MORTIS_LOG("");
 	// 체력 변경
 	if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
 	{
+			MORTIS_LOG("");
 		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth());
 		SetCurrentHealth(NewCurrentHealth);
 
-		// TODO: UI 컴포넌트의 Delegate에 Broadcast
+		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromAttributeData(Data))
+		{
+			PlayerUIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, GetMaxHealth());
+			MORTIS_LOG("");
+		}
 	}
 	// 데미지를 입었을 때
 	else if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
@@ -30,7 +50,13 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		const float NewHealth = FMath::Clamp(OldHealth - DamageTaken, 0, GetMaxHealth());
 		SetCurrentHealth(NewHealth);
 
-		// TODO: UI 컴포넌트의 Delegate에 Broadcast
+		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromAttributeData(Data))
+		{
+			PlayerUIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
+			MORTIS_LOG("");
+			
+		}
+
 		// TODO: 사망 상태 태그 추가
 	}
 

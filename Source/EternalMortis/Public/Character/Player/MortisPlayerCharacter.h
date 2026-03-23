@@ -104,4 +104,7 @@ private:
 
 public:
 	FORCEINLINE UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent() const { return MortisPlayerCombatComponent; }
+	FORCEINLINE UMortisPlayerUIComponent* GetPlayerUIComponent() const { return PlayerUIComponent; }
+	
+
 };
