@@ -4,6 +4,8 @@
 #include "System/MortisRuneInventorySubsystem.h"
 #include "System/MortisRuneDatabaseSubsystem.h"
 
+#include "MortisDebugHelper.h"
+
 void UMortisRuneInventorySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
@@ -14,10 +16,7 @@ void UMortisRuneInventorySubsystem::Initialize(FSubsystemCollectionBase& Collect
 
 bool UMortisRuneInventorySubsystem::AddRune(const FMortisRuneInstance& NewRune)
 {
-    if (!NewRune.InstanceId.IsValid())
-    {
-        return false;
-    }
+    if (!NewRune.InstanceId.IsValid()) return false;
 
     OwningRunes.Add(NewRune);
     OnOwningRuneAdded.Broadcast(NewRune);

@@ -134,24 +134,6 @@ struct FMortisActiveRuneSetState
     float CooldownEndTime = 0.f;
 };
 
-//USTRUCT()
-//struct FMortisAppliedSetTierRuntime
-//{
-//    GENERATED_BODY()
-//
-//    UPROPERTY()
-//    FGameplayTag SetTag;
-//
-//    UPROPERTY()
-//    int32 Threshold = 0;
-//
-//    UPROPERTY()
-//    TArray<FActiveGameplayEffectHandle> EffectHandles;
-//
-//    UPROPERTY()
-//    TArray<FGameplayAbilitySpecHandle> AbilityHandles;
-//};
-
 USTRUCT(BlueprintType)
 struct FMortisSetTierDef
 {
