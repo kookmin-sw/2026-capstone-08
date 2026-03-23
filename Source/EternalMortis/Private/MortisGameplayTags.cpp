@@ -67,6 +67,13 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Magic, "Data.AttackType.Magic");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackScale, "Data.AttackScale");
 
+	UE_DEFINE_GAMEPLAY_TAG(Data_RuneValue, "Data.RuneValue");
+
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxHP, "Data.Player.Stat.MaxHP");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxStamina, "Data.Player.Stat.MaxStamina");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_StaminaRegen, "Data.Player.Stat.StaminaRegen");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxMana, "Data.Player.Stat.MaxMana");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_ManaRegen, "Data.Player.Stat.ManaRegen");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Strength, "Data.Player.Stat.Strength");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Dexterity, "Data.Player.Stat.Dexterity");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Intelligence, "Data.Player.Stat.Intelligence");
@@ -74,6 +81,12 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Coefficient_Strength, "Data.Player.Stat.Coefficient.Strength");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Coefficient_Dexterity, "Data.Player.Stat.Coefficient.Dexterity");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Coefficient_Intelligence, "Data.Player.Stat.Coefficient.Intelligence");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Speed_LightAttack, "Data.Player.Stat.Speed.LightAttack");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Speed_WeaponSkill, "Data.Player.Stat.Speed.WeaponSkill");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_Speed_Move, "Data.Player.Stat.Speed.Move");
+
+	// ====================		RuneSet Tags	====================
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Slashing, "Rune.Set.Slashing");
 
 	// ====================		Character Tags	====================
 }

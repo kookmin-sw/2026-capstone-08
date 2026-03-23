@@ -2,6 +2,7 @@
 
 
 #include "Character/Player/MortisPlayerCharacter.h"
+#include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -11,7 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Components/Input/MortisInputComponent.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
-#include "AbilitySystem/MortisAbilitySystemComponent.h"
+#include "Components/Equipment/MortisEquipmentComponent.h"
 #include "Components/UI/MortisPlayerUIComponent.h"
 #include "Components/Movement/MortisPlayerMovementComponent.h"
 #include "MortisGameplayTags.h"
@@ -47,6 +48,8 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 	MortisPlayerCombatComponent = CreateDefaultSubobject<UMortisPlayerCombatComponent>("MortisPlayerCombatComponent");
 
 	PlayerUIComponent = CreateDefaultSubobject<UMortisPlayerUIComponent>(TEXT("HeroUIComponent"));
+
+	EquipmentComponent = CreateDefaultSubobject<UMortisEquipmentComponent>(TEXT("EquipmentComponent"));
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
