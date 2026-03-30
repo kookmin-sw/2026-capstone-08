@@ -24,18 +24,15 @@ UMortisAttributeSet::UMortisAttributeSet()
 
 void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
-	MORTIS_LOG("");
 	// 체력 변경
 	if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
 	{
-			MORTIS_LOG("");
 		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth());
 		SetCurrentHealth(NewCurrentHealth);
 
 		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
 		{
 			UIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, GetMaxHealth());
-			MORTIS_LOG("");
 		}
 	}
 	// 데미지를 입었을 때
