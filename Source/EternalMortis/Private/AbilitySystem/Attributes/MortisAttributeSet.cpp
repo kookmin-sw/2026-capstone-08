@@ -2,19 +2,16 @@
 
 
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
-#include "Character/Player/MortisPlayerCharacter.h"
-#include "Components/UI/MortisPlayerUIComponent.h"
+#include "Components/UI/MortisUIComponent.h"
 #include "GameplayEffectExtension.h"
 #include "MortisDebugHelper.h"
 
 namespace
 {
-	UMortisPlayerUIComponent* GetPlayerUIComponentFromAttributeData(const FGameplayEffectModCallbackData& Data)
+	UMortisUIComponent* GetUIComponentFromAttributeData(const FGameplayEffectModCallbackData& Data)
 	{
 		const AActor* OwningActor = Data.Target.GetAvatarActor();
-		const AMortisPlayerCharacter* PlayerCharacter = Cast<AMortisPlayerCharacter>(OwningActor);
-
-		return PlayerCharacter -> GetPlayerUIComponent();
+		return OwningActor ? OwningActor->FindComponentByClass<UMortisUIComponent>() : nullptr;
 	}
 }
 
@@ -35,9 +32,9 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth());
 		SetCurrentHealth(NewCurrentHealth);
 
-		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromAttributeData(Data))
+		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
 		{
-			PlayerUIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, GetMaxHealth());
+			UIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, GetMaxHealth());
 			MORTIS_LOG("");
 		}
 	}
@@ -53,9 +50,9 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		
 		// TODO: UI 컴포넌트의 Delegate에 Broadcast
 
-		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromAttributeData(Data))
+		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
 		{
-			PlayerUIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
+			UIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
 			MORTIS_LOG("");
 			
 		}

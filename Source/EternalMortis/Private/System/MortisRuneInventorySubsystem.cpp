@@ -85,31 +85,33 @@ void UMortisRuneInventorySubsystem::SetSlotCount(const int32 NewCount)
     EquippedRunes.SetNum(SlotCount);
 }
 
-void UMortisRuneInventorySubsystem::UpdateCooldown(const FGameplayTag& SetTag, float CooldownEndTime)
+void UMortisRuneInventorySubsystem::UpdateCooldown(const FGameplayTag& SetTag, float CooldownStartTime, float CooldownEndTime, int32 Level)
 {
     FMortisActiveRuneSetState* FoundState = RuneSetMap.Find(SetTag);
     if (!FoundState) return;
 
-    FoundState->CooldownEndTime = CooldownEndTime;
-    OnCoolTimeUpdated.Broadcast(SetTag);
+    FoundState->Variables[Level-1].CooldownStartTime = CooldownStartTime;
+    FoundState->Variables[Level-1].CooldownEndTime = CooldownEndTime;
+    OnCoolTimeUpdated.Broadcast(SetTag, Level);
 }
 
-void UMortisRuneInventorySubsystem::UpdateDuration(const FGameplayTag& SetTag, float DurationEndTime)
+void UMortisRuneInventorySubsystem::UpdateDuration(const FGameplayTag& SetTag, float DurationStartTime, float DurationEndTime, int32 Level)
 {
     FMortisActiveRuneSetState* FoundState = RuneSetMap.Find(SetTag);
     if (!FoundState) return;
 
-    FoundState->DurationEndTime = DurationEndTime;
-    OnDurationTimeUpdated.Broadcast(SetTag);
+    FoundState->Variables[Level-1].DurationStartTime = DurationStartTime;
+    FoundState->Variables[Level-1].DurationEndTime = DurationEndTime;
+    OnDurationTimeUpdated.Broadcast(SetTag, Level);
 }
 
-void UMortisRuneInventorySubsystem::UpdateStack(const FGameplayTag& SetTag, int32 Delta)
+void UMortisRuneInventorySubsystem::UpdateStack(const FGameplayTag& SetTag, int32 Delta, int32 Level)
 {
     FMortisActiveRuneSetState* FoundState = RuneSetMap.Find(SetTag);
     if (!FoundState) return;
 
-    FoundState->CurrentStack += Delta;
-    OnStackUpdated.Broadcast(SetTag);
+    FoundState->Variables[Level-1].CurrentStack += Delta;
+    OnStackUpdated.Broadcast(SetTag, Level);
 }
 
 const TArray<FMortisRuneInstance>& UMortisRuneInventorySubsystem::GetOwningRunes() const
@@ -152,7 +154,7 @@ void UMortisRuneInventorySubsystem::UpdateSetCount(const FGameplayTag& SetTagToC
         FMortisActiveRuneSetState& NewState = RuneSetMap.Add(SetTagToChange);
         NewState.SetTag = SetTagToChange;
         NewState.SetName = SetRow->SetName;
-        NewState.Icon = SetRow->Icon;
+        //NewState.Icon = SetRow->Icon;
         NewState.CurrentCount = 0;
         NewState.CurrentLevel = 0;
     }

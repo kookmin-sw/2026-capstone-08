@@ -36,6 +36,36 @@ enum class EMortisRuneSymbol : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FMortisActiveRuneSetStateVariable
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TObjectPtr<UTexture2D> Icon = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bIsActive = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bIsPassive = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 CurrentStack = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float DurationStartTime = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float DurationEndTime = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float CooldownStartTime = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float CooldownEndTime = 0.f;
+};
+
+USTRUCT(BlueprintType)
 struct FMortisRuneValueRange
 {
     GENERATED_BODY()
@@ -92,10 +122,17 @@ struct FMortisRuneInstance
     float RolledValue = 0.f;
 };
 
+
 USTRUCT(BlueprintType)
 struct FMortisActiveRuneSetState
 {
     GENERATED_BODY()
+    
+    // 배열로 하니깐 블루프린트에 노출이 안돼서 Tarray로 변경하고 생성자에 크기 3으로 만듦... 나중에 확인 필요
+    FMortisActiveRuneSetState() 
+    {
+        Variables.SetNum(3);
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FGameplayTag SetTag;
@@ -104,35 +141,15 @@ struct FMortisActiveRuneSetState
     FText SetName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UTexture2D> Icon = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 CurrentCount = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 CurrentLevel = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bIsActive = false;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bIsPassive = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 CurrentStack = 0;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float TotalDuration = 0.f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float DurationEndTime = 0.f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float TotalCooldown = 0.f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float CooldownEndTime = 0.f;
+    TArray<FMortisActiveRuneSetStateVariable> Variables;
 };
+
 
 USTRUCT(BlueprintType)
 struct FMortisSetTierDef

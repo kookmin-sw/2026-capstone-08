@@ -13,6 +13,7 @@ public class EternalMortis : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"UMG",
 			"InputCore",
 			"EnhancedInput",
 			"GameplayTags",
@@ -25,7 +26,11 @@ public class EternalMortis : ModuleRules
             "AIModule"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"Slate",
+			"SlateCore"
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

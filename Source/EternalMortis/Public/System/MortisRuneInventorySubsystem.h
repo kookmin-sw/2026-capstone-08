@@ -13,9 +13,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnOwningRuneAdded, const FMor
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnOwningRuneRemoved, const FMortisRuneInstance&, RuneToRemove);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnEquippedRuneAdded, const int32, SlotIndex, const FMortisRuneInstance&, RuneToAdd);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnEquippedRuneRemoved, const int32, SlotIndex, const FMortisRuneInstance&, RuneToRemove);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnDurationTimeUpdated, const FGameplayTag&, TagToUpdate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnCoolTimeUpdated, const FGameplayTag&, TagToUpdate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnStackUpdated, const FGameplayTag&, TagToUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnDurationTimeUpdated, const FGameplayTag&, TagToUpdate, const int32, Level);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnCoolTimeUpdated, const FGameplayTag&, TagToUpdate, const int32, Level);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMortisOnStackUpdated, const FGameplayTag&, TagToUpdate, const int32, Level);
 
 
 struct FMortisRuneSetRow;
@@ -72,13 +72,13 @@ public:
 
     // 쿨타임, 지속시간, 스택 갱신
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
-    void UpdateCooldown(const FGameplayTag& SetTag, float CooldownEndTime);
+    void UpdateCooldown(const FGameplayTag& SetTag, float CooldownStartTime, float CooldownEndTime, int32 Level);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
-    void UpdateDuration(const FGameplayTag& SetTag, float DurationEndTime);
+    void UpdateDuration(const FGameplayTag& SetTag, float DurationStartTime, float DurationEndTime, int32 Level);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
-    void UpdateStack(const FGameplayTag& SetTag, int32 Delta);
+    void UpdateStack(const FGameplayTag& SetTag, int32 Delta, int32 Level);
 
     // Tag로 룬 세트 가져오기
     UFUNCTION(BlueprintPure, Category = "Mortis|Rune")
