@@ -67,12 +67,22 @@ void AMortisAIController::ConfigurePerceptionFromData(const UMortisEnemyData* En
 	SetGenericTeamId(static_cast<uint8>(EnemyData->Affiliation));
 }
 
+AActor* AMortisAIController::GetTargetActor() const
+{
+	if (const UBlackboardComponent* BBComp = GetBlackboardComponent())
+	{
+		return Cast<AActor>(BBComp->GetValueAsObject(MortisBlackboardKeys::TargetActor));
+	}
+	return nullptr;
+}
+
 void AMortisAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	if (AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(InPawn))
 	{
+		EnemyCharacter->InitializeEnemyCharacter();
 		// MORTIS_LOG("AIController Possess: %s", *InPawn->GetActorNameOrLabel());
 		if (const UMortisEnemyData* Data = EnemyCharacter->GetEnemyData())
 		{
@@ -81,6 +91,12 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 			if (Data->BehaviorTree)
 			{
 				bool Result = RunBehaviorTree(Data->BehaviorTree);
+				UBlackboardComponent* BBComp = GetBlackboardComponent();
+				if (!BBComp)
+				{
+					return;
+				}
+				BBComp->SetValueAsFloat(MortisBlackboardKeys::StrafingDistance, EnemyCharacter->GetRandomStrafingDistance());
 				// MORTIS_LOG("Run behavior tree %s", Result ? *FString("Success") : *FString("Fail"));
 			}
 			
@@ -90,15 +106,24 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 
 void AMortisAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (UBlackboardComponent* BBComp = GetBlackboardComponent())
+	UBlackboardComponent* BBComp = GetBlackboardComponent();
+	if (!BBComp)
 	{
-		if (!BBComp->GetValueAsObject(TargetActorKey))
+		return;
+	}
+	
+	if (BBComp->GetValueAsObject(MortisBlackboardKeys::TargetActor))
+	{
+		return;
+	}
+	
+	if (Actor && Stimulus.WasSuccessfullySensed())
+	{
+		BBComp->SetValueAsObject(MortisBlackboardKeys::TargetActor, Actor);
+		if (GetPawn())
 		{
-			if (Actor && Stimulus.WasSuccessfullySensed())
-			{
-				BBComp->SetValueAsObject(TargetActorKey, Actor);
-				// MORTIS_LOG("Set TargetActor: %s", *Actor->GetActorNameOrLabel());
-			}
+			float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Actor->GetActorLocation());
+			BBComp->SetValueAsFloat(MortisBlackboardKeys::TargetDist, Distance);
 		}
 	}
 }

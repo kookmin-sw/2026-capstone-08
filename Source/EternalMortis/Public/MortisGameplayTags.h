@@ -33,6 +33,7 @@ namespace MortisGameplayTags
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Ranged);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Pattern);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Turn);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact);
 	
 	// ====================		State Tags		====================
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Dead);
@@ -54,12 +55,14 @@ namespace MortisGameplayTags
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_Success_LightAttack);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_Success_SkillAttack);
 	
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Action_ExecutePattern);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Action_Turn);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Action_HitReact);
+	
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_RuneSet_Slash_Exaltation_Done);
 
-	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Request_ExecutePattern);
-	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Request_Turn);
-
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_AttackHit);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_Combo_Next);
 	
 
 	// ====================		Data Tags		====================
@@ -115,6 +118,8 @@ namespace MortisGameplayTags
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Rune_Set_Combo);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Rune_Set_Mystery);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Rune_Set_Inspiration);
+
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Enemy_Stat_WeaponDamage);
 
 	// ====================		Character Tags	====================
 

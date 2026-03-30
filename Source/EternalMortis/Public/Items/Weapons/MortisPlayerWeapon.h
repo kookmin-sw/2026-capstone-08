@@ -17,14 +17,19 @@ class ETERNALMORTIS_API AMortisPlayerWeapon : public AMortisWeaponBase
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
+	AMortisPlayerWeapon();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|WeaponData")
 	FMortisPlayerWeaponData PlayerWeaponData;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon")
+	TObjectPtr<UStaticMeshComponent> WeaponMesh;
+	
 	UFUNCTION (BlueprintCallable)
-	void AssignWeaponAbilitySpecHandles(const TArray<FGameplayAbilitySpecHandle> SpecHandelsToGrant);
+	void AssignWeaponAbilitySpecHandles(const TArray<FGameplayAbilitySpecHandle> SpecHandlesToGrant);
 
 	UFUNCTION(BlueprintPure)
-	TArray<FGameplayAbilitySpecHandle> GetGrantedAbilitySpecHandels() const;
+	TArray<FGameplayAbilitySpecHandle> GetGrantedAbilitySpecHandles() const;
 
 private:
 	TArray<FGameplayAbilitySpecHandle> GrantedAbilitySpecHandles;

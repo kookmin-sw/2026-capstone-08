@@ -41,7 +41,7 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	MORTIS_LOG("TurnMontage: %s", *TurnMontage->GetName());
+	// MORTIS_LOG("TurnMontage: %s", *TurnMontage->GetName());
 
 	if (bUseMotionWarping)
 	{

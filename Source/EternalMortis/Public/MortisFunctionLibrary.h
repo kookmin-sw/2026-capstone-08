@@ -52,4 +52,7 @@ public:
 	static AMortisEnemyCharacter* GetEnemyCharacter(UBehaviorTreeComponent& OwnerComp);
 	static AMortisAIController* GetMortisAIController(UBehaviorTreeComponent& OwnerComp);
 	static UMortisAbilitySystemComponent* GetMortisASC(UBehaviorTreeComponent& OwnerComp);
+
+	/* Motion Warping */
+	static FVector CalculateWarpTargetLocation(const AActor* SelfActor, const AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float DesiredDistance);
 };

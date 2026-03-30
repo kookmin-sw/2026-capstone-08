@@ -43,6 +43,10 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 	FRotator MeshRotation = FRotator(0.f, -90.f, 0.f);
+
+	/* Linked Anim Layer */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TSubclassOf<UAnimInstance> LinkedAnimLayerClass;
 	
 	/* Capsule Component */
 	UPROPERTY(EditDefaultsOnly, Category = "Collision")
@@ -54,13 +58,22 @@ public:
 	/* Animation */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TSubclassOf<UAnimInstance> AnimClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	float SpeedInterpSpeed = 8.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	float DirectionInterpSpeed = 10.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation|IK")
+	bool bUseTwoHandedIK = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation|IK", meta = (EditCondition = "bUseTwoHandedIK"))
+	FName LeftHandSocketName = TEXT("LeftHandGripSocket");
 	
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	FRotator RotationRate = FRotator(0.f, 180.f, 0.f);
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Movement")
-	float MaxWalkSpeed = 300.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float IdleMaxWalkSpeed;
@@ -82,15 +95,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	/* EQS */
+	UPROPERTY(EditDefaultsOnly, Category = "AI|EQS")
+	TMap<FGameplayTag, FMortisDistanceRange> PhaseStrafingRanges; 
+	
+	/* Perception */
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
 	float SightRadius = 5000.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
 	float LoseSightRadius = 5500.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
 	float PeripheralVisionAngleDegrees = 360.f;
-	
+
+	/* Crowd Avoidance */
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Detour Crowd Avoidance Config")
 	bool bEnableCrowdAvoidance = true;
 

@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/Enemy/MortisEnemyGameplayAbility.h"
 
+#include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Controllers/MortisAIController.h"
 
@@ -27,4 +28,31 @@ UMortisEnemyCombatComponent* UMortisEnemyGameplayAbility::GetEnemyCombatComponen
 		return EnemyCharacter->GetEnemyCombatComponent();	
 	}
 	return nullptr;
+}
+
+
+FGameplayEffectSpecHandle UMortisEnemyGameplayAbility::MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, const FGameplayTag& DamageTag)
+{
+	if (!EffectClass)
+	{
+		return FGameplayEffectSpecHandle();
+	}
+
+	FGameplayEffectContextHandle ContextHandle = GetMortisAbilitySystemComponentFromActorInfo()->MakeEffectContext();
+	ContextHandle.SetAbility(this);
+	ContextHandle.AddSourceObject(GetAvatarActorFromActorInfo());
+	ContextHandle.AddInstigator(GetAvatarActorFromActorInfo(), GetAvatarActorFromActorInfo());
+
+	FGameplayEffectSpecHandle EffectSpecHandle = GetMortisAbilitySystemComponentFromActorInfo()->MakeOutgoingSpec(
+		EffectClass,
+		GetAbilityLevel(),
+		ContextHandle
+	);
+
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		DamageTag,
+		WeaponDamage
+	);
+	
+	return EffectSpecHandle;
 }

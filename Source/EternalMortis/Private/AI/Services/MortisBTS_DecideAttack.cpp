@@ -45,9 +45,8 @@ void UMortisBTS_DecideAttack::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		return;
 	}
 	
-	if (FMath::FRandRange(0.f, 1.f) >= AttackProbability)
+	if (FMath::FRandRange(0.f, 1.f) <= AttackProbability)
 	{
-		MORTIS_LOG("Decide Attack");
 		BBComp->SetValueAsBool(bAttackDecideKey.SelectedKeyName, true);
 	}
 }

@@ -3,12 +3,19 @@
 
 #include "Items/Weapons/MortisPlayerWeapon.h"
 
-void AMortisPlayerWeapon::AssignWeaponAbilitySpecHandles(const TArray<FGameplayAbilitySpecHandle> SpecHandelsToGrant)
+AMortisPlayerWeapon::AMortisPlayerWeapon()
 {
-	GrantedAbilitySpecHandles = SpecHandelsToGrant;
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(WeaponRoot);
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-TArray<FGameplayAbilitySpecHandle> AMortisPlayerWeapon::GetGrantedAbilitySpecHandels() const
+void AMortisPlayerWeapon::AssignWeaponAbilitySpecHandles(const TArray<FGameplayAbilitySpecHandle> SpecHandlesToGrant)
+{
+	GrantedAbilitySpecHandles = SpecHandlesToGrant;
+}
+
+TArray<FGameplayAbilitySpecHandle> AMortisPlayerWeapon::GetGrantedAbilitySpecHandles() const
 {
 	return GrantedAbilitySpecHandles;
 }

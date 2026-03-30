@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MortisGameplayTags.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisWeaponBase.generated.h"
 
 class UBoxComponent;
@@ -24,17 +25,16 @@ public:
 	FOnTargetInteractedDelegate OnWeaponHitTarget;
 	FOnTargetInteractedDelegate OnWeaponPulledFromTarget;
 
-	UBoxComponent* GetWeaponCollisionBox(FGameplayTag TagToToggle);
+	UShapeComponent* GetWeaponCollisionComponent(FGameplayTag TagToToggle);
 
+	FORCEINLINE virtual UMeshComponent* GetWeaponMesh() const { return nullptr; }
+	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
-	UStaticMeshComponent* WeaponMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
-	UMortisBoxComponent* WeaponCollisionBox;
-
-	UPROPERTY()
-	TMap<FGameplayTag, TObjectPtr<UMortisBoxComponent>> CollisionCache;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Weapon")
+	TObjectPtr<USceneComponent> WeaponRoot;
+	
+	UPROPERTY(VisibleAnywhere)
+	TMap<FGameplayTag, TObjectPtr<UShapeComponent>> CollisionComponentMap;
 
 	virtual void BeginPlay() override;
 
@@ -43,4 +43,6 @@ protected:
 
 	UFUNCTION()
 	virtual void OnCollisionBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	void InitializeWeaponCollisions();
 };

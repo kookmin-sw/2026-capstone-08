@@ -20,4 +20,9 @@ namespace Debug
 		}
 		UE_LOG(LogMortis, Warning, TEXT("%s"), *Msg);
 	}
+
+	static FString ToString(bool bValue)
+	{
+		return bValue ? TEXT("True") : TEXT("False");
+	}
 }

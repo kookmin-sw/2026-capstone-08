@@ -51,7 +51,7 @@ EBTNodeResult::Type UMortisBTT_SelectAttackPattern::ExecuteTask(UBehaviorTreeCom
 
 			if (AttackPatternIndex != INDEX_NONE)
 			{
-				MORTIS_LOG("AttackPatternIndex: %d", AttackPatternIndex);
+				// MORTIS_LOG("AttackPatternIndex: %d", AttackPatternIndex);
 				BBComp->SetValueAsFloat(AttackPatternIndexKey.SelectedKeyName, AttackPatternIndex);
 				return EBTNodeResult::Succeeded;
 			}

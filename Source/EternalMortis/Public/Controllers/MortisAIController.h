@@ -10,6 +10,13 @@
 
 #include "MortisAIController.generated.h"
 
+namespace MortisBlackboardKeys
+{
+	static const FName TargetActor = TEXT("TargetActor");
+	static const FName TargetDist = TEXT("TargetDist");
+	static const FName StrafingDistance = TEXT("StrafingDistance");
+	
+}
 class UAISenseConfig_Sight;
 /**
  * 
@@ -28,15 +35,11 @@ public:
 	
 	void ConfigurePerceptionFromData(const class UMortisEnemyData* EnemyData);
 
-protected:
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI")
-	// TObjectPtr<UAIPerceptionComponent> AIPerceptionComponent;
+	AActor* GetTargetActor() const;
 	
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	TObjectPtr<UAISenseConfig_Sight> SightConfig;
-
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	FName TargetActorKey = FName("TargetActor");
 
 	//~ Begin AAIController Begin
 	virtual void OnPossess(APawn* InPawn) override;

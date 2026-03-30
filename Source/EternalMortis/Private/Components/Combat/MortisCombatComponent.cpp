@@ -2,6 +2,8 @@
 
 
 #include "Components/Combat/MortisCombatComponent.h"
+
+#include "MortisDebugHelper.h"
 #include "Items/Weapons/MortisWeaponBase.h"
 #include "Components/BoxComponent.h"
 
@@ -31,7 +33,11 @@ AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedWeaponByTag(FGamep
 
 AMortisWeaponBase* UMortisCombatComponent::GetCharacterCurrentEquippedWeapon() const
 {
-	if (!CurrentEquippedWeaponTag.IsValid()) return nullptr;
+	if (!CurrentEquippedWeaponTag.IsValid())
+	{
+		MORTIS_LOG("%s is invalid!", *CurrentEquippedWeaponTag.GetTagName().ToString());
+		return nullptr;
+	}
 	return GetCharacterCarriedWeaponByTag(CurrentEquippedWeaponTag);
 }
 
@@ -47,13 +53,25 @@ void UMortisCombatComponent::ToggleDamageCollision(bool bShouldEnable, FGameplay
 void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)
 {
 	AMortisWeaponBase* WeaponToToggle = GetCharacterCurrentEquippedWeapon();
-	check(WeaponToToggle);
+	if (!WeaponToToggle)
+	{
+		MORTIS_LOG("WeaponToToggle is null!");
+		return;
+	}
+	UShapeComponent* CollisionShape = WeaponToToggle->GetWeaponCollisionComponent(TagToToggle);
+	if (!CollisionShape)
+	{
+		MORTIS_LOG("ShapeComponent is null!");
+		return;
+	}
+	
 	if (bShouldEnable)
-		WeaponToToggle->GetWeaponCollisionBox(TagToToggle)->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	{
+		CollisionShape->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
 	else
 	{
-		WeaponToToggle->GetWeaponCollisionBox(TagToToggle)->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+		CollisionShape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		OverlappedActors.Empty();
 	}
 }

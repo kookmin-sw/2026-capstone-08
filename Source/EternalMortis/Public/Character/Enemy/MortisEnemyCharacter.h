@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Character/MortisCharacterBase.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisEnemyCharacter.generated.h"
 
 class UMortisEnemyCombatComponent;
@@ -20,11 +21,12 @@ class ETERNALMORTIS_API AMortisEnemyCharacter : public AMortisCharacterBase
 public:
 	AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer);
 
+	void InitializeEnemyCharacter();
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 	//~ Begin APawn Interface
-	virtual void PossessedBy(AController* NewController) override;
+	// virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
 
 public:
@@ -34,7 +36,8 @@ public:
 	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override;
 	//~ End IMortisCombatInterfac
 	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
-	
+
+	float GetRandomStrafingDistance() const;
 protected:
 	void InitializeEnemyByData();
 	
@@ -43,6 +46,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
 	TObjectPtr<UMortisEnemyCombatComponent> EnemyCombatComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
+	FGameplayTag CurrentPhase = MortisGameplayTags::State_Enemy_Phase_1;
 	
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -52,8 +58,4 @@ private:
 	void RegisterStateTagEvent();
 	void OnStrafingStateChanged(FGameplayTag Tag, int32 NewCount);
 	void OnChasingStateChanged(FGameplayTag Tag, int32 NewCount) const;
-
-	float IdleMaxWalkSpeed;
-	float StrafingMaxWalkSpeed;
-	float ChasingMaxWalkSpeed;	
 };

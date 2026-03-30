@@ -25,7 +25,8 @@ public:
 	//~ End UBTNode Interface
 	
 protected:
-	//~ Begin UBTService Interface 
+	//~ Begin UBTService Interface
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	//~ End UBTService Interface 
 
@@ -37,4 +38,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "AI|EQS")
 	FBlackboardKeySelector StrafingLocationKey;
+
+	UPROPERTY(EditAnywhere, Category = "AI|EQS")
+	FBlackboardKeySelector StrafingDistanceKey;
+
+	UPROPERTY(EditAnywhere, Category = "AI|EQS")
+	FName CircleRadiusParamName = TEXT("OnCircle.CircleRadius");
+
+private:
+	void UpdateStrafingLocation(UBehaviorTreeComponent& OwnerComp);
 };

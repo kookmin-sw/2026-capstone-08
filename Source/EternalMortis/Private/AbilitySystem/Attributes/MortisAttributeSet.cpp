@@ -49,6 +49,9 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 		const float NewHealth = FMath::Clamp(OldHealth - DamageTaken, 0, GetMaxHealth());
 		SetCurrentHealth(NewHealth);
+		SetIncomingDamage(0.f);
+		
+		// TODO: UI 컴포넌트의 Delegate에 Broadcast
 
 		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromAttributeData(Data))
 		{

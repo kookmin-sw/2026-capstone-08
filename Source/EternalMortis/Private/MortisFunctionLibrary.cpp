@@ -113,3 +113,33 @@ UMortisAbilitySystemComponent* UMortisFunctionLibrary::GetMortisASC(UBehaviorTre
 	AMortisEnemyCharacter* Enemy = GetEnemyCharacter(OwnerComp);
 	return Enemy ? Enemy->GetMortisAbilitySystemComponent() : nullptr;
 }
+
+FVector UMortisFunctionLibrary::CalculateWarpTargetLocation(const AActor* SelfActor, const AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float DesiredDistance)
+{
+	if (!SelfActor || !TargetActor)
+	{
+		return FVector::ZeroVector;
+	}
+	const FVector TargetLocation = TargetActor->GetActorLocation();
+	const FVector SelfLocation = SelfActor->GetActorLocation();
+	switch (WarpTargetMode)
+	{
+	case EMortisWarpTargetMode::ActorLocation:
+		return TargetLocation;
+		
+	case EMortisWarpTargetMode::OffsetFromSelf:
+		{
+			FVector Direction = TargetLocation - SelfLocation;
+			return SelfLocation + Direction.GetSafeNormal2D() * DesiredDistance;			
+		}
+
+	case EMortisWarpTargetMode::OffsetFromTarget:
+		{
+			FVector Direction = SelfLocation - TargetLocation;
+			return TargetLocation + Direction.GetSafeNormal2D() * DesiredDistance;
+		}
+		
+	default:
+		return TargetLocation;
+	}
+}

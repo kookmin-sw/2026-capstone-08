@@ -3,6 +3,7 @@
 #include "AI/Services/MortisBTS_FocusTarget.h"
 
 #include "AIController.h"
+#include "MortisDebugHelper.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -45,9 +46,11 @@ void UMortisBTS_FocusTarget::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp,
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
 	if (!TargetActor)
 	{
+		MORTIS_LOG("Target Actor is null");
 		return;
 	}
-	
+
+	// MORTIS_LOG("SetFocus: %s", *TargetActor->GetActorNameOrLabel());
 	AIC->SetFocus(TargetActor, EAIFocusPriority::Gameplay);
 }
 
@@ -60,6 +63,6 @@ void UMortisBTS_FocusTarget::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, 
 	{
 		return;
 	}
-
+	// MORTIS_LOG("Clear Focus");
 	AIC->ClearFocus(EAIFocusPriority::Gameplay);
 }

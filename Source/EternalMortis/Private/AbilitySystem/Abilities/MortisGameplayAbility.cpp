@@ -27,9 +27,9 @@ void UMortisGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 		ActorInfo->AbilitySystemComponent->ClearAbility(Handle);
 }
 
-FActiveGameplayEffectHandle UMortisGameplayAbility::NativeApplyEffectSpecHandleToTarget(AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle)
+FActiveGameplayEffectHandle UMortisGameplayAbility::NativeApplyEffectSpecHandleToTarget(const AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle)
 {
-	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(const_cast<AActor*>(TargetActor));
 	check(TargetASC && SpecHandle.IsValid());
 	return GetMortisAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(
 		*SpecHandle.Data,

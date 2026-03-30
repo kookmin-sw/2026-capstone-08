@@ -4,6 +4,7 @@
 #include "AbilitySystem/AbilityTasks/MortisAT_UpdateWarpTarget.h"
 
 #include "MortisDebugHelper.h"
+#include "MortisFunctionLibrary.h"
 #include "MotionWarpingComponent.h"
 #include "Character/MortisCharacterBase.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -75,17 +76,6 @@ void UMortisAT_UpdateWarpTarget::TickTask(float DeltaTime)
 	}
 }
 
-// void UMortisAT_UpdateWarpTarget::OnDestroy(bool bInOwnerFinished)
-// {
-// 	if (CachedMWC.IsValid())
-// 	{
-// 		CachedMWC->RemoveWarpTarget(WarpTargetName);
-// 	}
-// 	
-// 	Super::OnDestroy(bInOwnerFinished);
-// }
-
-
 void UMortisAT_UpdateWarpTarget::UpdateTarget()
 {
 	if (!CachedTarget.IsValid())
@@ -96,7 +86,7 @@ void UMortisAT_UpdateWarpTarget::UpdateTarget()
 	}
 	FMotionWarpingTarget WarpTarget;
 	WarpTarget.Name = WarpTargetName;
-	WarpTarget.Location = CalculateWarpTargetLocation();
+	WarpTarget.Location = UMortisFunctionLibrary::CalculateWarpTargetLocation(GetAvatarActor(), CachedTarget.Get(), WarpTargetMode, DesiredDistance);
 	WarpTarget.Rotation = UKismetMathLibrary::FindLookAtRotation(
 		GetAvatarActor()->GetActorLocation(), 
 		CachedTarget->GetActorLocation()
@@ -106,32 +96,32 @@ void UMortisAT_UpdateWarpTarget::UpdateTarget()
 	// MORTIS_LOG("Update: %f, %f", CachedTarget->GetActorLocation().X, CachedTarget->GetActorLocation().Y);
 }
 
-FVector UMortisAT_UpdateWarpTarget::CalculateWarpTargetLocation()
-{
-	if (!CachedTarget.IsValid() || !GetAvatarActor())
-	{
-		return FVector::Zero();
-	}
-	const FVector TargetLocation = CachedTarget->GetActorLocation();
-	const FVector SelfLocation = GetAvatarActor()->GetActorLocation();
-	switch (WarpTargetMode)
-	{
-	case EMortisWarpTargetMode::ActorLocation:
-		return TargetLocation;
-		
-	case EMortisWarpTargetMode::OffsetFromSelf:
-	{
-		FVector Direction = TargetLocation - SelfLocation;
-		return SelfLocation + Direction.GetSafeNormal2D() * DesiredDistance;			
-	}
-
-	case EMortisWarpTargetMode::OffsetFromTarget:
-	{
-		FVector Direction = SelfLocation - TargetLocation;
-		return TargetLocation + Direction.GetSafeNormal2D() * DesiredDistance;
-	}
-		
-	default:
-		return TargetLocation;
-	}
-}
+// FVector UMortisAT_UpdateWarpTarget::CalculateWarpTargetLocation()
+// {
+// 	if (!CachedTarget.IsValid() || !GetAvatarActor())
+// 	{
+// 		return FVector::Zero();
+// 	}
+// 	const FVector TargetLocation = CachedTarget->GetActorLocation();
+// 	const FVector SelfLocation = GetAvatarActor()->GetActorLocation();
+// 	switch (WarpTargetMode)
+// 	{
+// 	case EMortisWarpTargetMode::ActorLocation:
+// 		return TargetLocation;
+// 		
+// 	case EMortisWarpTargetMode::OffsetFromSelf:
+// 	{
+// 		FVector Direction = TargetLocation - SelfLocation;
+// 		return SelfLocation + Direction.GetSafeNormal2D() * DesiredDistance;			
+// 	}
+//
+// 	case EMortisWarpTargetMode::OffsetFromTarget:
+// 	{
+// 		FVector Direction = SelfLocation - TargetLocation;
+// 		return TargetLocation + Direction.GetSafeNormal2D() * DesiredDistance;
+// 	}
+// 		
+// 	default:
+// 		return TargetLocation;
+// 	}
+// }

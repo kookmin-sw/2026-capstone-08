@@ -25,54 +25,74 @@ AMortisEnemyCharacter::AMortisEnemyCharacter(const FObjectInitializer& ObjectIni
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	EnemyCombatComponent = CreateDefaultSubobject<UMortisEnemyCombatComponent>("EnemyCombatComponent");
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+}
+
+void AMortisEnemyCharacter::InitializeEnemyCharacter()
+{
+	InitializeEnemyByData();
+	RegisterStateTagEvent();
 }
 
 void AMortisEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	InitializeEnemyByData();
-	RegisterStateTagEvent();
 }
 
-void AMortisEnemyCharacter::PossessedBy(AController* NewController)
+void AMortisEnemyCharacter::Tick(float DeltaSeconds)
 {
-	Super::PossessedBy(NewController);
+	Super::Tick(DeltaSeconds);
+	
+	// bool A = GetCharacterMovement()->bOrientRotationToMovement;
+	// bool B = GetCharacterMovement()->bUseControllerDesiredRotation;
+	// bool C = bUseControllerRotationYaw;
+	// FString DebugString = FString::Printf(TEXT("OrientToMovement: %s, UseControllerRotation: %s, UseControllerYaw: %s"), *Debug::ToString(A), *Debug::ToString(B), *Debug::ToString(C));
+	// DrawDebugString(GetWorld(), GetActorLocation() + FVector(0.f, -50.f, 100.f), DebugString, this, FColor::Yellow, 0.f);
+	//
 }
+
+
+// void AMortisEnemyCharacter::PossessedBy(AController* NewController)
+// {
+// 	Super::PossessedBy(NewController);
+// }
 
 void AMortisEnemyCharacter::InitializeEnemyByData()
 {
-	MORTIS_LOG("");
-	if (!EnemyData)
+	if (!ensureMsgf(EnemyData, TEXT("%s: Enemy Data is not set"), *GetName()))
 	{
-		MORTIS_LOG("Enemy data is null");
 		return;
 	}
 
-	if (!GetCapsuleComponent() || !GetMesh() || !GetCharacterMovement())
-	{
-		return;
-	}
+	check(GetCapsuleComponent() && GetMesh() && GetCharacterMovement());
 	
 	GetCapsuleComponent()->InitCapsuleSize(EnemyData->CapsuleRadius, EnemyData->CapsuleHalfHeight);
 	GetMesh()->SetSkeletalMesh(EnemyData->EnemyMesh);
 	GetMesh()->SetRelativeScale3D(EnemyData->MeshScale);
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -EnemyData->CapsuleHalfHeight));
 	GetMesh()->SetRelativeRotation(EnemyData->MeshRotation);
-	GetMesh()->SetAnimInstanceClass(EnemyData->AnimClass);
+
+	if (EnemyData->AnimClass)
+	{
+		GetMesh()->SetAnimInstanceClass(EnemyData->AnimClass);
+	}
+
+	if (EnemyData->LinkedAnimLayerClass)
+	{
+		GetMesh()->LinkAnimClassLayers(EnemyData->LinkedAnimLayerClass);
+	}
 	
 	GetCharacterMovement()->RotationRate = EnemyData->RotationRate;
-	GetCharacterMovement()->MaxWalkSpeed = EnemyData->MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = EnemyData->IdleMaxWalkSpeed;
 	GetCharacterMovement()->BrakingDecelerationWalking = EnemyData->BrakingDecelerationWalking;
 
 	CharacterAbilitySet = EnemyData->AbilitySet;
-	//
+	
+	// is Game playing
 	if (GetWorld() && GetWorld()->IsGameWorld())
 	{
-		IdleMaxWalkSpeed = EnemyData->IdleMaxWalkSpeed;
-		StrafingMaxWalkSpeed = EnemyData->StrafingMaxWalkSpeed;
-		ChasingMaxWalkSpeed = EnemyData->ChasingMaxWalkSpeed;
-		
 		if (EnemyData->AbilitySet)
 		{
 			EnemyData->AbilitySet->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
@@ -103,6 +123,15 @@ UMortisEnemyCombatComponent* AMortisEnemyCharacter::GetEnemyCombatComponent() co
 	return EnemyCombatComponent;
 }
 
+float AMortisEnemyCharacter::GetRandomStrafingDistance() const
+{
+	if (!EnemyData || !EnemyData->PhaseStrafingRanges.Contains(CurrentPhase))
+	{
+		return 500.f;
+	}
+	return FMath::RandRange(EnemyData->PhaseStrafingRanges[CurrentPhase].MinDistance, EnemyData->PhaseStrafingRanges[CurrentPhase].MaxDistance);
+}
+
 #if WITH_EDITOR
 void AMortisEnemyCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -123,6 +152,7 @@ void AMortisEnemyCharacter::RegisterStateTagEvent()
 {
 	if (!MortisAbilitySystemComponent)
 	{
+		MORTIS_LOG("ASC is null");
 		return;
 	}
 	
@@ -139,17 +169,24 @@ void AMortisEnemyCharacter::RegisterStateTagEvent()
 
 void AMortisEnemyCharacter::OnStrafingStateChanged(const FGameplayTag Tag, int32 NewCount)
 {
-	// MORTIS_LOG("Strafing %s", NewCount > 0 ? TEXT("Begin") : TEXT("End"));
+	if (!EnemyData)
+	{
+		return;
+	}
 	bool bStrafing = NewCount > 0;
 	bUseControllerRotationYaw = bStrafing;
 	GetCharacterMovement()->bOrientRotationToMovement = !bStrafing;
 	GetCharacterMovement()->bUseControllerDesiredRotation = bStrafing;
-	GetCharacterMovement()->MaxWalkSpeed = bStrafing ? StrafingMaxWalkSpeed : IdleMaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = bStrafing ? EnemyData->StrafingMaxWalkSpeed : EnemyData->IdleMaxWalkSpeed;
 }
 
 void AMortisEnemyCharacter::OnChasingStateChanged(FGameplayTag Tag, int32 NewCount) const
 {
+	if (!EnemyData)
+	{
+		return;
+	}
 	// MORTIS_LOG("Chasing %s", NewCount > 0 ? TEXT("Begin") : TEXT("End"));
 	bool bChasing = NewCount > 0;
-	GetCharacterMovement()->MaxWalkSpeed = bChasing ? ChasingMaxWalkSpeed : IdleMaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = bChasing ? EnemyData->ChasingMaxWalkSpeed : EnemyData->IdleMaxWalkSpeed;
 }

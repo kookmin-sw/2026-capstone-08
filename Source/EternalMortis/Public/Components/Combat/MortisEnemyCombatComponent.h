@@ -7,6 +7,7 @@
 #include "Types/MortisStructTypes.h"
 #include "MortisEnemyCombatComponent.generated.h"
 
+class AMortisEnemyWeapon;
 class UMortisAttackPatternData;
 /**
  * 
@@ -16,6 +17,12 @@ class ETERNALMORTIS_API UMortisEnemyCombatComponent : public UMortisCombatCompon
 {
 	GENERATED_BODY()
 
+public:
+	//~ Begin UMortisCombatComponent Intferface
+	virtual void OnHitTargetActor(AActor* HitActor) override;
+	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor) override;
+	//~ End UMortisCombatComponent Intferface
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|AttackPattern")
 	TArray<FMortisAttackPattern> AttackPatterns;
@@ -34,5 +41,7 @@ public:
 	
 	FORCEINLINE const TArray<FMortisAttackPattern>& GetAttackPatterns() const { return AttackPatterns; }
 	FORCEINLINE const FMortisAttackPattern* GetAttackPatternByIndex(int32 Index) const;
+
+	FORCEINLINE AMortisEnemyWeapon* GetEnemyWeapon() const;
 	int32 SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const;
 };

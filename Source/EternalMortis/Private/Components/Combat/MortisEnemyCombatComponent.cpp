@@ -1,16 +1,34 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Components/Combat/MortisEnemyCombatComponent.h"
 
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Components/Combat/MortisEnemyCombatComponent.h"
-
+#include "AbilitySystemBlueprintLibrary.h"
 #include "MortisDebugHelper.h"
+#include "Abilities/GameplayAbilityTypes.h"
 #include "Character/Enemy/MortisEnemyData.h"
-#include "Controllers/MortisAIController.h"
+#include "Items/Weapons/MortisEnemyWeapon.h"
+
+void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
+{
+	Super::OnHitTargetActor(HitActor);
+	
+	if (OverlappedActors.Contains(HitActor))
+	{
+		return;
+	}
+	OverlappedActors.AddUnique(HitActor);
+	
+	FGameplayEventData EventData;
+	EventData.Instigator = GetOwningPawn();
+	EventData.Target = HitActor;
+	
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_AttackHit, EventData);
+}
+
+void UMortisEnemyCombatComponent::OnWeaponPulledFromTargetActor(AActor* InteractedActor)
+{
+	Super::OnWeaponPulledFromTargetActor(InteractedActor);
+}
 
 void UMortisEnemyCombatComponent::SetAttackPattern(UMortisAttackPatternData* PatternData)
 {
@@ -29,6 +47,11 @@ const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex
 		return nullptr;
 	}
 	return &AttackPatterns[Index];
+}
+
+AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetEnemyWeapon() const
+{
+	return Cast<AMortisEnemyWeapon>(GetCharacterCurrentEquippedWeapon());
 }
 
 int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const

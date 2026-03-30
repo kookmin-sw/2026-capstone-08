@@ -18,6 +18,8 @@ void UMortisCharacterAnimInstanceBase::NativeThreadSafeUpdateAnimation(float Del
 	if (!OwningCharacter || !OwningMovementComponent) return;
 
 	GroundSpeed = OwningCharacter->GetVelocity().Size2D();
+	SmoothedSpeed = FMath::FInterpTo(SmoothedSpeed, GroundSpeed, DeltaSeconds, SpeedInterpSpeed);
 	bHasAcceleration = OwningMovementComponent->GetCurrentAcceleration().SizeSquared2D() > 0;
-	LocomotionDirection = UKismetAnimationLibrary::CalculateDirection(OwningCharacter->GetVelocity(), OwningCharacter->GetActorRotation());
+	LocomotionDirection = UKismetAnimationLibrary::CalculateDirection(OwningCharacter->GetVelocity(), OwningCharacter->GetActorRotation()); 
+	SmoothedDirection = FMath::FInterpTo(SmoothedDirection, LocomotionDirection, DeltaSeconds, DirectionInterpSpeed);
 }

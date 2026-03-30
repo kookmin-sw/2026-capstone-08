@@ -21,4 +21,6 @@ public:
 	AMortisEnemyCharacter* GetEnemyCharacterFromActorInfo() const;
 	AMortisAIController* GetAIControllerFromActorInfo() const;
 	UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
+
+	FGameplayEffectSpecHandle MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, const FGameplayTag& DamageTag);
 };

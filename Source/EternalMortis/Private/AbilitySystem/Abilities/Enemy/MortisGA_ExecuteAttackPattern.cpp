@@ -2,6 +2,8 @@
 
 
 #include "AbilitySystem/Abilities/Enemy/MortisGA_ExecuteAttackPattern.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
 #include "MortisDebugHelper.h"
 
@@ -10,7 +12,10 @@
 #include "RootMotionModifier.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/AbilityTasks/MortisAT_UpdateWarpTarget.h"
+#include "Items/Weapons/MortisEnemyWeapon.h"
+#include "Items/Weapons/MortisWeaponBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UMortisGA_ExecuteAttackPattern::UMortisGA_ExecuteAttackPattern()
@@ -71,10 +76,7 @@ void UMortisGA_ExecuteAttackPattern::EndAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
-	if (UpdateWarpTargetTask.IsValid())
-	{
-		UpdateWarpTargetTask->EndTask();
-	}
+	ResetCachedTasks();
 	AttackPattern = nullptr;
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
@@ -91,6 +93,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 	const FMortisAttackPatternStep& Step = AttackPattern->Steps[CurrentStepIndex];
 	if (!Step.Montage || !CachedTargetActor.IsValid())
 	{
+		MORTIS_LOG("Montage or CachedTarget is invalid");
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 		return;
 	}
@@ -98,7 +101,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 	{
 		if (Step.bContinuousWarpUpdate)
 		{
-			UpdateWarpTargetTask = UMortisAT_UpdateWarpTarget::UpdateWarpTarget(
+			CachedUpdateWarpTargetTask = UMortisAT_UpdateWarpTarget::UpdateWarpTarget(
 				this,
 				Step.WarpTargetName,
 				CachedTargetActor.Get(),
@@ -107,12 +110,13 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 				0.1f,
 				Step.WarpUpdateDuration
 			);
-			UpdateWarpTargetTask->ReadyForActivation();
+			CachedUpdateWarpTargetTask->ReadyForActivation();
 		}
 		else
 		{
 			if (!CachedMotionWarpingComp.IsValid())
 			{
+				MORTIS_LOG("Warp Target is invalid");
 				EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 				return;
 			}
@@ -129,24 +133,55 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		LastWarpTargetName = Step.WarpTargetName;
 	}
 	
-	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+	CachedMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, 
 		NAME_None, 
 		Step.Montage, 
 		Step.PlayRate
 	);
 	
-	if (MontageTask)
+	if (CachedMontageTask.IsValid())
 	{
-		MontageTask->OnCompleted.AddDynamic(this, &ThisClass::OnStepMontageCompleted);
-		MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
-		MontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnStepMontageCancelled);
+		CachedMontageTask->OnCompleted.AddDynamic(this, &ThisClass::OnStepMontageCompleted);
+		CachedMontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnStepMontageInterrupted);
+		CachedMontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnStepMontageCancelled);
 		
-		MontageTask->ReadyForActivation();
+		CachedMontageTask->ReadyForActivation();
 	}
 	else
 	{
 		MORTIS_LOG("Invalid Montage Task!");
+	}
+
+	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		HitEventTag,
+		nullptr,
+		false,
+		true
+	);
+
+	if (CachedWaitHitTask.IsValid())
+	{
+		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
+		CachedWaitHitTask->ReadyForActivation();
+	}
+
+	if (Step.bUseComboTransitionNotify)
+	{
+		CachedComboTransitionTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+			this,
+			ComboTransitionEventTag,
+			nullptr,
+			false,
+			true
+		);
+
+		if (CachedComboTransitionTask.IsValid())
+		{
+			CachedComboTransitionTask->EventReceived.AddDynamic(this, &ThisClass::OnComboTransitionReceived);
+			CachedComboTransitionTask->ReadyForActivation();
+		}
 	}
 }
 
@@ -180,12 +215,8 @@ void UMortisGA_ExecuteAttackPattern::OnStepFinished(bool bInterrupted)
 	const FMortisAttackPatternStep& Step = AttackPattern->Steps[CurrentStepIndex];
 	CurrentStepIndex++;
 
+	ResetCachedTasks();
 	
-	if (UpdateWarpTargetTask.IsValid())
-	{
-		UpdateWarpTargetTask->EndTask();
-		UpdateWarpTargetTask.Reset();
-	}
 	if (Step.DelayAfterStep > 0.0f)
 	{
 		UAbilityTask_WaitDelay* DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Step.DelayAfterStep);
@@ -195,5 +226,71 @@ void UMortisGA_ExecuteAttackPattern::OnStepFinished(bool bInterrupted)
 	else
 	{
 		ExecuteNextStep();
+	}
+}
+
+void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Payload)
+{
+	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex))
+	{
+		MORTIS_LOG("Attack Pattern or Step is invalid");
+		return;
+	}
+	UMortisEnemyCombatComponent* CombatComponent = GetEnemyCombatComponent();
+	if (!CombatComponent)
+	{
+		MORTIS_LOG("Combat Component is invalid");
+		return;
+	}
+
+	AMortisEnemyWeapon* Weapon = CombatComponent->GetEnemyWeapon();
+	if (!Weapon)
+	{
+		MORTIS_LOG("Weapon is invalid");
+		return;
+	}
+	
+	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, Weapon->GetEnemyWeaponData().WeaponDamage, DamageTag);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
+		SpecHandle,
+		MortisGameplayTags::Data_AttackScale,
+		AttackPattern->Steps[CurrentStepIndex].DamageMultiplier
+	);
+	
+	NativeApplyEffectSpecHandleToTarget(Payload.Target, SpecHandle);
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(const_cast<AActor*>(Payload.Target.Get()), MortisGameplayTags::Event_Action_HitReact, Payload);
+}
+
+void UMortisGA_ExecuteAttackPattern::OnComboTransitionReceived(FGameplayEventData Payload)
+{
+	OnStepFinished(false);
+}
+
+void UMortisGA_ExecuteAttackPattern::ResetCachedTasks()
+{
+	if (CachedMontageTask.IsValid())
+	{
+		CachedMontageTask->OnInterrupted.Clear();
+		CachedMontageTask->EndTask();
+		CachedMontageTask.Reset();
+	}
+	
+	if (CachedUpdateWarpTargetTask.IsValid())
+	{
+		CachedUpdateWarpTargetTask->EndTask();
+		CachedUpdateWarpTargetTask.Reset();
+	}
+	
+	if (CachedWaitHitTask.IsValid())
+	{
+		CachedWaitHitTask->EndTask();
+		CachedWaitHitTask.Reset();
+	}
+
+	if (CachedComboTransitionTask.IsValid())
+	{
+		CachedComboTransitionTask->EndTask();
+		CachedComboTransitionTask.Reset();
 	}
 }

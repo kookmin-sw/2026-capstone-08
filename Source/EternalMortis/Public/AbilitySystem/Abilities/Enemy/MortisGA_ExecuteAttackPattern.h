@@ -7,6 +7,8 @@
 #include "Types/MortisStructTypes.h"
 #include "MortisGA_ExecuteAttackPattern.generated.h"
 
+class UAbilityTask_PlayMontageAndWait;
+class UAbilityTask_WaitGameplayEvent;
 class UMortisAT_UpdateWarpTarget;
 /**
  * 
@@ -26,6 +28,18 @@ protected:
 	//~ End UGameplayAbility Interface
 
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Damage")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Damage")
+	FGameplayTag HitEventTag = MortisGameplayTags::Event_Combat_AttackHit;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Combat")
+	FGameplayTag ComboTransitionEventTag = MortisGameplayTags::Event_Combat_Combo_Next;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Damage")
+	FGameplayTag DamageTag = MortisGameplayTags::Data_Enemy_Stat_WeaponDamage;
+	
 	UFUNCTION()
 	void ExecuteNextStep();
 
@@ -40,6 +54,12 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	void OnStepFinished(bool bInterrupted);
+
+	UFUNCTION()
+	void OnHitEventReceived(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void OnComboTransitionReceived(FGameplayEventData Payload);
 	
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -48,8 +68,13 @@ private:
 	const FMortisAttackPattern* AttackPattern;
 	
 	TWeakObjectPtr<UMotionWarpingComponent> CachedMotionWarpingComp;
-	TWeakObjectPtr<AActor> CachedTargetActor; 
-	TWeakObjectPtr<UMortisAT_UpdateWarpTarget> UpdateWarpTargetTask;
+	TWeakObjectPtr<AActor> CachedTargetActor;
+	TWeakObjectPtr<UAbilityTask_PlayMontageAndWait> CachedMontageTask;
+	TWeakObjectPtr<UMortisAT_UpdateWarpTarget> CachedUpdateWarpTargetTask;
+	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedWaitHitTask; 
+	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedComboTransitionTask; 
 
 	FName LastWarpTargetName = NAME_None;
+
+	void ResetCachedTasks();
 };

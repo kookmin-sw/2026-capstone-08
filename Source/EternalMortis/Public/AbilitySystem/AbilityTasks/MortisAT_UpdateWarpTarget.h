@@ -30,13 +30,9 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 	//~ End UGameplayTask Interface
 
-	//~ Begin UAbilityTask Interface
-	// virtual void OnDestroy(bool bInOwnerFinished) override;
-	//~ End UAbilityTask Interface
-	
 private:
 	void UpdateTarget();
-	FVector CalculateWarpTargetLocation();
+	// FVector CalculateWarpTargetLocation();
 	FName WarpTargetName;
 	EMortisWarpTargetMode WarpTargetMode;
 	float DesiredDistance = 0.f;

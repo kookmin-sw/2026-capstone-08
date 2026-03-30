@@ -54,6 +54,15 @@ struct FMortisPlayerWeaponData
 };
 
 USTRUCT(BlueprintType)
+struct FMortisEnemyWeaponData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float WeaponDamage;
+};
+
+USTRUCT(BlueprintType)
 struct FMortisAttackPatternStep
 {
 	GENERATED_BODY()
@@ -64,15 +73,13 @@ struct FMortisAttackPatternStep
 	UPROPERTY(EditDefaultsOnly)
 	float PlayRate = 1.0f;
 
-	// UPROPERTY(EditDefaultsOnly)
-	// FGameplayTag HitEventTag;
-
 	UPROPERTY(EditDefaultsOnly)
 	float DamageMultiplier = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float DelayAfterStep = 0.0f;
 
+	/* Motion Warping */
 	UPROPERTY(EditDefaultsOnly)
 	bool bUseMotionWarping = false;
 
@@ -90,6 +97,13 @@ struct FMortisAttackPatternStep
 
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bContinuousWarpUpdate"))
 	float WarpUpdateDuration = -1.f;
+
+	/* Combo */
+	UPROPERTY(EditDefaultsOnly)
+	bool bUseComboTransitionNotify = false;
+
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseComboTransitionNotify"))
+	FGameplayTag ComboTransitionEventTag = MortisGameplayTags::Event_Combat_Combo_Next;
 };
 
 USTRUCT(BlueprintType)
@@ -124,10 +138,22 @@ struct FMortisTagToBoolMapping
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mappping")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mappping")
 	FGameplayTag Tag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mappping")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mappping")
 	FName BoolPropertyName;
 };
 
+// for EQS
+USTRUCT(BlueprintType)
+struct FMortisDistanceRange
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Distance")
+	float MinDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Distance")
+	float MaxDistance;
+};

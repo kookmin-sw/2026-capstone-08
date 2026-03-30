@@ -10,12 +10,15 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(meta = (BlueprintSpawnableComponent))
 class ETERNALMORTIS_API UMortisBoxComponent : public UBoxComponent
 {
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Hitbox")
+	FGameplayTag GetCollisionTag() const { return CollisionTag; }
+	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Hitbox", meta = (Categories = "Data.CollisionType"))
 	FGameplayTag CollisionTag;
 };

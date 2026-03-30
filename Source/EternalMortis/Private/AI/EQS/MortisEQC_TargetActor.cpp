@@ -2,17 +2,12 @@
 
 
 #include "AI/EQS/MortisEQC_TargetActor.h"
+#include "Controllers/MortisAIController.h"
 
-#include "MortisDebugHelper.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "EnvironmentQuery/Items/EnvQueryItemType_Actor.h"
-
-namespace MortisAIKey
-{
-	const FName TargetActor = TEXT("TargetActor");
-}
 
 void UMortisEQC_TargetActor::ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQueryContextData& ContextData) const
 {
@@ -27,7 +22,7 @@ void UMortisEQC_TargetActor::ProvideContext(FEnvQueryInstance& QueryInstance, FE
 	UBlackboardComponent* BBComp = UAIBlueprintHelperLibrary::GetBlackboard(OwnerActor);
 	if (BBComp)
 	{
-		if (const AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(MortisAIKey::TargetActor)))
+		if (const AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(MortisBlackboardKeys::TargetActor)))
 		{
 			UEnvQueryItemType_Actor::SetContextHelper(ContextData, TargetActor);
 		}

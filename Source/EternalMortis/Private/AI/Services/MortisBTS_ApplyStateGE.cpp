@@ -4,6 +4,7 @@
 #include "AI/Services/MortisBTS_ApplyStateGE.h"
 
 #include "GameplayEffectTypes.h"
+#include "MortisDebugHelper.h"
 #include "MortisFunctionLibrary.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 
