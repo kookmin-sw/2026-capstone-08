@@ -21,6 +21,12 @@ UMortisPlayerAttributeSet::UMortisPlayerAttributeSet()
 {
 	InitMaxStamina(1.0f);
 	InitCurrentStamina(1.0f);
+	InitStaminaRegen(1.0f);
+	InitStaminaReductionRate(0.0f);
+	InitMaxMana(1.0f);
+	InitCurrentMana(1.0f);
+	InitManaRegen(1.0f);
+	InitManaReductionRate(1.0f);
 	InitStrength(10.0f);
 	InitDexterity(10.0f);
 	InitIntelligence(10.0f);
@@ -28,6 +34,8 @@ UMortisPlayerAttributeSet::UMortisPlayerAttributeSet()
 	InitStrCoef(0.0f);
 	InitDexCoef(0.0f);
 	InitIntCoef(0.0f);
+
+	InitRollStaminaReduction(0.0f);
 }
 
 void UMortisPlayerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)

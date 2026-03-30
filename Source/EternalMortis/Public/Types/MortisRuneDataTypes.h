@@ -159,7 +159,7 @@ struct FMortisRuneSymbolRow : public FTableRowBase
 
     // 실제 UI 표시용 문자
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    FText Glyph;
+    TObjectPtr<UTexture2D> Glyph;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FText DisplayName;

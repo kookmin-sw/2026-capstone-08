@@ -106,6 +106,62 @@ FMortisRuneInstance UMortisRuneDatabaseSubsystem::GenerateRune(int32 CurrentFloo
     return NewRune;
 }
 
+FMortisRuneInstance UMortisRuneDatabaseSubsystem::GenerateRuneWithTag(FGameplayTag SetTag, EMortisRuneGrade Grade) const
+{
+    FMortisRuneInstance NewRune;
+
+    const FMortisRuneSetRow* SetRow = GetRuneSetRow(SetTag);
+    if (!SetRow || SetRow->AllowedSymbols.Num() <= 0)
+        return NewRune;
+
+    const EMortisRuneSymbol* SymbolPick = GetUniformRandomEntry<EMortisRuneSymbol>(SetRow->AllowedSymbols);
+    if (!SymbolPick || *SymbolPick == EMortisRuneSymbol::None)
+        return NewRune;
+
+    const FMortisRuneSymbolRow* SymbolRow = GetRuneSymbolRow(*SymbolPick);
+    if (!SymbolRow)
+        return NewRune;
+
+    const FMortisRuneValueRange Range = GetValueRangeByGrade(*SymbolRow, Grade);
+
+    NewRune.InstanceId = FGuid::NewGuid();
+    NewRune.SetTag = SetTag;
+    NewRune.SymbolType = *SymbolPick;
+    NewRune.Grade = Grade;
+    NewRune.RolledValue = FMath::FloorToFloat(FMath::FRandRange(Range.MinValue, Range.MaxValue));
+
+    return NewRune;
+}
+
+FMortisRuneInstance UMortisRuneDatabaseSubsystem::GenerateRuneWithTagAndSymbol(FGameplayTag SetTag, EMortisRuneGrade Grade, EMortisRuneSymbol SymbolType) const
+{
+    FMortisRuneInstance NewRune;
+
+    if (SymbolType == EMortisRuneSymbol::None)
+        return NewRune;
+
+    const FMortisRuneSetRow* SetRow = GetRuneSetRow(SetTag);
+    if (!SetRow)
+        return NewRune;
+
+    if (!SetRow->AllowedSymbols.Contains(SymbolType))
+        return NewRune;
+
+    const FMortisRuneSymbolRow* SymbolRow = GetRuneSymbolRow(SymbolType);
+    if (!SymbolRow)
+        return NewRune;
+
+    const FMortisRuneValueRange Range = GetValueRangeByGrade(*SymbolRow, Grade);
+
+    NewRune.InstanceId = FGuid::NewGuid();
+    NewRune.SetTag = SetTag;
+    NewRune.SymbolType = SymbolType;
+    NewRune.Grade = Grade;
+    NewRune.RolledValue = FMath::FloorToFloat(FMath::FRandRange(Range.MinValue, Range.MaxValue));
+
+    return NewRune;
+}
+
 const FMortisRuneSymbolRow* UMortisRuneDatabaseSubsystem::GetRuneSymbolRow(EMortisRuneSymbol SymbolType) const
 {
 	return RuneSymbolMap.Find(SymbolType);

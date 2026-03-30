@@ -106,71 +106,93 @@ void UMortisEquipmentComponent::UpdateRuneSetBonus(const TArray<FGameplayTag>& A
         FMortisActiveRuneSetState SetState;
         const bool bFound = RuneInv->GetRuneSetStateByTag(SetTag, SetState);
 
-        // 세트 효과를 못찾았거나, 비활성화 되어있거나, 레벨이 0 이하라면 제거
-        if (!bFound || SetState.CurrentLevel <= 0)
+        if (!bFound || SetState.CurrentCount <= 0)
         {
-            RemoveSetTier(SetTag);
+            ClearSetRuntime(SetTag);
             continue;
         }
 
-        // 없는 세트효과면 제거
         const FMortisRuneSetRow* SetRow = RuneDB->GetRuneSetRow(SetTag);
         if (!SetRow)
         {
-            RemoveSetTier(SetTag);
+            ClearSetRuntime(SetTag);
             continue;
         }
 
-        // 적용할 Ability/Effect를 못찾으면 제거
-        const FMortisSetTierDef* TierDef = FindTierDefByLevel(*SetRow, SetState.CurrentLevel);
-        if (!TierDef)
+        // 이 세트에서 지금 있어야 하는 티어들
+        TSet<int32> DesiredTierCounts;
+        for (const FMortisSetTierDef& TierDef : SetRow->TierDefs)
         {
-            RemoveSetTier(SetTag);
+            if (TierDef.ActivateCount <= SetState.CurrentCount)
+                DesiredTierCounts.Add(TierDef.ActivateCount);
+        }
+
+        // 만족하는 티어가 하나도 없으면 제거
+        if (DesiredTierCounts.Num() == 0)
+        {
+            ClearSetRuntime(SetTag);
             continue;
         }
 
-        FMortisAppliedRuneSetRuntime* ExistingRuntime = AppliedRuneSetRuntimes.Find(SetTag);
-        // 이미 같은 등급이면 넘어가기
-        if (ExistingRuntime && ExistingRuntime->AppliedLevel == SetState.CurrentLevel)
-            continue;
+        FMortisAppliedRuneSetRuntime& SetRuntime = AppliedRuneSetRuntimes.FindOrAdd(SetTag);
+        SetRuntime.SetTag = SetTag;
 
-        if (ExistingRuntime)
-            RemoveSetTier(SetTag);
+        // 없어져야 할 티어만 제거
+        for (int32 i = SetRuntime.AppliedTiers.Num() - 1; i >= 0; --i)
+        {
+            const int32 AppliedCount = SetRuntime.AppliedTiers[i].ActivateCount;
 
-        // 모두 정상에, 갱신이 필요하면 세트효과 적용
-        ApplySetTier(SetState, *TierDef);
+            if (!DesiredTierCounts.Contains(AppliedCount))
+            {
+                RemoveSetTier(SetRuntime, AppliedCount);
+            }
+        }
+
+        // 새로 필요한 티어만 추가
+        for (const FMortisSetTierDef& TierDef : SetRow->TierDefs)
+        {
+            if (!DesiredTierCounts.Contains(TierDef.ActivateCount))
+                continue;
+
+            if (HasAppliedTier(SetRuntime, TierDef.ActivateCount))
+                continue;
+
+            ApplySetTier(TierDef, SetRuntime);
+        }
+
+        // 적용된 티어가 아예 없으면 맵에서 제거
+        if (SetRuntime.AppliedTiers.Num() == 0)
+            AppliedRuneSetRuntimes.Remove(SetTag);
     }
 
-    // 없어진 세트효과 제거
+    // 아예 사라진 세트 제거
     TArray<FGameplayTag> ExistingTags;
     AppliedRuneSetRuntimes.GetKeys(ExistingTags);
 
     for (const FGameplayTag& ExistingTag : ExistingTags)
     {
         if (!IncomingTags.Contains(ExistingTag))
-            RemoveSetTier(ExistingTag);
+            ClearSetRuntime(ExistingTag);
     }
 }
 
-// 도우미 함수
-const FMortisSetTierDef* UMortisEquipmentComponent::FindTierDefByLevel(const FMortisRuneSetRow& SetRow, int32 Level) const
+bool UMortisEquipmentComponent::HasAppliedTier(const FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount) const
 {
-    if (Level <= 0)return nullptr;
+    for (const FMortisAppliedRuneSetTierRuntime& TierRuntime : SetRuntime.AppliedTiers)
+    {
+        if (TierRuntime.ActivateCount == ActivateCount)
+            return true;
+    }
 
-    const int32 Index = Level - 1;
-    if (!SetRow.TierDefs.IsValidIndex(Index)) return nullptr;
-
-    return &SetRow.TierDefs[Index];
+    return false;
 }
 
-void UMortisEquipmentComponent::ApplySetTier(const FMortisActiveRuneSetState& SetState, const FMortisSetTierDef& TierDef)
+void UMortisEquipmentComponent::ApplySetTier(const FMortisSetTierDef& TierDef, FMortisAppliedRuneSetRuntime& SetRuntime)
 {
-    MORTIS_LOG("Hello");
     if (!ASC) return;
 
-    FMortisAppliedRuneSetRuntime RuneSetRuntime;
-    RuneSetRuntime.SetTag = SetState.SetTag;
-    RuneSetRuntime.AppliedLevel = SetState.CurrentLevel;
+    FMortisAppliedRuneSetTierRuntime NewTierRuntime;
+    NewTierRuntime.ActivateCount = TierDef.ActivateCount;
 
     const FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
 
@@ -183,49 +205,63 @@ void UMortisEquipmentComponent::ApplySetTier(const FMortisActiveRuneSetState& Se
         if (!SpecHandle.IsValid())
             continue;
 
-        const FActiveGameplayEffectHandle EffectHandle =
-            ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+        const FActiveGameplayEffectHandle EffectHandle = ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 
         if (EffectHandle.WasSuccessfullyApplied())
-            RuneSetRuntime.EffectHandles.Add(EffectHandle);
+            NewTierRuntime.EffectHandles.Add(EffectHandle);
     }
 
-    if (GetOwningPawn())
+    for (const TSubclassOf<UGameplayAbility>& AbilityClass : TierDef.GrantedAbilities)
     {
-        for (const TSubclassOf<UGameplayAbility>& AbilityClass : TierDef.GrantedAbilities)
-        {
-            if (!AbilityClass)
-                continue;
+        if (!AbilityClass)
+            continue;
 
-            FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, this);
-            const FGameplayAbilitySpecHandle AbilityHandle = ASC->GiveAbility(AbilitySpec);
+        FGameplayAbilitySpec AbilitySpec(AbilityClass, 1, INDEX_NONE, this);
+        const FGameplayAbilitySpecHandle AbilityHandle = ASC->GiveAbility(AbilitySpec);
 
-            if (AbilityHandle.IsValid())
-                RuneSetRuntime.AbilityHandles.Add(AbilityHandle);
-        }
+        if (AbilityHandle.IsValid())
+            NewTierRuntime.AbilityHandles.Add(AbilityHandle);
     }
 
-    AppliedRuneSetRuntimes.Add(SetState.SetTag, MoveTemp(RuneSetRuntime));
+    SetRuntime.AppliedTiers.Add(MoveTemp(NewTierRuntime));
 }
 
-void UMortisEquipmentComponent::RemoveSetTier(const FGameplayTag& SetTag)
+void UMortisEquipmentComponent::RemoveSetTier(FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount)
 {
     if (!ASC) return;
 
-    FMortisAppliedRuneSetRuntime* Runtime = AppliedRuneSetRuntimes.Find(SetTag);
-    if (!Runtime) return;
-
-    for (const FActiveGameplayEffectHandle& EffectHandle : Runtime->EffectHandles)
+    for (int32 i = SetRuntime.AppliedTiers.Num() - 1; i >= 0; i--)
     {
-        if (EffectHandle.IsValid())
-            ASC->RemoveActiveGameplayEffect(EffectHandle);
-    }
+        FMortisAppliedRuneSetTierRuntime& TierRuntime = SetRuntime.AppliedTiers[i];
+        if (TierRuntime.ActivateCount != ActivateCount)
+            continue;
 
-    if (GetOwner() && GetOwner()->HasAuthority())
-    {
-        for (const FGameplayAbilitySpecHandle& AbilityHandle : Runtime->AbilityHandles)
+        for (const FActiveGameplayEffectHandle& EffectHandle : TierRuntime.EffectHandles)
+        {
+            if (EffectHandle.IsValid())
+                ASC->RemoveActiveGameplayEffect(EffectHandle);
+        }
+
+        for (const FGameplayAbilitySpecHandle& AbilityHandle : TierRuntime.AbilityHandles)
+        {
             if (AbilityHandle.IsValid())
                 ASC->ClearAbility(AbilityHandle);
+        }
+
+        SetRuntime.AppliedTiers.RemoveAt(i);
+        return;
+    }
+}
+
+void UMortisEquipmentComponent::ClearSetRuntime(const FGameplayTag& SetTag)
+{
+    FMortisAppliedRuneSetRuntime* SetRuntime = AppliedRuneSetRuntimes.Find(SetTag);
+    if (!SetRuntime)
+        return;
+
+    for (int32 i = SetRuntime->AppliedTiers.Num() - 1; i >= 0; i--)
+    {
+        RemoveSetTier(*SetRuntime, SetRuntime->AppliedTiers[i].ActivateCount);
     }
 
     AppliedRuneSetRuntimes.Remove(SetTag);

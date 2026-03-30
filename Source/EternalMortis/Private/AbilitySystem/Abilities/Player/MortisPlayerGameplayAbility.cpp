@@ -6,6 +6,7 @@
 #include "Controllers/MortisPlayerController.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
+#include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
 #include "MortisGameplayTags.h"
 
 
@@ -67,4 +68,58 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 	EffectSpecHandle.Data->AddDynamicAssetTag(AttackType);
 
 	return EffectSpecHandle;
+}
+
+float UMortisPlayerGameplayAbility::CalculateStaminaCost(float BaseCost, float AdditionalReduceRate) const
+{
+	const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC) return BaseCost;
+
+	const float ReductionRate = ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetStaminaReductionRateAttribute()) + AdditionalReduceRate;
+
+	return -BaseCost * (1.0f - ReductionRate);
+}
+
+bool UMortisPlayerGameplayAbility::CheckStaminaCost(float BaseCost, float& OutFinalCost, float AdditionalReduceRate) const
+{
+	const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC)
+	{
+		OutFinalCost = BaseCost;
+		return false;
+	}
+
+	OutFinalCost = CalculateStaminaCost(BaseCost);
+
+	const float CurrentStamina =
+		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentStaminaAttribute()) + AdditionalReduceRate;
+
+	return CurrentStamina >= -OutFinalCost;
+}
+
+float UMortisPlayerGameplayAbility::CalculateManaCost(float BaseCost, float AdditionalReduceRate) const
+{
+	const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC) return BaseCost;
+
+	const float ReductionRate = ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetManaReductionRateAttribute()) + AdditionalReduceRate;
+
+	return -BaseCost * (1.0f - ReductionRate);
+}
+
+bool UMortisPlayerGameplayAbility::CheckManaCost(float BaseCost, float& OutFinalCost, float AdditionalReduceRate) const
+{
+	const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC)
+	{
+		OutFinalCost = BaseCost;
+		return false;
+	}
+
+	OutFinalCost = CalculateStaminaCost(BaseCost);
+
+	const float CurrentMana =
+		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute()) + AdditionalReduceRate;
+
+	return CurrentMana >= -OutFinalCost;
 }

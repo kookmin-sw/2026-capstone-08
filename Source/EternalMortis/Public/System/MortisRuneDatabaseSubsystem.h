@@ -25,6 +25,12 @@ public:
     UFUNCTION(BlueprintCallable)
     FMortisRuneInstance GenerateRune(int32 CurrentFloor) const;
 
+    UFUNCTION(BlueprintCallable)
+    FMortisRuneInstance GenerateRuneWithTag(FGameplayTag SetTag, EMortisRuneGrade Grade) const;
+
+    UFUNCTION(BlueprintCallable)
+    FMortisRuneInstance GenerateRuneWithTagAndSymbol(FGameplayTag SetTag, EMortisRuneGrade Grade, EMortisRuneSymbol SymbolType) const;
+
 protected:
     UPROPERTY(EditDefaultsOnly, Category = "Rune")
     TObjectPtr<UDataTable> RuneSymbolTable;

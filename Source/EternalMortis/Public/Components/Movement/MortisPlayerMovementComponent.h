@@ -15,20 +15,19 @@ class ETERNALMORTIS_API UMortisPlayerMovementComponent : public UCharacterMoveme
 	GENERATED_BODY()
 	
 public:
-	// 걷기 속도
+	// 기본 걷기 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mortis|Acceleration")
-	float WalkSpeed = 375.f;
-
-	// 달리기 속도
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mortis|Acceleration")
-	float SprintSpeed = 600.f;
+	float DefaultWalkSpeed = 375.f;
 
 	// 작을수록 천천히 내려감
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mortis|Acceleration")
 	float SpeedCapInterp = 6.f;
 
 	UFUNCTION(BlueprintCallable)
-	void SetSprinting(bool bSprinting);
+	void SetTargetSpeed(float MoveSpeed);
+
+	UFUNCTION(BlueprintPure)
+	float GetSetTargetSpeed() const { return TargetSpeedCap; }
 
 protected:
 	float CurrentSpeedCap = 375.f;

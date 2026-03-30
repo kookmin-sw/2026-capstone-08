@@ -13,6 +13,7 @@ class UMortisInputConfig;
 class UMortisPlayerCombatComponent;
 class UMortisPlayerUIComponent;
 class UMortisEquipmentComponent;
+struct FOnAttributeChangeData;
 struct FInputActionValue;
 
 /**
@@ -101,6 +102,8 @@ private:
 	void Input_AbilityInputReleased(FGameplayTag InputTag);
 
 	bool IsBufferableAbility(FGameplayTag AbilityTag);
+
+	void ChangeMovementMaxSpeed(const FOnAttributeChangeData& Data);
 
 public:
 	FORCEINLINE UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent() const { return MortisPlayerCombatComponent; }

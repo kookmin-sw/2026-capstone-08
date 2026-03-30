@@ -3,9 +3,9 @@
 
 #include "Components/Movement/MortisPlayerMovementComponent.h"
 
-void UMortisPlayerMovementComponent::SetSprinting(bool bSprinting)
+void UMortisPlayerMovementComponent::SetTargetSpeed(float MoveSpeed)
 {
-	TargetSpeedCap = bSprinting ? SprintSpeed : WalkSpeed;
+	TargetSpeedCap = FMath::Max(0.0f, MoveSpeed);
 }
 
 void UMortisPlayerMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)

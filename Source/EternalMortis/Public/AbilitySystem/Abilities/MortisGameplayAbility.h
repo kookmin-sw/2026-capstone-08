@@ -33,6 +33,10 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
 	void ApplyGameplayEffectSpecHandleToHitResults(const FGameplayEffectSpecHandle& SpecHandle, const TArray<FHitResult>& HitResults);
 
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
+	FGameplayEffectSpecHandle MakeEffectSpecWithSetByCaller(TSubclassOf<UGameplayEffect> EffectClass, FGameplayTag DataTag, float Value, float EffectLevel = 1.f) const;
+
+
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
 	UMortisCombatComponent* GetMortisCombatComponentFromActorInfo() const;
 

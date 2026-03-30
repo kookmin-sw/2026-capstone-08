@@ -68,6 +68,19 @@ void UMortisGameplayAbility::ApplyGameplayEffectSpecHandleToHitResults(const FGa
 	}
 }
 
+FGameplayEffectSpecHandle UMortisGameplayAbility::MakeEffectSpecWithSetByCaller(TSubclassOf<UGameplayEffect> EffectClass, FGameplayTag DataTag, float Value, float EffectLevel) const
+{
+	if (!EffectClass)
+		return FGameplayEffectSpecHandle();
+
+	FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(EffectClass, EffectLevel);
+	if (!SpecHandle.IsValid())
+		return FGameplayEffectSpecHandle();
+
+	SpecHandle.Data->SetSetByCallerMagnitude(DataTag, Value);
+	return SpecHandle;
+}
+
 UMortisCombatComponent* UMortisGameplayAbility::GetMortisCombatComponentFromActorInfo() const
 {
 	return GetAvatarActorFromActorInfo()->FindComponentByClass<UMortisCombatComponent>();

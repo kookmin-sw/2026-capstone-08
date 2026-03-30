@@ -37,6 +37,21 @@ struct FMortisEquippedRuneRuntime
 };
 
 USTRUCT()
+struct FMortisAppliedRuneSetTierRuntime
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    int32 ActivateCount = 0;
+
+    UPROPERTY()
+    TArray<FActiveGameplayEffectHandle> EffectHandles;
+
+    UPROPERTY()
+    TArray<FGameplayAbilitySpecHandle> AbilityHandles;
+};
+
+USTRUCT()
 struct FMortisAppliedRuneSetRuntime
 {
     GENERATED_BODY()
@@ -45,13 +60,7 @@ struct FMortisAppliedRuneSetRuntime
     FGameplayTag SetTag;
 
     UPROPERTY()
-    int32 AppliedLevel = 0;
-
-    UPROPERTY()
-    TArray<FActiveGameplayEffectHandle> EffectHandles;
-
-    UPROPERTY()
-    TArray<FGameplayAbilitySpecHandle> AbilityHandles;
+    TArray<FMortisAppliedRuneSetTierRuntime> AppliedTiers;
 };
 
 UCLASS()
@@ -84,8 +93,8 @@ private:
     UFUNCTION()
     void UpdateRuneSetBonus(const TArray<FGameplayTag>& ActiveSetTags);
 
-    const FMortisSetTierDef* FindTierDefByLevel(const FMortisRuneSetRow& SetRow, int32 Level) const;
-
-    void ApplySetTier(const FMortisActiveRuneSetState& SetState, const FMortisSetTierDef& TierDef);
-    void RemoveSetTier(const FGameplayTag& SetTag);
+    bool HasAppliedTier(const FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount) const;
+    void ApplySetTier(const FMortisSetTierDef& TierDef, FMortisAppliedRuneSetRuntime& SetRuntime);
+    void RemoveSetTier(FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount);
+    void ClearSetRuntime(const FGameplayTag& SetTag);
 };

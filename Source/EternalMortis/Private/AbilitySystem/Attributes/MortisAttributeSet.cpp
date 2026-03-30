@@ -61,3 +61,20 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	}
 
 }
+
+void UMortisAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (Attribute == GetMaxHealthAttribute())
+	{
+		if (NewValue > OldValue)
+		{
+			float CurrHealth = GetCurrentHealth();
+			CurrHealth += (NewValue - OldValue);
+			SetCurrentHealth(CurrHealth);
+		}
+		else if (GetCurrentHealth() > NewValue)
+			SetCurrentHealth(NewValue);
+	}
+}

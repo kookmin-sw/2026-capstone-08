@@ -6,6 +6,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MortisGameplayTags.h"
 
+#include "MortisDebugHelper.h"
+
 AMortisPlayerWeapon* UMortisPlayerCombatComponent::GetPlayerCarriedWeaponByTag(FGameplayTag WeaponTag) const
 {
 	return Cast<AMortisPlayerWeapon>(GetCharacterCarriedWeaponByTag(WeaponTag));
@@ -24,7 +26,7 @@ FMortisPlayerWeaponData UMortisPlayerCombatComponent::GetPlayerCurrentWeaponData
 void UMortisPlayerCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
     if (OverlappedActors.Contains(HitActor)) return;
-
+    MORTIS_LOG("Attack");
     OverlappedActors.AddUnique(HitActor);
 
     FGameplayEventData Data;

@@ -53,6 +53,8 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	MortisAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UMortisPlayerAttributeSet::GetMoveSpeedAttribute()).AddUObject(this, &AMortisPlayerCharacter::ChangeMovementMaxSpeed);
 }
 
 void AMortisPlayerCharacter::SetRecoveryMontage(UAnimMontage* InMontage)
@@ -205,4 +207,10 @@ bool AMortisPlayerCharacter::IsBufferableAbility(FGameplayTag AbilityTag)
 		AbilityTag.MatchesTagExact(MortisGameplayTags::InputTag_Ability_Roll)
 		|| AbilityTag.MatchesTagExact(MortisGameplayTags::InputTag_Ability_LightAttack)
 		|| AbilityTag.MatchesTag(MortisGameplayTags::InputTag_Ability_WeaponSkill);
+}
+
+void AMortisPlayerCharacter::ChangeMovementMaxSpeed(const FOnAttributeChangeData& Data)
+{
+	if (UMortisPlayerMovementComponent* MovementComp = Cast<UMortisPlayerMovementComponent>(GetCharacterMovement()))
+		MovementComp->SetTargetSpeed(Data.NewValue);
 }
