@@ -40,6 +40,13 @@ struct FMortisActiveRuneSetStateVariable
 {
     GENERATED_BODY()
     
+    FMortisActiveRuneSetStateVariable() = default;
+
+    explicit FMortisActiveRuneSetStateVariable(TObjectPtr<UTexture2D> InIcon)
+        : Icon(InIcon)
+    {
+    }
+    
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UTexture2D> Icon = nullptr;
 
@@ -129,11 +136,12 @@ struct FMortisActiveRuneSetState
     GENERATED_BODY()
     
     // 배열로 하니깐 블루프린트에 노출이 안돼서 Tarray로 변경하고 생성자에 크기 3으로 만듦... 나중에 확인 필요
+    /*
     FMortisActiveRuneSetState() 
     {
         Variables.SetNum(3);
     }
-
+    */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FGameplayTag SetTag;
 
@@ -158,6 +166,9 @@ struct FMortisSetTierDef
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     int32 ActivateCount = 2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FText Description;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TArray<TSubclassOf<UGameplayEffect>> GrantedEffects;
@@ -215,8 +226,9 @@ struct FMortisRuneSetRow : public FTableRowBase
     FText SetName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UTexture2D> Icon = nullptr;
-
+    //TObjectPtr<UTexture2D> Icon = nullptr;
+    TArray<TObjectPtr<UTexture2D>> Icon;
+    
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TArray<EMortisRuneSymbol> AllowedSymbols;
 

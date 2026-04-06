@@ -154,7 +154,13 @@ void UMortisRuneInventorySubsystem::UpdateSetCount(const FGameplayTag& SetTagToC
         FMortisActiveRuneSetState& NewState = RuneSetMap.Add(SetTagToChange);
         NewState.SetTag = SetTagToChange;
         NewState.SetName = SetRow->SetName;
-        //NewState.Icon = SetRow->Icon;
+        
+        for (const TObjectPtr<UTexture2D>& Tmp : SetRow->Icon)
+        {
+            NewState.Variables.Emplace(Tmp);
+        }
+
+        //NewState.Variables[0].Icon = SetRow->Icon[0];
         NewState.CurrentCount = 0;
         NewState.CurrentLevel = 0;
     }
