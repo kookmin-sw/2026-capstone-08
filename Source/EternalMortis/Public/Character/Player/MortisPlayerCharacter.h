@@ -13,6 +13,7 @@ class UMortisInputConfig;
 class UMortisPlayerCombatComponent;
 class UMortisPlayerUIComponent;
 class UMortisEquipmentComponent;
+class UMortisInteractionComponent;
 struct FOnAttributeChangeData;
 struct FInputActionValue;
 
@@ -78,6 +79,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
 	UMortisEquipmentComponent* EquipmentComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
+	UMortisInteractionComponent* InteractionComponent;
 
 	// Inputs
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))

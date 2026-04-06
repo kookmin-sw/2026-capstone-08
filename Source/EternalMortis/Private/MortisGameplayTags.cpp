@@ -9,6 +9,10 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "InputTag.Move");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Look, "InputTag.Look");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Zoom, "InputTag.Zoom");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "InputTag.Interact");
+
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Select_Left, "InputTag.Select.Left");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Select_Right, "InputTag.Select.Right");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold, "InputTag.Hold");
 
@@ -64,6 +68,7 @@ namespace MortisGameplayTags
 
 	// ====================		Data Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DefaultSword, "Data.Weapon.DefaultSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FallenKnightSword, "Data.Weapon.FallenKnightSword");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Special, "Data.CollisionType.Weapon.Special");

@@ -1,0 +1,59 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Items/Interactable/MortisInteractableActorBase.h"
+#include "MortisPickupBase.generated.h"
+
+class UWidgetComponent;
+
+/**
+ * 
+ */
+UCLASS()
+class ETERNALMORTIS_API AMortisPickupBase : public AMortisInteractableActorBase
+{
+	GENERATED_BODY()
+	
+public:
+	AMortisPickupBase();
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ReactivateAsDroppedItem();
+
+	UFUNCTION(BlueprintCallable)
+	void StartArcMove(const FVector& InStartLocation, const FVector& InTargetLocation, float InDuration = 0.35f, float InArcHeight = 80.f);
+
+	UFUNCTION(BlueprintPure)
+	bool IsArcMoving() const { return bArcMoving; }
+
+	// AMortisInteractableActorBase Override
+	virtual void SetSelectionUIVisible(bool bVisible) override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
+	float DefaultArcDuration = 0.35f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
+	float DefaultArcHeight = 80.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> SelectionWidget;
+
+protected:
+	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
+
+	void FinishArcMove();
+
+protected:
+	bool bArcMoving = false;
+	float ArcElapsed = 0.f;
+	float ArcDuration = 0.35f;
+	float ArcHeight = 80.f;
+
+	FVector ArcStart = FVector::ZeroVector;
+	FVector ArcTarget = FVector::ZeroVector;
+};

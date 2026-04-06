@@ -15,6 +15,7 @@
 #include "Components/Equipment/MortisEquipmentComponent.h"
 #include "Components/UI/MortisPlayerUIComponent.h"
 #include "Components/Movement/MortisPlayerMovementComponent.h"
+#include "Components/Collisions/MortisInteractionComponent.h"
 #include "MortisGameplayTags.h"
 
 #include "MortisDebugHelper.h"
@@ -50,6 +51,16 @@ AMortisPlayerCharacter::AMortisPlayerCharacter(const FObjectInitializer& ObjectI
 	PlayerUIComponent = CreateDefaultSubobject<UMortisPlayerUIComponent>(TEXT("HeroUIComponent"));
 
 	EquipmentComponent = CreateDefaultSubobject<UMortisEquipmentComponent>(TEXT("EquipmentComponent"));
+
+	InteractionComponent = CreateDefaultSubobject<UMortisInteractionComponent>(TEXT("InteractionComponent"));
+	InteractionComponent->SetupAttachment(GetRootComponent());
+	InteractionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	InteractionComponent->SetCollisionObjectType(ECC_Pawn);
+	InteractionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	InteractionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	InteractionComponent->SetGenerateOverlapEvents(true);
+	InteractionComponent->SetSphereRadius(200.f);
+	InteractionComponent->SetRelativeLocation(FVector(80.f, 0.f, 60.f));
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;

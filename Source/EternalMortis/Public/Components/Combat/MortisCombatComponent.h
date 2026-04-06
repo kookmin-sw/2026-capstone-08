@@ -30,6 +30,9 @@ public:
 	void RegisterSpawnedWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
+	bool UnregisterSpawnedWeapon(FGameplayTag WeaponTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	AMortisWeaponBase* GetCharacterCarriedWeaponByTag(FGameplayTag InWeaponTagToGet) const;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Mortis|Combat")

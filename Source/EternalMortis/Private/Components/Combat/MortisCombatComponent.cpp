@@ -21,6 +21,35 @@ void UMortisCombatComponent::RegisterSpawnedWeapon(FGameplayTag WeaponTag, AMort
 		CurrentEquippedWeaponTag = WeaponTag;
 }
 
+bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
+{
+	if (!WeaponTag.IsValid())
+		return false;
+
+	AMortisWeaponBase* Weapon = nullptr;
+	if (AMortisWeaponBase* const* FoundWeapon = CharacterCarriedWeaponMap.Find(WeaponTag))
+	{
+		Weapon = *FoundWeapon;
+	}
+
+	// 현재 장착 무기 상태 정리
+	if (CurrentEquippedWeaponTag == WeaponTag)
+	{
+		CurrentEquippedWeaponTag = FGameplayTag();
+		OverlappedActors.Empty();
+	}
+
+	// delegate 정리
+	if (IsValid(Weapon))
+	{
+		Weapon->OnWeaponHitTarget.Unbind();
+		Weapon->OnWeaponPulledFromTarget.Unbind();
+	}
+
+	// 맵에서는 무조건 제거
+	return CharacterCarriedWeaponMap.Remove(WeaponTag) > 0;
+}
+
 AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedWeaponByTag(FGameplayTag WeaponTagToGet) const
 {
 	if (CharacterCarriedWeaponMap.Contains(WeaponTagToGet))

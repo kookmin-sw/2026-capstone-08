@@ -14,12 +14,21 @@ class ETERNALMORTIS_API UMortisGameDataSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 public:
-    UPROPERTY(Config, EditAnywhere, Category = "Rune")
+    UPROPERTY(Config, EditAnywhere, Category = "Rune Data")
     TSoftObjectPtr<UDataTable> RuneSymbolTable;
 
-    UPROPERTY(Config, EditAnywhere, Category = "Rune")
+    UPROPERTY(Config, EditAnywhere, Category = "Rune Data")
     TSoftObjectPtr<UDataTable> RuneSetTable;
 
-    UPROPERTY(Config, EditAnywhere, Category = "Rune")
+    UPROPERTY(Config, EditAnywhere, Category = "Rune Data")
     TSoftObjectPtr<UDataTable> RuneDropRuleTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+    TSoftObjectPtr<UDataTable> WeaponTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+    TSoftObjectPtr<UDataTable> WeaponDropRuleTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+    TSoftObjectPtr<UDataTable> WeaponGradeStyleTable;
 };

@@ -6,6 +6,7 @@
 
 #include "MortisDebugHelper.h"
 
+
 void UMortisRuneDatabaseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
