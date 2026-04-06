@@ -20,6 +20,11 @@ AMortisPlayerWeapon* UMortisPlayerCombatComponent::GetPlayerCurrentEquippedWeapo
 
 FMortisPlayerWeaponData UMortisPlayerCombatComponent::GetPlayerCurrentWeaponData() const
 {
+	if (!GetPlayerCurrentEquippedWeapon())
+	{
+		MORTIS_LOG("Current Weapon is invalid!");
+		return FMortisPlayerWeaponData();
+	}
 	return GetPlayerCurrentEquippedWeapon()->PlayerWeaponData;
 }
 

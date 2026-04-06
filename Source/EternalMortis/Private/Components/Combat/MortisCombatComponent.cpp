@@ -16,6 +16,7 @@ void UMortisCombatComponent::RegisterCombatItem(FGameplayTag ItemTag, AMortisCom
     
 	if (AMortisWeaponBase* Weapon = Cast<AMortisWeaponBase>(ItemToRegister))
 	{
+		MORTIS_LOG("Register Weapon");
 		CharacterWeaponMap.Emplace(ItemTag, Weapon);
 		
 		Weapon->OnWeaponHitTarget.BindUObject(this, &ThisClass::OnHitTargetActor);
@@ -50,6 +51,10 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 	if (CurrentEquippedWeaponTag == WeaponTag)
 	{
 		CurrentEquippedWeaponTag = FGameplayTag();
+		if (AMortisWeaponBase* CurrentWeapon = GetCharacterCurrentEquippedWeapon())
+		{
+			CurrentWeapon->ClearOverlappedActors();
+		}
 		// OverlappedActors.Empty();
 	}
 
