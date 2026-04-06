@@ -24,14 +24,16 @@ void UMortisANS_ToggleWeaponCollision::NotifyEnd(USkeletalMeshComponent* MeshCom
 
 void UMortisANS_ToggleWeaponCollision::ToggleWeaponCollisionForMesh(const USkeletalMeshComponent* MeshComp, bool bEnable) const
 {
-	if (!MeshComp)
+	check(MeshComp);
+	AActor* Owner = MeshComp->GetOwner();
+	if (!Owner)
 	{
 		return;
 	}
 	
-	AActor* Owner = MeshComp->GetOwner();
-	if (!Owner)
+	if (!TagToToggle.IsValid())
 	{
+		MORTIS_LOG("TagToToggle is Invalid!");
 		return;
 	}
 	

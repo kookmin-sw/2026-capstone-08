@@ -3,18 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MortisCombatItemBase.h"
 #include "GameFramework/Actor.h"
-#include "MortisGameplayTags.h"
-#include "Types/MortisStructTypes.h"
 #include "MortisWeaponBase.generated.h"
-
-class UBoxComponent;
-class UMortisBoxComponent;
 
 DECLARE_DELEGATE_OneParam(FOnTargetInteractedDelegate, AActor*)
 
 UCLASS()
-class ETERNALMORTIS_API AMortisWeaponBase : public AActor
+class ETERNALMORTIS_API AMortisWeaponBase : public AMortisCombatItemBase
 {
 	GENERATED_BODY()
 	
@@ -25,24 +21,9 @@ public:
 	FOnTargetInteractedDelegate OnWeaponHitTarget;
 	FOnTargetInteractedDelegate OnWeaponPulledFromTarget;
 
-	UShapeComponent* GetWeaponCollisionComponent(FGameplayTag TagToToggle);
-
-	FORCEINLINE virtual UMeshComponent* GetWeaponMesh() const { return nullptr; }
-	
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Weapon")
-	TObjectPtr<USceneComponent> WeaponRoot;
-	
-	UPROPERTY(VisibleAnywhere)
-	TMap<FGameplayTag, TObjectPtr<UShapeComponent>> CollisionComponentMap;
-
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	virtual void OnCollisionBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	virtual void OnCollisionBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
-	void InitializeWeaponCollisions();
+	//~ Begin AMortisItemBase Interfaces
+	virtual void OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	virtual void OnCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+	//~ End AMortisItemBase Interfaces
 };

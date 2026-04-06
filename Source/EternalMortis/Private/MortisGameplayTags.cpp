@@ -37,6 +37,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Pattern, "Ability.Action.Attack.Pattern");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Turn, "Ability.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Stagger, "Ability.Action.Stagger");
 
 	// ====================		State Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
@@ -47,6 +48,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Idle, "State.Movement.Idle");
 	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Strafing, "State.Movement.Strafing");
 	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Chasing, "State.Movement.Chasing");
+	
+	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Guarding, "State.Combat.Guarding");
 	
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_1, "State.Enemy.Phase.1");
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_2, "State.Enemy.Phase.2");
@@ -65,13 +68,19 @@ namespace MortisGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_AttackHit, "Event.Combat.AttackHit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Combo_Next, "Event.Combat.Combo.Next");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Attack_Blocked, "Event.Combat.Attack.Blocked");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Block_Success, "Event.Combat.Block.Success");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_EndWarpUpdate, "Event.Montage.EndWarpUpdate");
 
 	// ====================		Data Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DefaultSword, "Data.Weapon.DefaultSword");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FallenKnightSword, "Data.Weapon.FallenKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Shield, "Data.Shield");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Special, "Data.CollisionType.Weapon.Special");
+	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Shield, "Data.CollisionType.Shield");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Body_LeftHand, "Data.CollisionType.Body.LeftHand");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Body_RightHand, "Data.CollisionType.Body.RightHand");
 

@@ -5,17 +5,17 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
+#include "Items/Weapons/MortisEnemyWeapon.h"
+#include "Items/Weapons/MortisWeaponBase.h"
 #include "MortisDebugHelper.h"
 
-#include "AIController.h"
+#include "MortisFunctionLibrary.h"
 #include "MotionWarpingComponent.h"
 #include "RootMotionModifier.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/AbilityTasks/MortisAT_UpdateWarpTarget.h"
-#include "Items/Weapons/MortisEnemyWeapon.h"
-#include "Items/Weapons/MortisWeaponBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UMortisGA_ExecuteAttackPattern::UMortisGA_ExecuteAttackPattern()
@@ -76,6 +76,7 @@ void UMortisGA_ExecuteAttackPattern::EndAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
+	// MORTIS_LOG("End GA_ExecuteAttackPattern");
 	ResetCachedTasks();
 	AttackPattern = nullptr;
 	
@@ -84,6 +85,7 @@ void UMortisGA_ExecuteAttackPattern::EndAbility(const FGameplayAbilitySpecHandle
 
 void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 {
+	MORTIS_LOG("Execute Next Step");
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex) || !CurrentActorInfo)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
@@ -107,10 +109,24 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 				CachedTargetActor.Get(),
 				Step.WarpTargetMode,
 				Step.DesiredDistance,
-				0.1f,
-				Step.WarpUpdateDuration
+				0.1f
 			);
-			CachedUpdateWarpTargetTask->ReadyForActivation();
+			if (CachedUpdateWarpTargetTask.IsValid())
+			{
+				CachedUpdateWarpTargetTask->ReadyForActivation();
+			}
+			
+			CachedWarpStopTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+				this,
+				MortisGameplayTags::Event_Montage_EndWarpUpdate,
+				nullptr,
+				true
+			);
+			if (CachedWarpStopTask.IsValid())
+			{
+				CachedWarpStopTask->EventReceived.AddDynamic(this, &ThisClass::OnStopWarpUpdateEventReceived);
+				CachedWarpStopTask->ReadyForActivation();
+			}
 		}
 		else
 		{
@@ -122,7 +138,12 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 			}
 			FMotionWarpingTarget WarpTarget;
 			WarpTarget.Name = Step.WarpTargetName;
-			WarpTarget.Location = CachedTargetActor->GetActorLocation();
+			WarpTarget.Location = UMortisFunctionLibrary::CalculateWarpTargetLocation(
+				GetAvatarActorFromActorInfo(),
+				CachedTargetActor.Get(),
+				Step.WarpTargetMode,
+				Step.DesiredDistance
+			);
 			FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
 				CurrentActorInfo->AvatarActor->GetActorLocation(), 
 				CachedTargetActor->GetActorLocation()
@@ -157,7 +178,6 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		this,
 		HitEventTag,
 		nullptr,
-		false,
 		true
 	);
 
@@ -229,6 +249,21 @@ void UMortisGA_ExecuteAttackPattern::OnStepFinished(bool bInterrupted)
 	}
 }
 
+void UMortisGA_ExecuteAttackPattern::OnStopWarpUpdateEventReceived(FGameplayEventData Payload)
+{
+	if (CachedUpdateWarpTargetTask.IsValid())
+	{
+		CachedUpdateWarpTargetTask->EndTask();
+		CachedUpdateWarpTargetTask.Reset();
+	}
+	
+	if (CachedWarpStopTask.IsValid())
+	{
+		CachedWarpStopTask->EndTask();
+		CachedWarpStopTask.Reset();
+	}
+}
+
 void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Payload)
 {
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex))
@@ -280,6 +315,12 @@ void UMortisGA_ExecuteAttackPattern::ResetCachedTasks()
 	{
 		CachedUpdateWarpTargetTask->EndTask();
 		CachedUpdateWarpTargetTask.Reset();
+	}
+	
+	if (CachedWarpStopTask.IsValid())
+	{
+		CachedWarpStopTask->EndTask();
+		CachedWarpStopTask.Reset();
 	}
 	
 	if (CachedWaitHitTask.IsValid())

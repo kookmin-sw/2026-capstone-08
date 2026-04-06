@@ -35,6 +35,10 @@ void UMortisEnemyAnimInstance::NativeInitializeAnimation()
 
 			bUseTwoHandedIK = EnemyData->bUseTwoHandedIK;
 			LeftHandGripSocketName = EnemyData->LeftHandSocketName;
+			
+			LeftUpperArmSocketName = EnemyData->LeftUpperArmSocketName;
+			ElbowBackOffset = EnemyData->ElbowBackOffset;
+			ElbowOutOffset = EnemyData->ElbowOutOffset;
 		}
 	}
 }
@@ -58,7 +62,17 @@ void UMortisEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		{
 			Montage_SetPlayRate(CurrentMontage, CurveSpeed);
 		}
+		else
+		{
+			Montage_SetPlayRate(CurrentMontage);
+		}
 	}
+	
+	// if (OwningCharacter)
+	// {
+	// 	FString DebugString = FString::Printf(TEXT("SmoothedSpeed: %f, SmoothedDirection: %f"), SmoothedSpeed, SmoothedDirection);
+	// 	DrawDebugString(GetWorld(), OwningCharacter->GetActorLocation() + FVector(0.f, 0, 100.f), DebugString, OwningCharacter, FColor::Yellow, 0.f);
+	// }
 }
 
 void UMortisEnemyAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
@@ -70,13 +84,11 @@ void UMortisEnemyAnimInstance::UpdateAimOffset(float DeltaSeconds)
 {
 	if (!OwningCharacter)
 	{
-		MORTIS_LOG("OwningCharacter is null!");
 		return;
 	}
 	AMortisAIController* AIC = Cast<AMortisAIController>(OwningCharacter->GetController());
 	if (!AIC)
 	{
-		MORTIS_LOG("OwningCharacter is invalid");
 		return;
 	}
 	FRotator AimOffset = FRotator(AimPitch, AimYaw, 0.f);
@@ -132,7 +144,7 @@ void UMortisEnemyAnimInstance::UpdateIKAlpha(float DeltaSeconds)
 		return;
 	}
 		
-	UMeshComponent* WeaponMesh = Weapon->GetWeaponMesh();
+	UMeshComponent* WeaponMesh = Weapon->GetItemMesh();
 	if (!WeaponMesh)
 	{
 		return;

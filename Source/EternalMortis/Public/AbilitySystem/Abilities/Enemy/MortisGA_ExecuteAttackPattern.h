@@ -56,6 +56,9 @@ protected:
 	void OnStepFinished(bool bInterrupted);
 
 	UFUNCTION()
+	void OnStopWarpUpdateEventReceived(FGameplayEventData Payload); 
+	
+	UFUNCTION()
 	void OnHitEventReceived(FGameplayEventData Payload);
 
 	UFUNCTION()
@@ -71,6 +74,7 @@ private:
 	TWeakObjectPtr<AActor> CachedTargetActor;
 	TWeakObjectPtr<UAbilityTask_PlayMontageAndWait> CachedMontageTask;
 	TWeakObjectPtr<UMortisAT_UpdateWarpTarget> CachedUpdateWarpTargetTask;
+	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedWarpStopTask;
 	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedWaitHitTask; 
 	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedComboTransitionTask; 
 

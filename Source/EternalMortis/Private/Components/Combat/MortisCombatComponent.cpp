@@ -2,32 +2,46 @@
 
 
 #include "Components/Combat/MortisCombatComponent.h"
-
 #include "MortisDebugHelper.h"
 #include "Items/Weapons/MortisWeaponBase.h"
+#include "Items/Weapons/MortisShieldBase.h"
+
 #include "Components/BoxComponent.h"
 
 
-void UMortisCombatComponent::RegisterSpawnedWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon)
+void UMortisCombatComponent::RegisterCombatItem(FGameplayTag ItemTag, AMortisCombatItemBase* ItemToRegister, bool bRegisterAsEquippedWeapon)
 {
-	checkf(!CharacterCarriedWeaponMap.Contains(WeaponTag), TEXT("A weapon named %s has already been added as carried weapon"), *WeaponTag.ToString());
-	check(WeaponToRegister);
+	checkf(ItemToRegister, TEXT("ItemToRegister is null for tag: %s"), *ItemTag.ToString());
+	checkf(!CharacterWeaponMap.Contains(ItemTag), TEXT("Item with tag %s is already registered"), *ItemTag.ToString());
+    
+	if (AMortisWeaponBase* Weapon = Cast<AMortisWeaponBase>(ItemToRegister))
+	{
+		CharacterWeaponMap.Emplace(ItemTag, Weapon);
+		
+		Weapon->OnWeaponHitTarget.BindUObject(this, &ThisClass::OnHitTargetActor);
+		Weapon->OnWeaponPulledFromTarget.BindUObject(this, &ThisClass::OnWeaponPulledFromTargetActor);
+        
+		if (bRegisterAsEquippedWeapon)
+		{
+			CurrentEquippedWeaponTag = ItemTag;
+		}
+		MORTIS_LOG("Weapon Registered: %s", *ItemTag.ToString());
+	}
+	else if (AMortisShieldBase* Shield = Cast<AMortisShieldBase>(ItemToRegister))
+	{
+		Shield->OnShieldBeginBlock.BindUObject(this, &ThisClass::OnShieldBeginBlock);
+		Shield->OnShieldEndBlock.BindUObject(this, &ThisClass::OnShieldEndBlock);
+		MORTIS_LOG("Shield Registered: %s", *ItemTag.ToString());
+	}
 
-	CharacterCarriedWeaponMap.Emplace(WeaponTag, WeaponToRegister);
-	WeaponToRegister->OnWeaponHitTarget.BindUObject(this, &ThisClass::OnHitTargetActor);
-	WeaponToRegister->OnWeaponPulledFromTarget.BindUObject(this, &ThisClass::OnWeaponPulledFromTargetActor);
-
-	if (bRegisterAsEquippedWeapon)
-		CurrentEquippedWeaponTag = WeaponTag;
 }
-
 bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 {
 	if (!WeaponTag.IsValid())
 		return false;
 
 	AMortisWeaponBase* Weapon = nullptr;
-	if (AMortisWeaponBase* const* FoundWeapon = CharacterCarriedWeaponMap.Find(WeaponTag))
+	if (AMortisWeaponBase* const* FoundWeapon = CharacterWeaponMap.Find(WeaponTag))
 	{
 		Weapon = *FoundWeapon;
 	}
@@ -36,7 +50,7 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 	if (CurrentEquippedWeaponTag == WeaponTag)
 	{
 		CurrentEquippedWeaponTag = FGameplayTag();
-		OverlappedActors.Empty();
+		// OverlappedActors.Empty();
 	}
 
 	// delegate 정리
@@ -47,14 +61,13 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 	}
 
 	// 맵에서는 무조건 제거
-	return CharacterCarriedWeaponMap.Remove(WeaponTag) > 0;
+	return CharacterWeaponMap.Remove(WeaponTag) > 0;
 }
-
-AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedWeaponByTag(FGameplayTag WeaponTagToGet) const
+AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedItemByTag(FGameplayTag TagToGet) const
 {
-	if (CharacterCarriedWeaponMap.Contains(WeaponTagToGet))
+	if (CharacterWeaponMap.Contains(TagToGet))
 	{
-		if (AMortisWeaponBase* const* FoundWeapon = CharacterCarriedWeaponMap.Find(WeaponTagToGet))
+		if (AMortisWeaponBase* const* FoundWeapon = CharacterWeaponMap.Find(TagToGet))
 			return *FoundWeapon;
 	}
 	return nullptr;
@@ -64,10 +77,10 @@ AMortisWeaponBase* UMortisCombatComponent::GetCharacterCurrentEquippedWeapon() c
 {
 	if (!CurrentEquippedWeaponTag.IsValid())
 	{
-		MORTIS_LOG("%s is invalid!", *CurrentEquippedWeaponTag.GetTagName().ToString());
+		// MORTIS_LOG("%s is invalid!", *CurrentEquippedWeaponTag.GetTagName().ToString());
 		return nullptr;
 	}
-	return GetCharacterCarriedWeaponByTag(CurrentEquippedWeaponTag);
+	return GetCharacterCarriedItemByTag(CurrentEquippedWeaponTag);
 }
 
 void UMortisCombatComponent::ToggleDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle, EToggleCollisionType ToggleDamageType)
@@ -81,13 +94,18 @@ void UMortisCombatComponent::ToggleDamageCollision(bool bShouldEnable, FGameplay
 
 void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)
 {
+	if (!TagToToggle.IsValid())
+	{
+		MORTIS_LOG("%s is invalid!", *TagToToggle.ToString());
+		return;
+	}
 	AMortisWeaponBase* WeaponToToggle = GetCharacterCurrentEquippedWeapon();
 	if (!WeaponToToggle)
 	{
 		MORTIS_LOG("WeaponToToggle is null!");
 		return;
 	}
-	UShapeComponent* CollisionShape = WeaponToToggle->GetWeaponCollisionComponent(TagToToggle);
+	UShapeComponent* CollisionShape = WeaponToToggle->GetCollisionComponentByTag(TagToToggle);
 	if (!CollisionShape)
 	{
 		MORTIS_LOG("ShapeComponent is null!");
@@ -101,7 +119,7 @@ void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEn
 	else
 	{
 		CollisionShape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		OverlappedActors.Empty();
+		WeaponToToggle->ClearOverlappedActors();
 	}
 }
 
@@ -115,5 +133,13 @@ void UMortisCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
 }
 void UMortisCombatComponent::OnWeaponPulledFromTargetActor(AActor* InteractedActor)
+{
+}
+
+void UMortisCombatComponent::OnShieldBeginBlock(AActor* Weapon)
+{
+}
+
+void UMortisCombatComponent::OnShieldEndBlock(AActor* Weapon)
 {
 }

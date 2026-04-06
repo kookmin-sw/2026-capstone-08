@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Enemy/MortisEnemyGameplayAbility.h"
+#include "Controllers/MortisAIController.h"
 #include "MortisGA_TurnInPlace.generated.h"
 
 /**
@@ -14,8 +15,10 @@ class ETERNALMORTIS_API UMortisGA_TurnInPlace : public UMortisEnemyGameplayAbili
 {
 	GENERATED_BODY()
 
-public:
+protected:
+	//~ Begin UGameplayAbility Interface
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	//~ End UGameplayAbility Interface
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -40,7 +43,7 @@ protected:
 	bool bUseMotionWarping = true;
 	
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "bUseMotionWarping"))
-	FName WarpTargetName = NAME_None;
+	FName WarpTargetName = TEXT("AttackTarget");
 
 	UPROPERTY(EditAnywhere)
 	float Turn90Threshold = 60.f;

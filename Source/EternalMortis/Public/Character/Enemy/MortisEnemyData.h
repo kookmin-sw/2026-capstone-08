@@ -65,11 +65,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	float DirectionInterpSpeed = 10.f;
 	
+	/* For Two Hand IK */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation|IK")
 	bool bUseTwoHandedIK = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation|IK", meta = (EditCondition = "bUseTwoHandedIK"))
 	FName LeftHandSocketName = TEXT("LeftHandGripSocket");
+	
+	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
+	FName LeftUpperArmSocketName = TEXT("upperarm_l");
+	
+	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
+	float ElbowOutOffset = 50.f;
+
+	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
+	float ElbowBackOffset = 30.f;
 	
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
@@ -109,7 +119,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
 	float PeripheralVisionAngleDegrees = 360.f;
 
-	/* Crowd Avoidance */
+	/* Detour Crowd Avoidance */
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Detour Crowd Avoidance Config")
 	bool bEnableCrowdAvoidance = true;
 

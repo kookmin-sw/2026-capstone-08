@@ -21,6 +21,9 @@ public:
 	//~ Begin UMortisCombatComponent Intferface
 	virtual void OnHitTargetActor(AActor* HitActor) override;
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor) override;
+	
+	virtual void OnShieldBeginBlock(AActor* Weapon) override;
+	virtual void OnShieldEndBlock(AActor* Weapon) override;
 	//~ End UMortisCombatComponent Intferface
 	
 protected:

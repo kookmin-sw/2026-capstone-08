@@ -12,12 +12,7 @@ void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
 	Super::OnHitTargetActor(HitActor);
 	
-	if (OverlappedActors.Contains(HitActor))
-	{
-		return;
-	}
-	OverlappedActors.AddUnique(HitActor);
-	
+	MORTIS_LOG("OnHitTargetActor");
 	FGameplayEventData EventData;
 	EventData.Instigator = GetOwningPawn();
 	EventData.Target = HitActor;
@@ -28,6 +23,37 @@ void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
 void UMortisEnemyCombatComponent::OnWeaponPulledFromTargetActor(AActor* InteractedActor)
 {
 	Super::OnWeaponPulledFromTargetActor(InteractedActor);
+}
+
+void UMortisEnemyCombatComponent::OnShieldBeginBlock(AActor* Weapon)
+{
+	Super::OnShieldBeginBlock(Weapon);
+	
+	MORTIS_LOG("");
+	AActor* WeaponActor = Weapon->GetOwner();
+	if (!WeaponActor)
+	{
+		return;
+	}
+	
+	APawn* Attacker = WeaponActor->GetInstigator();
+	if (!Attacker)
+	{
+		return;
+	}
+	
+	FGameplayEventData EventData;
+	EventData.Instigator = GetOwningPawn();
+	EventData.Target = Attacker;
+	
+	MORTIS_LOG("Send Gameplay Event To %s", *Attacker->GetActorNameOrLabel());
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_Block_Success, EventData);
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Attacker, MortisGameplayTags::Event_Combat_Attack_Blocked, EventData);
+}
+
+void UMortisEnemyCombatComponent::OnShieldEndBlock(AActor* Weapon)
+{
+	Super::OnShieldEndBlock(Weapon);
 }
 
 void UMortisEnemyCombatComponent::SetAttackPattern(UMortisAttackPatternData* PatternData)
@@ -61,10 +87,10 @@ int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, f
 	float TotalWeight = 0.f;
 	for (int32 i = 0; i < AttackPatterns.Num(); i++)
 	{
-		// MORTIS_LOG("DistanceToTarget: %s, AngleToTarget: %s, RequiredPhase: %s",
-		// 	(DistanceToTarget >= AttackPatterns[i].MinRange && DistanceToTarget <= AttackPatterns[i].MaxRange) ? TEXT("true") : TEXT("false"), 
-		// 	(AngleToTarget >= AttackPatterns[i].MinAngle && AngleToTarget <= AttackPatterns[i].MaxAngle) ? TEXT("true") : TEXT("false"), 
-		// 	AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
+		MORTIS_LOG("DistanceToTarget: %s, AngleToTarget: %s, RequiredPhase: %s",
+			(DistanceToTarget >= AttackPatterns[i].MinRange && DistanceToTarget <= AttackPatterns[i].MaxRange) ? TEXT("true") : TEXT("false"), 
+			(AngleToTarget >= AttackPatterns[i].MinAngle && AngleToTarget <= AttackPatterns[i].MaxAngle) ? TEXT("true") : TEXT("false"), 
+			AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
 		if (DistanceToTarget >= AttackPatterns[i].MinRange &&
 			DistanceToTarget <= AttackPatterns[i].MaxRange &&
 			AngleToTarget >= AttackPatterns[i].MinAngle &&

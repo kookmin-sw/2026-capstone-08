@@ -17,14 +17,12 @@ class ETERNALMORTIS_API AMortisPlayerWeapon : public AMortisWeaponBase
 {
 	GENERATED_BODY()
 
-public:
-	AMortisPlayerWeapon();
-	
+public:	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|WeaponData")
 	FMortisPlayerWeaponData PlayerWeaponData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon")
-	TObjectPtr<UStaticMeshComponent> WeaponMesh;
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon")
+	// TObjectPtr<UStaticMeshComponent> WeaponMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mortis|Weapon")
 	FActiveGameplayEffectHandle WeaponDamageEffectHandle;
@@ -34,7 +32,6 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	TArray<FGameplayAbilitySpecHandle> GetGrantedAbilitySpecHandles() const;
-
 
 private:
 	TArray<FGameplayAbilitySpecHandle> GrantedAbilitySpecHandles;

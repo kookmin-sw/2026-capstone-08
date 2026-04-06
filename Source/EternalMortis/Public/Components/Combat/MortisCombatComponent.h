@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/PawnExtensionComponentBase.h"
 #include "GameplayTagContainer.h"
+#include "Items/Weapons/MortisShieldBase.h"
 #include "MortisCombatComponent.generated.h"
 
 class AMortisWeaponBase;
@@ -15,6 +16,7 @@ UENUM(BlueprintType)
 enum class EToggleCollisionType : uint8
 {
 	CurrentWeapon,
+	Shield,
 	Body
 };
 /**
@@ -27,13 +29,13 @@ class ETERNALMORTIS_API UMortisCombatComponent : public UPawnExtensionComponentB
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
-	void RegisterSpawnedWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon);
+	void RegisterCombatItem(FGameplayTag ItemTag, AMortisCombatItemBase* ItemToRegister, bool bRegisterAsEquippedWeapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	bool UnregisterSpawnedWeapon(FGameplayTag WeaponTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
-	AMortisWeaponBase* GetCharacterCarriedWeaponByTag(FGameplayTag InWeaponTagToGet) const;
+	AMortisWeaponBase* GetCharacterCarriedItemByTag(FGameplayTag TagToGet) const;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Mortis|Combat")
 	FGameplayTag CurrentEquippedWeaponTag;
@@ -48,6 +50,10 @@ public:
 	virtual void OnHitTargetActor(AActor* HitActor);
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor);
 
+	/* Shield Callbacks */
+	virtual void OnShieldBeginBlock(AActor* Weapon);
+	virtual void OnShieldEndBlock(AActor* Weapon);
+	
 	/* Attack Trace */
 	void BeginAttackTrace(FName SocketName, float Radius);
 	void UpdateAttackTrace();
@@ -57,12 +63,9 @@ protected:
 	virtual void ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 	virtual void ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis")
-	TArray<AActor*> OverlappedActors;
-
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Mortis|Combat")
-	TMap<FGameplayTag, AMortisWeaponBase*> CharacterCarriedWeaponMap;
+	TMap<FGameplayTag, AMortisWeaponBase*> CharacterWeaponMap;
 
 	/* Attack Trace */
 	FName CurrentTraceSocket;

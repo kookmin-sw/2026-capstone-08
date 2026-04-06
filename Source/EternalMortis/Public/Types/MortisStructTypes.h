@@ -95,9 +95,6 @@ struct FMortisAttackPatternStep
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseMotionWarping"))
 	bool bContinuousWarpUpdate = false;
 
-	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bContinuousWarpUpdate"))
-	float WarpUpdateDuration = -1.f;
-
 	/* Combo */
 	UPROPERTY(EditDefaultsOnly)
 	bool bUseComboTransitionNotify = false;

@@ -10,7 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 UMortisAT_UpdateWarpTarget* UMortisAT_UpdateWarpTarget::UpdateWarpTarget(UGameplayAbility* OwningAbility,
-	FName WarpTargetName, AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float DesiredDistance, float UpdateInterval, float WarpUpdateDuration)
+	FName WarpTargetName, AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float DesiredDistance, float UpdateInterval)
 {
 	UMortisAT_UpdateWarpTarget* Task = NewAbilityTask<UMortisAT_UpdateWarpTarget>(OwningAbility);
 	Task->WarpTargetName = WarpTargetName;
@@ -18,7 +18,6 @@ UMortisAT_UpdateWarpTarget* UMortisAT_UpdateWarpTarget::UpdateWarpTarget(UGamepl
 	Task->CachedTarget = TargetActor;
 	Task->WarpTargetMode = WarpTargetMode;
 	Task->DesiredDistance = DesiredDistance;
-	Task->WarpUpdateDuration = WarpUpdateDuration;
 	Task->bTickingTask = true;
 	
 	return Task;
@@ -57,16 +56,6 @@ void UMortisAT_UpdateWarpTarget::Activate()
 void UMortisAT_UpdateWarpTarget::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
-
-	if (WarpUpdateDuration > 0.f)
-	{
-		TotalElapsedTime += DeltaTime;
-		if (TotalElapsedTime >= WarpUpdateDuration)
-		{
-			EndTask();
-			return;
-		}
-	}
 	
 	TimeSinceLastUpdate += DeltaTime;
 	if (TimeSinceLastUpdate > UpdateInterval)
@@ -95,33 +84,3 @@ void UMortisAT_UpdateWarpTarget::UpdateTarget()
 
 	// MORTIS_LOG("Update: %f, %f", CachedTarget->GetActorLocation().X, CachedTarget->GetActorLocation().Y);
 }
-
-// FVector UMortisAT_UpdateWarpTarget::CalculateWarpTargetLocation()
-// {
-// 	if (!CachedTarget.IsValid() || !GetAvatarActor())
-// 	{
-// 		return FVector::Zero();
-// 	}
-// 	const FVector TargetLocation = CachedTarget->GetActorLocation();
-// 	const FVector SelfLocation = GetAvatarActor()->GetActorLocation();
-// 	switch (WarpTargetMode)
-// 	{
-// 	case EMortisWarpTargetMode::ActorLocation:
-// 		return TargetLocation;
-// 		
-// 	case EMortisWarpTargetMode::OffsetFromSelf:
-// 	{
-// 		FVector Direction = TargetLocation - SelfLocation;
-// 		return SelfLocation + Direction.GetSafeNormal2D() * DesiredDistance;			
-// 	}
-//
-// 	case EMortisWarpTargetMode::OffsetFromTarget:
-// 	{
-// 		FVector Direction = SelfLocation - TargetLocation;
-// 		return TargetLocation + Direction.GetSafeNormal2D() * DesiredDistance;
-// 	}
-// 		
-// 	default:
-// 		return TargetLocation;
-// 	}
-// }

@@ -45,6 +45,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
 	bool bIsStrafing;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
+	bool bIsGuarding;
+	
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData|IK")
     float CurrentIKAlpha = 0.f;
     
@@ -54,10 +57,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AnimData|IK")
 	FVector LeftElbowJointTarget;
 
-	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
+	UPROPERTY(VisibleAnywhere, Category = "AnimData|IK")
 	float ElbowOutOffset = 50.f;
 
-	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
+	UPROPERTY(VisibleAnywhere, Category = "AnimData|IK")
 	float ElbowBackOffset = 30.f;
 	
 private:
@@ -68,6 +71,6 @@ private:
 	void OnTagChanged(const FGameplayTag Tag, int32 NewCount, FName BoolPropertyName);
 
 	bool bUseTwoHandedIK = false;
-	FName LeftHandGripSocketName = NAME_None;
-	FName LeftUpperArmSocketName = TEXT("upperarm_l");
+	FName LeftHandGripSocketName;
+	FName LeftUpperArmSocketName;
 };

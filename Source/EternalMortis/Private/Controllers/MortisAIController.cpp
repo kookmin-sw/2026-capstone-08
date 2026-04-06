@@ -23,7 +23,7 @@ AMortisAIController::AMortisAIController(const FObjectInitializer& ObjectInitial
 	PerceptionComponent->ConfigureSense(*SightConfig);
 	PerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
 
-	PerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::HandleTargetPerceptionUpdated);
+	PerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetPerceptionUpdated);
 }
 
 ETeamAttitude::Type AMortisAIController::GetTeamAttitudeTowards(const AActor& Other) const
@@ -56,12 +56,32 @@ void AMortisAIController::ConfigurePerceptionFromData(const UMortisEnemyData* En
 	SightConfig->PeripheralVisionAngleDegrees = EnemyData->PeripheralVisionAngleDegrees;
 	
 	PerceptionComponent->ConfigureSense(*SightConfig);
-
-	if (UCrowdFollowingComponent* CrowdComp = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent()))
+	
+	if (EnemyData->bEnableCrowdAvoidance)
 	{
-		CrowdComp->SetCrowdSimulationState(EnemyData->bEnableCrowdAvoidance? ECrowdSimulationState::Enabled : ECrowdSimulationState::ObstacleOnly);
-		CrowdComp->SetCrowdAvoidanceQuality(static_cast<ECrowdAvoidanceQuality::Type>(EnemyData->AvoidanceQuality - 1));
-		CrowdComp->SetCrowdCollisionQueryRange(EnemyData->AvoidanceQueryRange);
+		if (UCrowdFollowingComponent* CrowdComp = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent()))
+		{
+			if (EnemyData->bEnableCrowdAvoidance)
+			{
+				switch (EnemyData->AvoidanceQuality)
+				{
+				case 1: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::Low);
+					break;
+				case 2: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::Medium);
+					break;
+				case 3: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::Good);
+					break;
+				case 4: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::High);
+					break;
+				default:
+					break;
+				}
+			}
+		
+			CrowdComp->SetCrowdSimulationState(EnemyData->bEnableCrowdAvoidance ? ECrowdSimulationState::Enabled : ECrowdSimulationState::ObstacleOnly);
+			CrowdComp->SetCrowdAvoidanceQuality(static_cast<ECrowdAvoidanceQuality::Type>(EnemyData->AvoidanceQuality - 1));
+			CrowdComp->SetCrowdCollisionQueryRange(EnemyData->AvoidanceQueryRange);
+		}
 	}
 
 	SetGenericTeamId(static_cast<uint8>(EnemyData->Affiliation));
@@ -104,7 +124,7 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 	}
 }
 
-void AMortisAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
+void AMortisAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	UBlackboardComponent* BBComp = GetBlackboardComponent();
 	if (!BBComp)

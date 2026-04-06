@@ -46,5 +46,5 @@ protected:
 	//~ End AAIController Begin
 	
 	UFUNCTION()
-	void HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 };

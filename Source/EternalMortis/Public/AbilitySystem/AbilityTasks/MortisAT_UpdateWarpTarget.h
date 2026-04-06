@@ -22,12 +22,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability|Task", meta = (HidePin = "OwningAbility", DefaultToOwningAbility = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UMortisAT_UpdateWarpTarget* UpdateWarpTarget(UGameplayAbility* OwningAbility, FName WarpTargetName, AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float
-		DesiredDistance, float UpdateInterval = 0.1f, float
-		WarpUpdateDuration = -1.f);
+		DesiredDistance, float UpdateInterval = 0.1f);
 
+public:
+	//~ Begin UGameplayTask Interface
+	virtual void TickTask(float DeltaTime) override;
+	//~ End UGameplayTask Interface
+	
+protected:
 	//~ Begin UGameplayTask Interface
 	virtual void Activate() override;
-	virtual void TickTask(float DeltaTime) override;
 	//~ End UGameplayTask Interface
 
 private:
@@ -36,12 +40,10 @@ private:
 	FName WarpTargetName;
 	EMortisWarpTargetMode WarpTargetMode;
 	float DesiredDistance = 0.f;
-	float WarpUpdateDuration = -1.f;
 	
 	float UpdateInterval = 0.1f;
 	
 	float TimeSinceLastUpdate = 0.1f;
-	float TotalElapsedTime = 0.f;
 
 	bool bIsUpdateFinished = false;
 	

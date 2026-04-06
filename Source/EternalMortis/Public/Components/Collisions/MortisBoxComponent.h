@@ -5,18 +5,19 @@
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "GameplayTagContainer.h"
+#include "Interfaces/MortisCollisionInterface.h"
 #include "MortisBoxComponent.generated.h"
 
 /**
  * 
  */
 UCLASS(meta = (BlueprintSpawnableComponent))
-class ETERNALMORTIS_API UMortisBoxComponent : public UBoxComponent
+class ETERNALMORTIS_API UMortisBoxComponent : public UBoxComponent, public IMortisCollisionInterface
 {
 	GENERATED_BODY()
 	
 public:
-	FGameplayTag GetCollisionTag() const { return CollisionTag; }
+	virtual FGameplayTag GetCollisionTag() const override { return CollisionTag; }
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Hitbox", meta = (Categories = "Data.CollisionType"))
