@@ -2,6 +2,8 @@
 
 
 #include "AbilitySystem/Abilities/Player/MortisPlayerGameplayAbility.h"
+
+#include "MortisFunctionLibrary.h"
 #include "Character/Player/MortisPlayerCharacter.h"
 #include "Controllers/MortisPlayerController.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
@@ -29,7 +31,7 @@ UMortisPlayerCombatComponent* UMortisPlayerGameplayAbility::GetMortisPlayerComba
 	return GetMortisPlayerCharacterFromActorInfo()->GetMortisPlayerCombatComponent();
 }
 
-FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef, FGameplayTag AttackType)
+FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType)
 {
 	check(EffectClass);
 
@@ -46,24 +48,30 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		MortisGameplayTags::Data_Player_Stat_WeaponDamage,
-		WeaponDamage
+		WeaponData.WeaponDamage
 	);
 
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		MortisGameplayTags::Data_Player_Stat_Coefficient_Strength,
-		StrCoef
+		UMortisFunctionLibrary::GetGradeCoef(WeaponData.StrGrade)
 	);
 
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		MortisGameplayTags::Data_Player_Stat_Coefficient_Dexterity,
-		DexCoef
+		UMortisFunctionLibrary::GetGradeCoef(WeaponData.DexGrade)
 	);
 
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		MortisGameplayTags::Data_Player_Stat_Coefficient_Intelligence,
-		IntCoef
+		UMortisFunctionLibrary::GetGradeCoef(WeaponData.IntGrade)
 	);
 
+	/* for poise test */
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		MortisGameplayTags::Data_Stat_PoiseDamage,
+		20.f
+	);
+	
 	if (!AttackType.IsValid()) AttackType = MortisGameplayTags::Data_AttackType_Slash;
 	EffectSpecHandle.Data->AddDynamicAssetTag(AttackType);
 

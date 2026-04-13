@@ -44,3 +44,10 @@ enum class EMortisWarpTargetMode : uint8
 	OffsetFromSelf UMETA(DisplayName = "Offset From Self"),
 	OffsetFromTarget UMETA(DisplayName = "Offset From Target")
 };
+
+UENUM()
+enum class EMortisMeshSource : uint8
+{
+	WeaponMesh UMETA(DisplayName = "Weapon Mesh"),
+	CharacterMesh UMETA(DisplayName = "Character Mesh"),
+};

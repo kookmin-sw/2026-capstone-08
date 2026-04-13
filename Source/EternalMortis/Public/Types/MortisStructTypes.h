@@ -29,6 +29,19 @@ struct FMortisAbilityInputBinding
 };
 
 USTRUCT(BlueprintType)
+struct FMortisWeaponCommonData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float WeaponDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float PoiseDamage;
+	
+};
+
+USTRUCT(BlueprintType)
 struct FMortisPlayerWeaponData
 {
 	GENERATED_BODY()
@@ -59,7 +72,7 @@ struct FMortisEnemyWeaponData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float WeaponDamage;
+	FMortisWeaponCommonData CommonData;
 };
 
 USTRUCT(BlueprintType)
@@ -153,4 +166,27 @@ struct FMortisDistanceRange
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Distance")
 	float MaxDistance;
+};
+
+USTRUCT(BlueprintType)
+struct FMortisAttackTraceConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	float Radius = 5.f;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FName StartSocket;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName EndSocket;
+
+	UPROPERTY(EditDefaultsOnly)
+	EMortisMeshSource MeshSource = EMortisMeshSource::WeaponMesh;
+	
+	bool operator==(const FMortisAttackTraceConfig& Config) const
+	{
+		return StartSocket == Config.StartSocket && EndSocket == Config.EndSocket && MeshSource == Config.MeshSource;
+	}
 };

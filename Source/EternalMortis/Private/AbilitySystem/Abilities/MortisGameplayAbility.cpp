@@ -6,6 +6,7 @@
 #include "Character/MortisCharacterBase.h"
 #include "Components/Combat/MortisCombatComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "MortisDebugHelper.h"
 #include "MortisFunctionLibrary.h"
 
 void UMortisGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -30,7 +31,15 @@ void UMortisGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 FActiveGameplayEffectHandle UMortisGameplayAbility::NativeApplyEffectSpecHandleToTarget(const AActor* TargetActor, const FGameplayEffectSpecHandle& SpecHandle)
 {
 	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(const_cast<AActor*>(TargetActor));
-	check(TargetASC && SpecHandle.IsValid());
+	if (!TargetActor)
+	{
+		MORTIS_LOG("TargetActor is null");
+	}
+	if (!SpecHandle.IsValid())
+	{
+		MORTIS_LOG("SpecHandle is invalid");
+	}
+	// MORTIS_LOG("Apply GE: Target=%s", *TargetActor->GetActorNameOrLabel());
 	return GetMortisAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(
 		*SpecHandle.Data,
 		TargetASC
@@ -103,4 +112,35 @@ UMotionWarpingComponent* UMortisGameplayAbility::GetMotionWarpingComponent() con
 		return Character->GetMotionWarpingComponent();
 	}
 	return nullptr;
+}
+
+FGameplayEffectSpecHandle UMortisGameplayAbility::MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass,
+	float Damage, float PoiseDamage, const FGameplayTag DamageTag)
+{
+	if (!EffectClass)
+	{
+		return FGameplayEffectSpecHandle();
+	}
+
+	FGameplayEffectContextHandle ContextHandle = GetMortisAbilitySystemComponentFromActorInfo()->MakeEffectContext();
+	ContextHandle.SetAbility(this);
+	ContextHandle.AddSourceObject(GetAvatarActorFromActorInfo());
+	ContextHandle.AddInstigator(GetAvatarActorFromActorInfo(), GetAvatarActorFromActorInfo());
+
+	FGameplayEffectSpecHandle EffectSpecHandle = GetMortisAbilitySystemComponentFromActorInfo()->MakeOutgoingSpec(
+		EffectClass,
+		GetAbilityLevel(),
+		ContextHandle
+	);
+
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		DamageTag,
+		Damage
+	);
+	
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		MortisGameplayTags::Data_Stat_PoiseDamage,
+		PoiseDamage
+	);
+	return EffectSpecHandle;
 }

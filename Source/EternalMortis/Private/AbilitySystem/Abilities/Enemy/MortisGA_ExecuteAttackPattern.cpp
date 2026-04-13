@@ -85,7 +85,6 @@ void UMortisGA_ExecuteAttackPattern::EndAbility(const FGameplayAbilitySpecHandle
 
 void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 {
-	MORTIS_LOG("Execute Next Step");
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex) || !CurrentActorInfo)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
@@ -266,6 +265,7 @@ void UMortisGA_ExecuteAttackPattern::OnStopWarpUpdateEventReceived(FGameplayEven
 
 void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Payload)
 {
+	// MORTIS_LOG("OnHitEventReceived");
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex))
 	{
 		MORTIS_LOG("Attack Pattern or Step is invalid");
@@ -279,13 +279,9 @@ void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Paylo
 	}
 
 	AMortisEnemyWeapon* Weapon = CombatComponent->GetEnemyWeapon();
-	if (!Weapon)
-	{
-		MORTIS_LOG("Weapon is invalid");
-		return;
-	}
+	const FMortisWeaponCommonData& WeaponData = Weapon ? Weapon->GetEnemyWeaponData().CommonData : CombatComponent->GetUnarmedData();
+	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, WeaponData, DamageTag);
 	
-	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, Weapon->GetEnemyWeaponData().WeaponDamage, DamageTag);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
 		MortisGameplayTags::Data_AttackScale,
@@ -294,7 +290,7 @@ void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Paylo
 	
 	NativeApplyEffectSpecHandleToTarget(Payload.Target, SpecHandle);
 
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(const_cast<AActor*>(Payload.Target.Get()), MortisGameplayTags::Event_Action_HitReact, Payload);
+	// UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(const_cast<AActor*>(Payload.Target.Get()), MortisGameplayTags::Event_Action_HitReact, Payload);
 }
 
 void UMortisGA_ExecuteAttackPattern::OnComboTransitionReceived(FGameplayEventData Payload)

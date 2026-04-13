@@ -81,8 +81,7 @@ void UMortisBTT_Strafe::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (FVector::DistSquared(Memory->LastStrafingLocation, AIC->GetPawn()->GetActorLocation()) < FMath::Square(AcceptableRadius)
 		|| Memory->ElapsedTime >= UpdateInterval)
 	{
-		bool bFinish = FVector::DistSquared(Memory->LastStrafingLocation, AIC->GetPawn()->GetActorLocation()) < FMath::Square(AcceptableRadius);
-		bool Interval = Memory->ElapsedTime >= UpdateInterval;
+		// bool bFinish = FVector::DistSquared(Memory->LastStrafingLocation, AIC->GetPawn()->GetActorLocation()) < FMath::Square(AcceptableRadius);
 		UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 		if (!BBComp)
 		{
@@ -91,6 +90,7 @@ void UMortisBTT_Strafe::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		}
 		
 		FVector StrafingLoc = BBComp->GetValueAsVector(StrafingLocationKey.SelectedKeyName);
+		// MORTIS_LOG("Move To: X = %f, Y = %f", StrafingLoc.X, StrafingLoc.Y);
 		AIC->MoveToLocation(StrafingLoc);
 		Memory->LastStrafingLocation = StrafingLoc;
 		Memory->ElapsedTime = 0.f;
@@ -100,9 +100,9 @@ void UMortisBTT_Strafe::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 EBTNodeResult::Type UMortisBTT_Strafe::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (AAIController* AIC = OwnerComp.GetAIOwner())
-	{
-		AIC->StopMovement();
-	}
+	// if (AAIController* AIC = OwnerComp.GetAIOwner())
+	// {
+	// 	AIC->StopMovement();
+	// }
 	return Super::AbortTask(OwnerComp, NodeMemory);
 }

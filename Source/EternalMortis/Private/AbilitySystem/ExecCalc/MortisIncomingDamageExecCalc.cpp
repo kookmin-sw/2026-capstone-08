@@ -2,6 +2,8 @@
 
 
 #include "AbilitySystem/ExecCalc/MortisIncomingDamageExecCalc.h"
+
+#include "MortisDebugHelper.h"
 #include "AbilitySystem/Attributes/MortisEnemyAttributeSet.h"
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
 #include "MortisGameplayTags.h"
@@ -19,11 +21,13 @@ struct FMortisDamageCapture
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistBlunt)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistSlash)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistMagic)
+	DECLARE_ATTRIBUTE_CAPTUREDEF(IncomingPoiseDamage)
 
 	FMortisDamageCapture()
 	{
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, BaseDamage, Source, false)
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, IncomingDamage, Source, false)
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, IncomingDamage, Target, false)
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, IncomingPoiseDamage, Target, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, AllTypeBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, PierceBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, BluntBonus, Source, false)
@@ -45,7 +49,8 @@ static const FMortisDamageCapture& GetMortisDamageCapture()
 UMortisIncomingDamageExecCalc::UMortisIncomingDamageExecCalc()
 {
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().BaseDamageDef);
-	RelevantAttributesToCapture.Add(GetMortisDamageCapture().IncomingDamageDef);
+	// RelevantAttributesToCapture.Add(GetMortisDamageCapture().IncomingDamageDef);
+	// RelevantAttributesToCapture.Add(GetMortisDamageCapture().IncomingPoiseDamageDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().AllTypeBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().PierceBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().BluntBonusDef);
@@ -74,7 +79,7 @@ void UMortisIncomingDamageExecCalc::Execute_Implementation(const FGameplayEffect
 
 	// Base Damage 불러오기
 	const float BaseDamage = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().BaseDamageDef, EvaluateParameters);
-
+	
 	// 각 Resist 불러오기
 	const float ResistPierce = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().ResistPierceDef, EvaluateParameters);
 	const float ResistBlunt = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().ResistBluntDef, EvaluateParameters);
@@ -111,6 +116,18 @@ void UMortisIncomingDamageExecCalc::Execute_Implementation(const FGameplayEffect
 				EGameplayModOp::Override,
 				IncomingDamage
 			)
+		);
+	}
+	
+	const float PoiseDamage = EffectSpec.GetSetByCallerMagnitude(MortisGameplayTags::Data_Stat_PoiseDamage, false, 1.f);
+	if (PoiseDamage > 0.f)
+	{
+		OutExecutionOutput.AddOutputModifier(
+			FGameplayModifierEvaluatedData(
+				GetMortisDamageCapture().IncomingPoiseDamageProperty,
+				EGameplayModOp::Override,
+				PoiseDamage
+			)	
 		);
 	}
 }

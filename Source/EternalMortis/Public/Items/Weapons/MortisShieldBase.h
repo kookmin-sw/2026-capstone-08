@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Items/Weapons/MortisCombatItemBase.h"
+#include "MortisWeaponBase.h"
 #include "MortisShieldBase.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnShieldBlockDelegate, AActor*)
@@ -11,14 +11,14 @@ DECLARE_DELEGATE_OneParam(FOnShieldBlockDelegate, AActor*)
  * 
  */
 UCLASS()
-class ETERNALMORTIS_API AMortisShieldBase : public AMortisCombatItemBase
+class ETERNALMORTIS_API AMortisShieldBase : public AMortisWeaponBase
 {
 	GENERATED_BODY()
 	
 public:
 	FOnShieldBlockDelegate OnShieldBeginBlock;
 	FOnShieldBlockDelegate OnShieldEndBlock;
-	
+
 protected:
 	virtual void BeginPlay() override;
 	//~Begin AMortisCombatItemBase Interfaces

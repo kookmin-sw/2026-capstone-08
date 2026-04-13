@@ -26,9 +26,10 @@ public:
 	virtual void OnShieldEndBlock(AActor* Weapon) override;
 	//~ End UMortisCombatComponent Intferface
 	
+	FMortisWeaponCommonData GetUnarmedData() const;
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|AttackPattern")
-	TArray<FMortisAttackPattern> AttackPatterns;
+	UPROPERTY()
+	TObjectPtr<const UMortisAttackPatternData> AttackPatternData;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|AttackPattern")
 	int32 CurrentAttackPatternIndex = 0;
@@ -40,11 +41,13 @@ protected:
 	FGameplayTag CurrentPhase = MortisGameplayTags::State_Enemy_Phase_1;
 	
 public:
-	void SetAttackPattern(UMortisAttackPatternData* PatternData);
+	void SetAttackPattern(const UMortisAttackPatternData* PatternData);
 	
-	FORCEINLINE const TArray<FMortisAttackPattern>& GetAttackPatterns() const { return AttackPatterns; }
 	FORCEINLINE const FMortisAttackPattern* GetAttackPatternByIndex(int32 Index) const;
 
 	FORCEINLINE AMortisEnemyWeapon* GetEnemyWeapon() const;
-	int32 SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const;
+	int32 SelectAttackPattern(float DistanceToTarget, float AngleToTarget);
+	
+private:
+	TArray<float> AttackPatternWeights;
 };

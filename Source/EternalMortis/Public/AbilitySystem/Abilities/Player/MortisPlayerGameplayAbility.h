@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisPlayerGameplayAbility.generated.h"
 
 class AMortisPlayerCharacter;
@@ -29,7 +30,7 @@ public:
 	UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent();
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
-	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, float StrCoef, float DexCoef, float IntCoef, FGameplayTag AttackType);
+	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
 	float CalculateStaminaCost(float BaseCost, float AdditionalReduceRate = 0.0f) const;

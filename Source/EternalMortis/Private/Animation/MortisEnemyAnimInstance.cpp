@@ -144,7 +144,7 @@ void UMortisEnemyAnimInstance::UpdateIKAlpha(float DeltaSeconds)
 		return;
 	}
 		
-	UMeshComponent* WeaponMesh = Weapon->GetItemMesh();
+	UMeshComponent* WeaponMesh = Weapon->GetWeaponMesh();
 	if (!WeaponMesh)
 	{
 		return;

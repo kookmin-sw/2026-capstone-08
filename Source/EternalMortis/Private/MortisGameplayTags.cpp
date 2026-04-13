@@ -81,14 +81,14 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Special, "Data.CollisionType.Weapon.Special");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Shield, "Data.CollisionType.Shield");
-	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Body_LeftHand, "Data.CollisionType.Body.LeftHand");
-	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Body_RightHand, "Data.CollisionType.Body.RightHand");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Pierce, "Data.AttackType.Pierce");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Blunt, "Data.AttackType.Blunt");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Slash, "Data.AttackType.Slash");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Magic, "Data.AttackType.Magic");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackScale, "Data.AttackScale");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Data_Stat_PoiseDamage, "Data.Stat.PoiseDamage");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_RuneValue, "Data.RuneValue");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Health, "Data.Cost.Health");

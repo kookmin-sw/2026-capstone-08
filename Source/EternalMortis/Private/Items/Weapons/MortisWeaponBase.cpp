@@ -5,10 +5,67 @@
 
 #include "MortisDebugHelper.h"
 #include "MortisFunctionLibrary.h"
+#include "Components/ShapeComponent.h"
+#include "Interfaces/MortisCollisionInterface.h"
 
 // Sets default values
 AMortisWeaponBase::AMortisWeaponBase()
 {
+	PrimaryActorTick.bCanEverTick = false;
+
+	WeaponRoot = CreateDefaultSubobject<USceneComponent>(TEXT("WeaponRoot"));
+	SetRootComponent(WeaponRoot);
+}
+
+const TArray<TObjectPtr<UShapeComponent>>* AMortisWeaponBase::GetCollisionComponentsByTag(FGameplayTag TagToToggle)
+{
+	if (const TArray<TObjectPtr<UShapeComponent>>* Found = CollisionComponentMap.Find(TagToToggle))
+	{
+		return Found;
+	}
+	return nullptr;
+}
+
+void AMortisWeaponBase::ToggleCollision(bool bEnable, const FGameplayTag& TagToToggle)
+{
+	const TArray<TObjectPtr<UShapeComponent>>* CollisionShapes = CollisionComponentMap.Find(TagToToggle);
+	if (CollisionShapes)
+	{
+		for (const TObjectPtr<UShapeComponent>& CollisionShape : *CollisionShapes)
+		{
+			CollisionShape->SetCollisionEnabled(bEnable ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+		}
+	}
+}
+
+void AMortisWeaponBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	InitializeWeaponMesh();
+	InitializeCollisions();
+}
+
+void AMortisWeaponBase::InitializeCollisions()
+{
+	CollisionComponentMap.Empty();
+	TArray<UShapeComponent*> ShapeComponents;
+	GetComponents<UShapeComponent>(ShapeComponents);
+	for (UShapeComponent* ShapeComp : ShapeComponents)
+	{
+		if (IMortisCollisionInterface* CollisionComp = Cast<IMortisCollisionInterface>(ShapeComp))
+		{
+			if (!CollisionComp->GetCollisionTag().IsValid())
+			{
+				continue;
+			}
+			
+			CollisionComponentMap.FindOrAdd(CollisionComp->GetCollisionTag()).Add(ShapeComp);
+			ShapeComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnCollisionBeginOverlap);
+			ShapeComp->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::OnCollisionEndOverlap);
+			ShapeComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+	}
 }
 
 void AMortisWeaponBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -20,19 +77,30 @@ void AMortisWeaponBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedC
 	{
 		if (UMortisFunctionLibrary::IsTargetPawnHostile(WeaponOwningPawn, HitPawn))
 		{
-			if (AddUniqueOverlappedActor(OtherActor))
-			{
-				OnWeaponHitTarget.ExecuteIfBound(OtherActor);
-			}
+			OnWeaponHitTarget.ExecuteIfBound(OtherActor);
 		}
 	}
 }
 
 void AMortisWeaponBase::OnCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OverlappedActors.Contains(OtherActor))
+	OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);
+}
+
+void AMortisWeaponBase::InitializeWeaponMesh()
+{
+	if (UStaticMeshComponent* StaticMeshComp = GetComponentByClass<UStaticMeshComponent>())
 	{
-		OverlappedActors.Remove(OtherActor);
-		OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);
+		WeaponMesh = StaticMeshComp;
 	}
+	else if (USkeletalMeshComponent* SkeletalMeshComp = GetComponentByClass<USkeletalMeshComponent>())
+	{
+		WeaponMesh = SkeletalMeshComp;
+	}
+	else
+	{
+		MORTIS_LOG("%s Mesh is not Set", *GetActorNameOrLabel());
+		return;
+	}
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 }

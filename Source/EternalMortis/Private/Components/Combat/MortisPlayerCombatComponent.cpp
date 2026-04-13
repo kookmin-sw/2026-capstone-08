@@ -10,7 +10,7 @@
 
 AMortisPlayerWeapon* UMortisPlayerCombatComponent::GetPlayerCarriedWeaponByTag(FGameplayTag WeaponTag) const
 {
-	return Cast<AMortisPlayerWeapon>(GetCharacterCarriedItemByTag(WeaponTag));
+	return Cast<AMortisPlayerWeapon>(GetCharacterCarriedWeaponByTag(WeaponTag));
 }
 
 AMortisPlayerWeapon* UMortisPlayerCombatComponent::GetPlayerCurrentEquippedWeapon() const
@@ -30,6 +30,10 @@ FMortisPlayerWeaponData UMortisPlayerCombatComponent::GetPlayerCurrentWeaponData
 
 void UMortisPlayerCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
+	if (!AddUniqueOverlappedActor(HitActor))
+	{
+		return;
+	}
     FGameplayEventData Data;
     Data.Instigator = GetOwningPawn();
     Data.Target = HitActor;

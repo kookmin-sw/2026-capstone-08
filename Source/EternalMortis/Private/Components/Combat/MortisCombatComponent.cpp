@@ -6,33 +6,34 @@
 #include "Items/Weapons/MortisWeaponBase.h"
 #include "Items/Weapons/MortisShieldBase.h"
 
-#include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 
-void UMortisCombatComponent::RegisterCombatItem(FGameplayTag ItemTag, AMortisCombatItemBase* ItemToRegister, bool bRegisterAsEquippedWeapon)
+void UMortisCombatComponent::RegisterWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon)
 {
-	checkf(ItemToRegister, TEXT("ItemToRegister is null for tag: %s"), *ItemTag.ToString());
-	checkf(!CharacterWeaponMap.Contains(ItemTag), TEXT("Item with tag %s is already registered"), *ItemTag.ToString());
+	checkf(WeaponToRegister, TEXT("ItemToRegister is null for tag: %s"), *WeaponTag.ToString());
+	checkf(!CharacterWeaponMap.Contains(WeaponTag), TEXT("Item with tag %s is already registered"), *WeaponTag.ToString());
     
-	if (AMortisWeaponBase* Weapon = Cast<AMortisWeaponBase>(ItemToRegister))
+	if (AMortisWeaponBase* Weapon = Cast<AMortisWeaponBase>(WeaponToRegister))
 	{
-		MORTIS_LOG("Register Weapon");
-		CharacterWeaponMap.Emplace(ItemTag, Weapon);
+		CharacterWeaponMap.Emplace(WeaponTag, Weapon);
 		
 		Weapon->OnWeaponHitTarget.BindUObject(this, &ThisClass::OnHitTargetActor);
 		Weapon->OnWeaponPulledFromTarget.BindUObject(this, &ThisClass::OnWeaponPulledFromTargetActor);
         
 		if (bRegisterAsEquippedWeapon)
 		{
-			CurrentEquippedWeaponTag = ItemTag;
+			CurrentEquippedWeaponTag = WeaponTag;
 		}
-		MORTIS_LOG("Weapon Registered: %s", *ItemTag.ToString());
-	}
-	else if (AMortisShieldBase* Shield = Cast<AMortisShieldBase>(ItemToRegister))
-	{
-		Shield->OnShieldBeginBlock.BindUObject(this, &ThisClass::OnShieldBeginBlock);
-		Shield->OnShieldEndBlock.BindUObject(this, &ThisClass::OnShieldEndBlock);
-		MORTIS_LOG("Shield Registered: %s", *ItemTag.ToString());
+		// MORTIS_LOG("Weapon Registered: %s", *ItemTag.ToString());
+		
+		if (AMortisShieldBase* Shield = Cast<AMortisShieldBase>(WeaponToRegister))
+		{
+			Shield->OnShieldBeginBlock.BindUObject(this, &ThisClass::OnShieldBeginBlock);
+			Shield->OnShieldEndBlock.BindUObject(this, &ThisClass::OnShieldEndBlock);
+			// MORTIS_LOG("Shield Registered: %s", *ItemTag.ToString());
+		}
 	}
 
 }
@@ -42,7 +43,7 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 		return false;
 
 	AMortisWeaponBase* Weapon = nullptr;
-	if (AMortisWeaponBase* const* FoundWeapon = CharacterWeaponMap.Find(WeaponTag))
+	if (TObjectPtr<AMortisWeaponBase> const* FoundWeapon = CharacterWeaponMap.Find(WeaponTag))
 	{
 		Weapon = *FoundWeapon;
 	}
@@ -51,11 +52,7 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 	if (CurrentEquippedWeaponTag == WeaponTag)
 	{
 		CurrentEquippedWeaponTag = FGameplayTag();
-		if (AMortisWeaponBase* CurrentWeapon = GetCharacterCurrentEquippedWeapon())
-		{
-			CurrentWeapon->ClearOverlappedActors();
-		}
-		// OverlappedActors.Empty();
+		OverlappedActors.Empty();
 	}
 
 	// delegate 정리
@@ -68,11 +65,11 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 	// 맵에서는 무조건 제거
 	return CharacterWeaponMap.Remove(WeaponTag) > 0;
 }
-AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedItemByTag(FGameplayTag TagToGet) const
+AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedWeaponByTag(FGameplayTag TagToGet) const
 {
 	if (CharacterWeaponMap.Contains(TagToGet))
 	{
-		if (AMortisWeaponBase* const* FoundWeapon = CharacterWeaponMap.Find(TagToGet))
+		if (TObjectPtr<AMortisWeaponBase> const* FoundWeapon = CharacterWeaponMap.Find(TagToGet))
 			return *FoundWeapon;
 	}
 	return nullptr;
@@ -85,16 +82,22 @@ AMortisWeaponBase* UMortisCombatComponent::GetCharacterCurrentEquippedWeapon() c
 		// MORTIS_LOG("%s is invalid!", *CurrentEquippedWeaponTag.GetTagName().ToString());
 		return nullptr;
 	}
-	return GetCharacterCarriedItemByTag(CurrentEquippedWeaponTag);
+	return GetCharacterCarriedWeaponByTag(CurrentEquippedWeaponTag);
 }
 
 void UMortisCombatComponent::ToggleDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle, EToggleCollisionType ToggleDamageType)
 {
 	checkf(TagToToggle.IsValid(), TEXT("TagToToggle Is Not Valid! Check AnimNotifyState On Your Attack Animation!"))
-	if (ToggleDamageType == EToggleCollisionType::CurrentWeapon)
+	
+	switch (ToggleDamageType)
+	{
+	case EToggleCollisionType::CurrentWeapon:
 		ToggleCurrentEquippedWeaponCollision(bShouldEnable, TagToToggle);
-	else
+		break;
+	case EToggleCollisionType::Body:
 		ToggleBodyDamageCollision(bShouldEnable, TagToToggle);
+		break;
+	}
 }
 
 void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)
@@ -110,27 +113,28 @@ void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEn
 		MORTIS_LOG("WeaponToToggle is null!");
 		return;
 	}
-	UShapeComponent* CollisionShape = WeaponToToggle->GetCollisionComponentByTag(TagToToggle);
-	if (!CollisionShape)
-	{
-		MORTIS_LOG("ShapeComponent is null!");
-		return;
-	}
 	
-	if (bShouldEnable)
+	WeaponToToggle->ToggleCollision(bShouldEnable, TagToToggle);
+
+	if (!bShouldEnable)
 	{
-		CollisionShape->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	}
-	else
-	{
-		CollisionShape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		WeaponToToggle->ClearOverlappedActors();
+		OverlappedActors.Empty();
 	}
 }
 
 void UMortisCombatComponent::ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle)
 {
 
+}
+
+bool UMortisCombatComponent::AddUniqueOverlappedActor(AActor* NewActor)
+{
+	if (NewActor && !OverlappedActors.Contains(NewActor))
+	{
+		OverlappedActors.Add(NewActor);
+		return true;
+	}
+	return false;
 }
 
 // 자식에서 Override
@@ -147,4 +151,90 @@ void UMortisCombatComponent::OnShieldBeginBlock(AActor* Weapon)
 
 void UMortisCombatComponent::OnShieldEndBlock(AActor* Weapon)
 {
+}
+
+/* Attack Trace */
+void UMortisCombatComponent::BeginAttackTrace(const FMortisAttackTraceConfig& Config)
+{
+	AttackTraceConfigs.Add(Config);
+	PreviousTraceStartLocations.Add(GetSocketLocation(Config, true));
+	PreviousTraceEndLocations.Add(GetSocketLocation(Config, false));
+}
+
+void UMortisCombatComponent::UpdateAttackTrace()
+{
+	for (int32 i = 0; i < AttackTraceConfigs.Num(); i++)
+	{
+		const FVector CurrentStart = GetSocketLocation(AttackTraceConfigs[i], true);
+		const FVector CurrentEnd = GetSocketLocation(AttackTraceConfigs[i], false);
+		
+		TArray<FHitResult> HitResults;
+		TArray<AActor*> IgnoreActors;
+		UKismetSystemLibrary::SphereTraceMultiForObjects(
+			this,
+			PreviousTraceStartLocations[i],
+			CurrentEnd,
+			AttackTraceConfigs[i].Radius,
+			AttackTraceObjectTypes,
+			false,
+			IgnoreActors,
+			EDrawDebugTrace::ForDuration,
+			HitResults,
+			true,
+			FLinearColor::Green
+		);
+	
+		PreviousTraceStartLocations[i] = CurrentStart;
+		PreviousTraceEndLocations[i] = CurrentEnd;
+		
+		for (const FHitResult& HitResult : HitResults)
+		{
+			if (AActor* HitActor = HitResult.GetActor())
+			{
+				OnHitTargetActor(HitActor);
+			}
+		}
+	}
+}
+
+void UMortisCombatComponent::EndAttackTrace(const FMortisAttackTraceConfig& Config)
+{
+	const int32 Index = AttackTraceConfigs.IndexOfByKey(Config);
+	if (AttackTraceConfigs.IsValidIndex(Index))
+	{
+		AttackTraceConfigs.RemoveAt(Index);
+		PreviousTraceStartLocations.RemoveAt(Index);
+		PreviousTraceEndLocations.RemoveAt(Index);
+	}
+	
+	if (AttackTraceConfigs.IsEmpty())
+	{
+		OverlappedActors.Empty();
+	}
+}
+
+
+FVector UMortisCombatComponent::GetSocketLocation(const FMortisAttackTraceConfig& Config, bool bStart) const
+{
+	if (Config.MeshSource == EMortisMeshSource::WeaponMesh)
+	{
+		if (AMortisWeaponBase* CurrentWeapon = GetCharacterCurrentEquippedWeapon())
+		{
+			if (UMeshComponent* Mesh = CurrentWeapon->GetWeaponMesh())
+			{
+				return Mesh->GetSocketLocation(bStart ? Config.StartSocket : Config.EndSocket);
+			}
+		}
+	}
+	else if (Config.MeshSource == EMortisMeshSource::CharacterMesh)
+	{
+		if (ACharacter* Character = Cast<ACharacter>(GetOwner()))
+		{
+			if (USkeletalMeshComponent* Mesh = Character->GetMesh())
+			{
+				return Mesh->GetSocketLocation(bStart ? Config.StartSocket : Config.EndSocket);
+			}
+		}
+	}
+	return FVector::ZeroVector;
 }

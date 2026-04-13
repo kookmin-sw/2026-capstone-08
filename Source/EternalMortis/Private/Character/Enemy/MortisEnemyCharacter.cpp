@@ -174,6 +174,7 @@ void AMortisEnemyCharacter::OnStrafingStateChanged(const FGameplayTag Tag, int32
 		return;
 	}
 	bool bStrafing = NewCount > 0;
+	// MORTIS_LOG("Strafing %s", NewCount > 0 ? TEXT("Begin") : TEXT("End"));
 	bUseControllerRotationYaw = bStrafing;
 	GetCharacterMovement()->bOrientRotationToMovement = !bStrafing;
 	GetCharacterMovement()->bUseControllerDesiredRotation = bStrafing;

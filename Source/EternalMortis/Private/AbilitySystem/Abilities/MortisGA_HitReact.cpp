@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/MortisGA_HitReact.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/MortisCharacterBase.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -14,7 +16,7 @@ void UMortisGA_HitReact::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	check(ActorInfo);
-	if (!TriggerEventData || !TriggerEventData->Instigator || !TriggerEventData->Target)
+	if (!TriggerEventData || !TriggerEventData->Instigator)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
