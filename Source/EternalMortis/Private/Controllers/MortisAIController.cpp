@@ -3,6 +3,7 @@
 
 #include "Controllers/MortisAIController.h"
 #include "MortisDebugHelper.h"
+#include "MortisFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Character/Enemy/MortisEnemyData.h"
@@ -28,20 +29,22 @@ AMortisAIController::AMortisAIController(const FObjectInitializer& ObjectInitial
 
 ETeamAttitude::Type AMortisAIController::GetTeamAttitudeTowards(const AActor& Other) const
 {
-	if (const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(&Other))
+	if (const APawn* OtherPawn = Cast<APawn>(&Other))
 	{
-		if (GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId())
+		if (const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(OtherPawn->GetController()))
 		{
-			return ETeamAttitude::Friendly;
-		}
-		if (GetGenericTeamId() != OtherTeamAgent->GetGenericTeamId()
-			&& OtherTeamAgent->GetGenericTeamId() != static_cast<uint8>(EMortisTeam::Neutral))
-		{
-			return ETeamAttitude::Hostile;
+			if (GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId())
+			{
+				return ETeamAttitude::Friendly;
+			}
+			if (GetGenericTeamId() != OtherTeamAgent->GetGenericTeamId()
+				&& OtherTeamAgent->GetGenericTeamId() != static_cast<uint8>(EMortisTeam::Neutral))
+			{
+				return ETeamAttitude::Hostile;
+			}
 		}
 	}
-	// return ETeamAttitude::Neutral;
-	return ETeamAttitude::Hostile;
+	return ETeamAttitude::Neutral;
 }
 
 void AMortisAIController::ConfigurePerceptionFromData(const UMortisEnemyData* EnemyData)
@@ -128,7 +131,7 @@ void AMortisAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus S
 {
 	UBlackboardComponent* BBComp = GetBlackboardComponent();
 	AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(GetPawn());
-	if (!BBComp || !Actor)
+	if (!BBComp || !Actor || !EnemyCharacter)
 	{
 		return;
 	}
@@ -138,15 +141,9 @@ void AMortisAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus S
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		BBComp->SetValueAsObject(MortisBlackboardKeys::TargetActor, Actor);
-		if (GetPawn())
-		{
-			float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Actor->GetActorLocation());
-			BBComp->SetValueAsFloat(MortisBlackboardKeys::TargetDist, Distance);
-		}
-		if (EnemyCharacter)
-		{
-			EnemyCharacter->SetEnemyHealthBarCombatVisibility(true);
-		}
+		float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Actor->GetActorLocation());
+		BBComp->SetValueAsFloat(MortisBlackboardKeys::TargetDist, Distance);
+		EnemyCharacter->SetEnemyHealthBarCombatVisibility(true);
 		return;
 	}
 

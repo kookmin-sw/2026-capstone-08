@@ -5,6 +5,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MortisDebugHelper.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Character/Enemy/MortisEnemyData.h"
 #include "Items/Weapons/MortisEnemyWeapon.h"
 
@@ -33,7 +34,6 @@ void UMortisEnemyCombatComponent::OnShieldBeginBlock(AActor* Weapon)
 {
 	Super::OnShieldBeginBlock(Weapon);
 	
-	MORTIS_LOG("");
 	AActor* WeaponActor = Weapon->GetOwner();
 	if (!WeaponActor)
 	{
@@ -50,7 +50,7 @@ void UMortisEnemyCombatComponent::OnShieldBeginBlock(AActor* Weapon)
 	EventData.Instigator = GetOwningPawn();
 	EventData.Target = Attacker;
 	
-	MORTIS_LOG("Send Gameplay Event To %s", *Attacker->GetActorNameOrLabel());
+	// MORTIS_LOG("Send Gameplay Event To %s", *Attacker->GetActorNameOrLabel());
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_Block_Success, EventData);
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Attacker, MortisGameplayTags::Event_Combat_Attack_Blocked, EventData);
 }

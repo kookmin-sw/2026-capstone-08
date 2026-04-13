@@ -40,6 +40,9 @@ protected:
 	virtual bool BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const;
 	void RefreshPickupPreviewWidget();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
+	UWidgetComponent* SelectionWidget;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
 	float DefaultArcDuration = 0.35f;
 
@@ -51,6 +54,8 @@ protected:
 	
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
 
+
+	
 	UMortisPickupPreviewWidget* GetPickupPreviewWidget() const;
 	void FinishArcMove();
 

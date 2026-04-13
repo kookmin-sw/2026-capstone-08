@@ -13,7 +13,7 @@ void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& In
 
 	for (const FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
-		if (!AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)) continue;
+		if (!AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) continue;
 		
 		if (InputTag.MatchesTag(MortisGameplayTags::InputTag_Toggle) && AbilitySpec.IsActive())
 		{

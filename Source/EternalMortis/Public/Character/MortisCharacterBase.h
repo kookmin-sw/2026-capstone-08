@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h"
 
 #include "Interfaces/MortisCombatInterface.h"
 #include "MortisCharacterBase.generated.h"

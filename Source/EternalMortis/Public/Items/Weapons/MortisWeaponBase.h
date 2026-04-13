@@ -41,15 +41,11 @@ protected:
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon")
 	TMap<FGameplayTag, TArray<TObjectPtr<UShapeComponent>>> CollisionComponentMap;
 	
-	/* Attack Trace */
-
-	
 	UFUNCTION()
 	virtual void OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	UFUNCTION()
 	virtual void OnCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
 
 private:
 	void InitializeWeaponMesh();

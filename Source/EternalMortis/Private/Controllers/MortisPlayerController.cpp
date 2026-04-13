@@ -2,10 +2,11 @@
 
 
 #include "Controllers/MortisPlayerController.h"
+#include "Types/MortisEnumTypes.h"
 
 AMortisPlayerController::AMortisPlayerController()
 {
-	PlayerTeamID = FGenericTeamId(0);
+	PlayerTeamID = FGenericTeamId(static_cast<uint8>(EMortisTeam::Player));
 }
 
 FGenericTeamId AMortisPlayerController::GetGenericTeamId() const
