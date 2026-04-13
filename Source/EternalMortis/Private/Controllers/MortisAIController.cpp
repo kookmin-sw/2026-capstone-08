@@ -127,17 +127,15 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 void AMortisAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	UBlackboardComponent* BBComp = GetBlackboardComponent();
-	if (!BBComp)
+	AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(GetPawn());
+	if (!BBComp || !Actor)
 	{
 		return;
 	}
-	
-	if (BBComp->GetValueAsObject(MortisBlackboardKeys::TargetActor))
-	{
-		return;
-	}
-	
-	if (Actor && Stimulus.WasSuccessfullySensed())
+
+	AActor* CurrentTargetActor = Cast<AActor>(BBComp->GetValueAsObject(MortisBlackboardKeys::TargetActor));
+
+	if (Stimulus.WasSuccessfullySensed())
 	{
 		BBComp->SetValueAsObject(MortisBlackboardKeys::TargetActor, Actor);
 		if (GetPawn())
@@ -145,5 +143,23 @@ void AMortisAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus S
 			float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Actor->GetActorLocation());
 			BBComp->SetValueAsFloat(MortisBlackboardKeys::TargetDist, Distance);
 		}
+		if (EnemyCharacter)
+		{
+			EnemyCharacter->SetEnemyHealthBarCombatVisibility(true);
+		}
+		return;
+	}
+
+	if (CurrentTargetActor != Actor)
+	{
+		return;
+	}
+
+	BBComp->ClearValue(MortisBlackboardKeys::TargetActor);
+	BBComp->ClearValue(MortisBlackboardKeys::TargetDist);
+
+	if (EnemyCharacter)
+	{
+		EnemyCharacter->SetEnemyHealthBarCombatVisibility(false);
 	}
 }

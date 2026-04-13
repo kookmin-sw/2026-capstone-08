@@ -3,6 +3,9 @@
 
 #include "Items/Interactable/Pickup/MortisWeaponPickup.h"
 
+#include "System/MortisWeaponDatabaseSubsystem.h"
+#include "UI/MortisPickupPreviewWidget.h"
+
 void AMortisWeaponPickup::SetWeaponData(const FMortisWeaponRow& InWeaponData)
 {
 	WeaponData = InWeaponData;
@@ -16,4 +19,28 @@ void AMortisWeaponPickup::ReactivateAsDroppedWeapon(const FMortisWeaponRow& InOl
 	const float Height = InArcHeight > 0.f ? InArcHeight : DefaultArcHeight;
 
 	StartArcMove(InStartLocation, InTargetLocation, Duration, Height);
+}
+
+bool AMortisWeaponPickup::BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const
+{
+	OutPreviewData.TitleText = WeaponData.WeaponName;
+
+	if (const UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (const UMortisWeaponDatabaseSubsystem* WeaponDatabase = GameInstance->GetSubsystem<UMortisWeaponDatabaseSubsystem>())
+		{
+			FMortisWeaponGradeStyleRow GradeStyleRow;
+			if (WeaponDatabase->GetWeaponGradeStyleByHandle(WeaponData.GradeStyleRow, GradeStyleRow))
+			{
+				OutPreviewData.AccentColor = GradeStyleRow.GradeColor;
+			}
+		}
+	}
+
+	if (OutPreviewData.TitleText.IsEmpty() && WeaponData.WeaponTag.IsValid())
+	{
+		OutPreviewData.TitleText = FText::FromName(WeaponData.WeaponTag.GetTagName());
+	}
+
+	return !OutPreviewData.TitleText.IsEmpty();
 }

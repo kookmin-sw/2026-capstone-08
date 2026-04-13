@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UI/MortisRunePresentationStyle.h"
 #include "UI/MortisRuneSynergyEntryWidget.h"
 #include "UI/MortisWidgetBase.h"
 #include "MortisRightRuneDetailWidget.generated.h"
@@ -22,6 +23,12 @@ struct FMortisRightRuneDetailViewData
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
     TObjectPtr<UTexture2D> RuneIcon = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
+    FLinearColor RuneIconTint = FLinearColor::White;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
+    FMortisRunePresentationStyle RunePresentationStyle;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
     FText RuneName;
@@ -70,9 +77,18 @@ protected:
     UFUNCTION()
     void HandleEquipButtonClicked();
 
+    UFUNCTION(BlueprintImplementableEvent, Category = "Mortis|Inventory|Rune")
+    void ReceiveRunePresentationStyleChanged(const FMortisRunePresentationStyle& InStyle);
+
     void RefreshSynergyEntries();
 
 protected:
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+    TObjectPtr<UImage> Image_SelectedRuneCore = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+    TObjectPtr<UImage> Image_SelectedRuneGlow = nullptr;
+
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
     TObjectPtr<UImage> Image_SelectedRuneIcon = nullptr;
 
@@ -108,6 +124,9 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     FMortisRightRuneDetailViewData CurrentData;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
+    FMortisRunePresentationStyle CurrentPresentationStyle;
 
     UPROPERTY(Transient)
     TArray<TObjectPtr<UMortisRuneSynergyEntryWidget>> CreatedSynergyEntries;

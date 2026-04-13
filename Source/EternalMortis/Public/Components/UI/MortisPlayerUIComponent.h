@@ -10,6 +10,7 @@
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStaminaChanged, float, NewStamina, float, MaxStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnManaChanged, float, NewMana, float, MaxMana);
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup=(UI), meta=(BlueprintSpawnableComponent))
 class ETERNALMORTIS_API UMortisPlayerUIComponent : public UMortisUIComponent
@@ -18,4 +19,7 @@ class ETERNALMORTIS_API UMortisPlayerUIComponent : public UMortisUIComponent
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnStaminaChanged OnStaminaChanged;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnManaChanged OnManaChanged;
 };

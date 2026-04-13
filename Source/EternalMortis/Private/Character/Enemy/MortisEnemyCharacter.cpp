@@ -7,14 +7,20 @@
 #include "AbilitySystem/Data/MortisEnemyAbilitySet.h"
 #include "Character/Enemy/MortisEnemyData.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
+#include "Components/UI/MortisEnemyUIComponent.h"
 #include "AbilitySystem/Attributes/MortisEnemyAttributeSet.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 AMortisEnemyCharacter::AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMortisEnemyAttributeSet>(TEXT("MortisAttributeSet")))
 {
+	static ConstructorHelpers::FClassFinder<UUserWidget> EnemyHealthBarWidgetClass(TEXT("/Game/UI/HUD/WBP/WBP_Bar"));
+
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	bUseControllerRotationPitch = false;
@@ -25,6 +31,21 @@ AMortisEnemyCharacter::AMortisEnemyCharacter(const FObjectInitializer& ObjectIni
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	EnemyCombatComponent = CreateDefaultSubobject<UMortisEnemyCombatComponent>("EnemyCombatComponent");
+	EnemyUIComponent = CreateDefaultSubobject<UMortisEnemyUIComponent>(TEXT("EnemyUIComponent"));
+
+	EnemyHealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("EnemyHealthBarWidget"));
+	EnemyHealthBarWidgetComponent->SetupAttachment(GetRootComponent());
+	EnemyHealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	EnemyHealthBarWidgetComponent->SetDrawAtDesiredSize(true);
+	EnemyHealthBarWidgetComponent->SetGenerateOverlapEvents(false);
+	EnemyHealthBarWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	EnemyHealthBarWidgetComponent->SetPivot(FVector2D(0.5f, 1.f));
+	EnemyHealthBarWidgetComponent->SetVisibility(false);
+
+	if (EnemyHealthBarWidgetClass.Succeeded())
+	{
+		EnemyHealthBarWidgetComponent->SetWidgetClass(EnemyHealthBarWidgetClass.Class);
+	}
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -34,6 +55,7 @@ void AMortisEnemyCharacter::InitializeEnemyCharacter()
 {
 	InitializeEnemyByData();
 	RegisterStateTagEvent();
+	InitializeEnemyHUD();
 }
 
 void AMortisEnemyCharacter::BeginPlay()
@@ -58,6 +80,16 @@ void AMortisEnemyCharacter::Tick(float DeltaSeconds)
 // {
 // 	Super::PossessedBy(NewController);
 // }
+
+void AMortisEnemyCharacter::InitializeEnemyHUD()
+{
+	UpdateEnemyHealthBarWidgetLocation();
+
+	if (EnemyUIComponent)
+	{
+		EnemyUIComponent->InitializeEnemyHealthBar(EnemyHealthBarWidgetComponent);
+	}
+}
 
 void AMortisEnemyCharacter::InitializeEnemyByData()
 {
@@ -106,6 +138,8 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 			}
 		}
 	}
+
+	UpdateEnemyHealthBarWidgetLocation();
 }
 
 UMortisEnemyData* AMortisEnemyCharacter::GetEnemyData() const
@@ -132,6 +166,25 @@ float AMortisEnemyCharacter::GetRandomStrafingDistance() const
 	return FMath::RandRange(EnemyData->PhaseStrafingRanges[CurrentPhase].MinDistance, EnemyData->PhaseStrafingRanges[CurrentPhase].MaxDistance);
 }
 
+void AMortisEnemyCharacter::SetEnemyHealthBarCombatVisibility(bool bShouldShow)
+{
+	if (EnemyUIComponent)
+	{
+		EnemyUIComponent->SetCombatHUDVisible(bShouldShow);
+	}
+}
+
+void AMortisEnemyCharacter::UpdateEnemyHealthBarWidgetLocation()
+{
+	if (!EnemyHealthBarWidgetComponent || !GetCapsuleComponent())
+	{
+		return;
+	}
+
+	const float CapsuleHalfHeight = GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+	EnemyHealthBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, CapsuleHalfHeight + EnemyHealthBarHeightOffset));
+}
+
 #if WITH_EDITOR
 void AMortisEnemyCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -145,6 +198,8 @@ void AMortisEnemyCharacter::PostEditChangeProperty(FPropertyChangedEvent& Proper
 			InitializeEnemyByData();
 		}
 	}
+
+	UpdateEnemyHealthBarWidgetLocation();
 }
 #endif
 

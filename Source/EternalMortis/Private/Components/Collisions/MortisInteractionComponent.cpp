@@ -42,25 +42,25 @@ void UMortisInteractionComponent::SelectNextTarget()
 
 	if (InteractionCandidates.Num() == 0)
 	{
-		SelectedTarget = nullptr;
+		SetSelectedTarget(nullptr);
 		return;
 	}
 
 	if (!SelectedTarget)
 	{
-		SelectedTarget = InteractionCandidates[0];
+		SetSelectedTarget(InteractionCandidates[0]);
 		return;
 	}
 
 	const int32 CurrentIndex = InteractionCandidates.IndexOfByKey(SelectedTarget);
 	if (CurrentIndex == INDEX_NONE)
 	{
-		SelectedTarget = InteractionCandidates[0];
+		SetSelectedTarget(InteractionCandidates[0]);
 		return;
 	}
 
 	const int32 NewIndex = (CurrentIndex + 1) % InteractionCandidates.Num();
-	SelectedTarget = InteractionCandidates[NewIndex];
+	SetSelectedTarget(InteractionCandidates[NewIndex]);
 }
 
 void UMortisInteractionComponent::SelectPreviousTarget()

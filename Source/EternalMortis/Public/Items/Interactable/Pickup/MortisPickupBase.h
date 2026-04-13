@@ -6,7 +6,9 @@
 #include "Items/Interactable/MortisInteractableActorBase.h"
 #include "MortisPickupBase.generated.h"
 
+struct FMortisPickupPreviewData;
 class UWidgetComponent;
+class UMortisPickupPreviewWidget;
 
 /**
  * 
@@ -34,6 +36,10 @@ public:
 	virtual void SetSelectionUIVisible(bool bVisible) override;
 
 protected:
+	virtual bool BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const;
+	void RefreshPickupPreviewWidget();
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
 	float DefaultArcDuration = 0.35f;
 
@@ -46,6 +52,7 @@ protected:
 protected:
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
 
+	UMortisPickupPreviewWidget* GetPickupPreviewWidget() const;
 	void FinishArcMove();
 
 protected:

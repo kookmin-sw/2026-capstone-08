@@ -26,6 +26,8 @@ public:
 	void ReactivateAsDroppedWeapon(const FMortisWeaponRow& InOldWeaponData, const FVector& InStartLocation, const FVector& InTargetLocation, float InDuration = -1.f, float InArcHeight = -1.f);
 
 protected:
+	virtual bool BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	FMortisWeaponRow WeaponData;
 };
