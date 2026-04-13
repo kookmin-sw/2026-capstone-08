@@ -38,6 +38,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float TargetZoomLength = 200.0f;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	bool bCanMoveInput = true;
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	bool bCanLookInput = true;
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	bool bCanAbilityInput = true;
+
 	AMortisPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 	// IMortisCombatInterface Override
@@ -55,6 +62,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|InputBuffer")
 	inline void SetBufferEnabled(bool bEnabled) { bCanBufferInput = bEnabled; }
+
+	UFUNCTION(BlueprintCallable, Category = "Control")
+	void SetAllInputEnabled(bool bMoveEnabled, bool bLookEnabled, bool bAbilityEnabled);
 
 protected:
 	// APawn Override
@@ -101,6 +111,7 @@ private:
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Zoom(const FInputActionValue& InputActionValue);
+	void Input_TargetChange(const FInputActionValue& InputActionValue);
 
 	void Input_AbilityInputPressed(FGameplayTag InputTag);
 	void Input_AbilityInputReleased(FGameplayTag InputTag);
@@ -108,6 +119,8 @@ private:
 	bool IsBufferableAbility(FGameplayTag AbilityTag);
 
 	void ChangeMovementMaxSpeed(const FOnAttributeChangeData& Data);
+
+	void HandleTargetChange(int32 Direction);
 
 public:
 	FORCEINLINE UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent() const { return MortisPlayerCombatComponent; }

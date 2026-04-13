@@ -42,7 +42,10 @@ public:
 	bool IsInteractionEnabled() const;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetSelectionUIVisible(bool bVisible);
+	virtual void SetSelectionIndicatorVisible(bool bVisible);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanBeInteractionCandidate(APawn* InteractingPawn) const;
 
 	FORCEINLINE UBoxComponent* GetInteractionCollision() const { return InteractionCollision; }
 

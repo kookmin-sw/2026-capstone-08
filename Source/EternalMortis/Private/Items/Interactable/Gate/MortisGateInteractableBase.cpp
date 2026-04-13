@@ -2,59 +2,129 @@
 
 
 #include "Items/Interactable/Gate/MortisGateInteractableBase.h"
-
 #include "Components/BoxComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/Collisions/MortisInteractionComponent.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 
 AMortisGateInteractableBase::AMortisGateInteractableBase()
 {
-	FrontInteractZone = CreateDefaultSubobject<UBoxComponent>(TEXT("FrontInteractZone"));
-	FrontInteractZone->SetupAttachment(Root);
-	FrontInteractZone->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	FrontInteractZone->SetCollisionResponseToAllChannels(ECR_Ignore);
-	FrontInteractZone->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	FrontInteractZone->SetGenerateOverlapEvents(true);
+	// 부모의 InteractionCollision 재사용
+	if (InteractionCollision)
+	{
+		InteractionCollision->SetBoxExtent(InteractionExtent);
+		InteractionCollision->SetRelativeLocation(InteractionOffset);
+		InteractionCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		InteractionCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
+		InteractionCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+		InteractionCollision->SetGenerateOverlapEvents(true);
+	}
 
 	GateBlockCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("GateBlockCollision"));
 	GateBlockCollision->SetupAttachment(Root);
 	GateBlockCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GateBlockCollision->SetCollisionResponseToAllChannels(ECR_Block);
+	GateBlockCollision->SetGenerateOverlapEvents(false);
 
 	PassEndPoint = CreateDefaultSubobject<USceneComponent>(TEXT("PassEndPoint"));
 	PassEndPoint->SetupAttachment(Root);
 }
 
+void AMortisGateInteractableBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (InteractionCollision)
+	{
+		InteractionCollision->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::HandleGateZoneBeginOverlap);
+		InteractionCollision->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::HandleGateZoneEndOverlap);
+	}
+}
+
+void AMortisGateInteractableBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (InteractionCollision)
+	{
+		InteractionCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ThisClass::HandleGateZoneBeginOverlap);
+		InteractionCollision->OnComponentEndOverlap.RemoveDynamic(this, &ThisClass::HandleGateZoneEndOverlap);
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
 bool AMortisGateInteractableBase::CanInteract(APawn* InteractingPawn) const
 {
 	if (!Super::CanInteract(InteractingPawn) || !InteractingPawn)
+	{
 		return false;
+	}
 
-	if (bRequireFrontZone && !IsPawnInFrontZone(InteractingPawn))
+	if (!CanBeInteractionCandidate(InteractingPawn))
+	{
 		return false;
-
-	if (bOneWayOnly && !IsPawnOnAllowedSide(InteractingPawn))
-		return false;
+	}
 
 	return true;
 }
 
-bool AMortisGateInteractableBase::IsPawnInFrontZone(APawn* InteractingPawn) const
+bool AMortisGateInteractableBase::CanBeInteractionCandidate(APawn* InteractingPawn) const
 {
-	if (!FrontInteractZone || !InteractingPawn)
-		return false;
-
-	return FrontInteractZone->IsOverlappingActor(InteractingPawn);
+	return IsPawnInsideGateInteractionZone(InteractingPawn);;
 }
 
-bool AMortisGateInteractableBase::IsPawnOnAllowedSide(APawn* InteractingPawn) const
+void AMortisGateInteractableBase::HandleGateZoneBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!InteractingPawn)
+	ACharacter* Character = Cast<ACharacter>(OtherActor);
+	if (!Character)
+	{
+		return;
+	}
+
+	if (OtherComp != Character->GetCapsuleComponent())
+	{
+		return;
+	}
+
+	if (UMortisInteractionComponent* InteractionComp = Character->FindComponentByClass<UMortisInteractionComponent>())
+	{
+		InteractionComp->RefreshCandidatesFromOverlaps();
+	}
+}
+
+void AMortisGateInteractableBase::HandleGateZoneEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ACharacter* Character = Cast<ACharacter>(OtherActor);
+	if (!Character)
+	{
+		return;
+	}
+
+	if (OtherComp != Character->GetCapsuleComponent())
+	{
+		return;
+	}
+
+	if (UMortisInteractionComponent* InteractionComp = Character->FindComponentByClass<UMortisInteractionComponent>())
+	{
+		InteractionComp->RefreshCandidatesFromOverlaps();
+	}
+}
+
+bool AMortisGateInteractableBase::IsPawnInsideGateInteractionZone(APawn* InteractingPawn) const
+{
+	const ACharacter* Character = Cast<ACharacter>(InteractingPawn);
+	if (!InteractionCollision || !Character)
+	{
 		return false;
+	}
 
-	const FVector GateForward = GetActorForwardVector();
-	const FVector ToGate = (GetActorLocation() - InteractingPawn->GetActorLocation()).GetSafeNormal();
-	const float Dot = FVector::DotProduct(GateForward, ToGate);
+	const UCapsuleComponent* CapsuleComp = Character->GetCapsuleComponent();
+	if (!CapsuleComp)
+	{
+		return false;
+	}
 
-	return Dot >= RequiredFrontDot;
+	return InteractionCollision->IsOverlappingComponent(CapsuleComp);
 }

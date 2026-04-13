@@ -10,48 +10,50 @@ class UBoxComponent;
 class USceneComponent;
 class APawn;
 
-/**
- * 
- */
 UCLASS(Abstract)
 class ETERNALMORTIS_API AMortisGateInteractableBase : public AMortisInteractableActorBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	AMortisGateInteractableBase();
 
-	virtual bool CanInteract(APawn* InteractingPawn) const override;
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	UFUNCTION(BlueprintPure)
-	UBoxComponent* GetFrontInteractZone() const { return FrontInteractZone; }
+	virtual bool CanInteract(APawn* InteractingPawn) const override;
+	virtual bool CanBeInteractionCandidate(APawn* InteractingPawn) const override;
 
 	UFUNCTION(BlueprintPure)
 	USceneComponent* GetPassEndPoint() const { return PassEndPoint; }
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gate")
-	TObjectPtr<UBoxComponent> FrontInteractZone;
+	UFUNCTION(BlueprintPure)
+	UBoxComponent* GetGateBlockCollision() const { return GateBlockCollision; }
 
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gate")
 	TObjectPtr<UBoxComponent> GateBlockCollision;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gate")
 	TObjectPtr<USceneComponent> PassEndPoint;
 
-	// true면 게이트 정면 영역에 들어와 있어야만 상호작용 가능
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gate")
-	bool bRequireFrontZone = true;
-
-	// true면 게이트 정면 방향에서만 허용
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gate")
-	bool bOneWayOnly = true;
-
-	// GateForward와 (Gate - Pawn) 방향 dot
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gate")
+	// 게이트의 Forward 방향 기준, Pawn이 앞쪽에 있어야 하는 최소 dot
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gate", meta = (ClampMin = "-1.0", ClampMax = "1.0"))
 	float RequiredFrontDot = 0.2f;
 
+	// 상호작용 콜리전을 게이트 앞쪽으로 얼마나 띄울지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gate")
+	FVector InteractionOffset = FVector(120.f, 0.f, 0.f);
+
+	// 상호작용 콜리전 크기
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gate")
+	FVector InteractionExtent = FVector(120.f, 150.f, 100.f);
+
 protected:
-	bool IsPawnInFrontZone(APawn* InteractingPawn) const;
-	bool IsPawnOnAllowedSide(APawn* InteractingPawn) const;
+	UFUNCTION()
+	void HandleGateZoneBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void HandleGateZoneEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	bool IsPawnInsideGateInteractionZone(APawn* InteractingPawn) const;
 };

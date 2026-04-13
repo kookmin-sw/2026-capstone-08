@@ -45,6 +45,13 @@ enum class EMortisWarpTargetMode : uint8
 	OffsetFromTarget UMETA(DisplayName = "Offset From Target")
 };
 
+UENUM(BlueprintType)
+enum class EMortisShopTransactionType : uint8
+{
+	None		UMETA(DisplayName = "None"),
+	Purchase	UMETA(DisplayName = "Purchase"),
+	Steal		UMETA(DisplayName = "Steal")
+};
 UENUM()
 enum class EMortisMeshSource : uint8
 {

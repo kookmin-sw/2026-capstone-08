@@ -6,7 +6,7 @@
 #include "Items/Interactable/MortisInteractableActorBase.h"
 #include "MortisPickupBase.generated.h"
 
-class UWidgetComponent;
+class UStaticMeshComponent;
 
 /**
  * 
@@ -31,7 +31,7 @@ public:
 	bool IsArcMoving() const { return bArcMoving; }
 
 	// AMortisInteractableActorBase Override
-	virtual void SetSelectionUIVisible(bool bVisible) override;
+	virtual void SetSelectionIndicatorVisible(bool bVisible) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
@@ -40,8 +40,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
 	float DefaultArcHeight = 80.f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TObjectPtr<UWidgetComponent> SelectionWidget;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup|Indicator")
+	TObjectPtr<UStaticMeshComponent> SelectionIndicatorMesh;
 
 protected:
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;

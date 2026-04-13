@@ -13,6 +13,7 @@ class UMortisPlayerLinkedAnimLayer;
 class UInputMappingContext;
 class UMortisPlayerGameplayAbility;
 enum class EMortisStatGrade : uint8;
+enum class EMortisShopTransactionType : uint8;
 
 USTRUCT(BlueprintType)
 struct FMortisAbilityInputBinding
@@ -166,6 +167,34 @@ struct FMortisDistanceRange
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Distance")
 	float MaxDistance;
+};
+
+// 상점 아이템용
+USTRUCT(BlueprintType)
+struct FMortisShopItemState
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shop")
+	int32 Price = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shop")
+	bool bCanSteal = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
+	bool bSold = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
+	bool bStolen = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
+	EMortisShopTransactionType PendingTransaction;
+
+	void ResetRuntimeState()
+	{
+		bSold = false;
+		bStolen = false;
+	}
 };
 
 USTRUCT(BlueprintType)

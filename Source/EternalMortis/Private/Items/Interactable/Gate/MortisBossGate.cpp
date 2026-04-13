@@ -14,13 +14,11 @@ bool AMortisBossGate::CanInteract(APawn* InteractingPawn) const
 
 void AMortisBossGate::OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded)
 {
+	Super::OnInteractionFinished(InteractingPawn, bSucceeded);
+
 	if (bSucceeded)
 	{
 		bAlreadyPassed = true;
 		DisableInteraction();
-	}
-	else
-	{
-		EnableInteraction();
 	}
 }

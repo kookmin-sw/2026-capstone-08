@@ -14,7 +14,7 @@ void UMortisInteractionComponent::BeginPlay()
 	OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::HandleBeginOverlap);
 	OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::HandleEndOverlap);
 
-	CleanupInvalidCandidates();
+	RefreshCandidatesFromOverlaps();
 }
 
 void UMortisInteractionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -27,7 +27,7 @@ void UMortisInteractionComponent::EndPlay(const EEndPlayReason::Type EndPlayReas
 
 void UMortisInteractionComponent::LockSelectedAsPending()
 {
-	CleanupInvalidCandidates();
+	RefreshCandidatesFromOverlaps();
 	PendingTarget = SelectedTarget;
 }
 
@@ -38,34 +38,34 @@ void UMortisInteractionComponent::ClearPendingTarget()
 
 void UMortisInteractionComponent::SelectNextTarget()
 {
-	CleanupInvalidCandidates();
+	RefreshCandidatesFromOverlaps();
 
 	if (InteractionCandidates.Num() == 0)
 	{
-		SelectedTarget = nullptr;
+		SetSelectedTarget(nullptr);
 		return;
 	}
 
 	if (!SelectedTarget)
 	{
-		SelectedTarget = InteractionCandidates[0];
+		SetSelectedTarget(InteractionCandidates[0]);
 		return;
 	}
 
 	const int32 CurrentIndex = InteractionCandidates.IndexOfByKey(SelectedTarget);
 	if (CurrentIndex == INDEX_NONE)
 	{
-		SelectedTarget = InteractionCandidates[0];
+		SetSelectedTarget(InteractionCandidates[0]);
 		return;
 	}
 
 	const int32 NewIndex = (CurrentIndex + 1) % InteractionCandidates.Num();
-	SelectedTarget = InteractionCandidates[NewIndex];
+	SetSelectedTarget(InteractionCandidates[NewIndex]);
 }
 
 void UMortisInteractionComponent::SelectPreviousTarget()
 {
-	CleanupInvalidCandidates();
+	RefreshCandidatesFromOverlaps();
 
 	if (InteractionCandidates.Num() == 0)
 	{
@@ -96,20 +96,38 @@ void UMortisInteractionComponent::ClearAllCandidates()
 	SetSelectedTarget(nullptr);
 }
 
-void UMortisInteractionComponent::CleanupInvalidCandidates()
+void UMortisInteractionComponent::RefreshCandidatesFromOverlaps()
 {
-	for (int32 i = InteractionCandidates.Num() - 1; i >= 0; --i)
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	if (!OwnerPawn)
 	{
-		AMortisInteractableActorBase* Candidate = InteractionCandidates[i];
-		if (!IsTargetStillUsable(Candidate))
-			InteractionCandidates.RemoveAt(i);
+		ClearAllCandidates();
+		PendingTarget = nullptr;
+		return;
 	}
+
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, AMortisInteractableActorBase::StaticClass());
+
+	TArray<TObjectPtr<AMortisInteractableActorBase>> NewCandidates;
+	NewCandidates.Reserve(OverlappingActors.Num());
+
+	for (AActor* OverlappedActor : OverlappingActors)
+	{
+		AMortisInteractableActorBase* Target = Cast<AMortisInteractableActorBase>(OverlappedActor);
+		if (!Target)
+			continue;
+
+		if (!IsCandidateAllowed(Target, OwnerPawn))
+			continue;
+
+		NewCandidates.AddUnique(Target);
+	}
+
+	InteractionCandidates = MoveTemp(NewCandidates);
 
 	if (!IsValid(SelectedTarget) || !InteractionCandidates.Contains(SelectedTarget))
 		ReselectIfNeeded();
-
-	if (PendingTarget && !IsValid(PendingTarget))
-		PendingTarget = nullptr;
 }
 
 void UMortisInteractionComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -121,8 +139,7 @@ void UMortisInteractionComponent::HandleBeginOverlap(UPrimitiveComponent* Overla
 	if (!NewTarget)
 		return;
 
-	AddCandidate(NewTarget);
-	MORTIS_LOG("Item Added");
+	RefreshCandidatesFromOverlaps();
 }
 
 void UMortisInteractionComponent::HandleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -134,8 +151,7 @@ void UMortisInteractionComponent::HandleEndOverlap(UPrimitiveComponent* Overlapp
 	if (!RemoveTarget)
 		return;
 
-	RemoveCandidate(RemoveTarget);
-	MORTIS_LOG("Item Removed");
+	RefreshCandidatesFromOverlaps();
 }
 
 void UMortisInteractionComponent::SetSelectedTarget(AMortisInteractableActorBase* NewTarget)
@@ -145,42 +161,15 @@ void UMortisInteractionComponent::SetSelectedTarget(AMortisInteractableActorBase
 
 	if (IsValid(SelectedTarget))
 	{
-		SelectedTarget->SetSelectionUIVisible(false);
+		SelectedTarget->SetSelectionIndicatorVisible(false);
 	}
 
 	SelectedTarget = NewTarget;
 
 	if (IsValid(SelectedTarget))
 	{
-		SelectedTarget->SetSelectionUIVisible(true);
+		SelectedTarget->SetSelectionIndicatorVisible(true);
 	}
-}
-
-void UMortisInteractionComponent::AddCandidate(AMortisInteractableActorBase* NewTarget)
-{
-	if (!IsTargetStillUsable(NewTarget))
-		return;
-
-	if (InteractionCandidates.Contains(NewTarget))
-		return;
-
-	InteractionCandidates.Add(NewTarget);
-
-	if (!SelectedTarget)
-		SetSelectedTarget(NewTarget);
-}
-
-void UMortisInteractionComponent::RemoveCandidate(AMortisInteractableActorBase* RemoveTarget)
-{
-	if (!RemoveTarget)
-		return;
-
-	const bool bWasSelected = (SelectedTarget == RemoveTarget);
-
-	InteractionCandidates.Remove(RemoveTarget);
-
-	if (bWasSelected)
-		ReselectIfNeeded();
 }
 
 void UMortisInteractionComponent::ReselectIfNeeded()
@@ -191,12 +180,12 @@ void UMortisInteractionComponent::ReselectIfNeeded()
 		SetSelectedTarget(nullptr);
 }
 
-bool UMortisInteractionComponent::IsTargetStillUsable(AMortisInteractableActorBase* Target) const
+bool UMortisInteractionComponent::IsCandidateAllowed(AMortisInteractableActorBase* Target, APawn* OwnerPawn) const
 {
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-
 	if (!OwnerPawn || !IsValid(Target))
+	{
 		return false;
+	}
 
-	return Target->CanInteract(OwnerPawn);
+	return Target->CanBeInteractionCandidate(OwnerPawn) && Target->CanInteract(OwnerPawn);
 }

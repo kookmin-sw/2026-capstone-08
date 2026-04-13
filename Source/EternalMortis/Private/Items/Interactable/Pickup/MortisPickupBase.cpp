@@ -2,17 +2,21 @@
 
 
 #include "Items/Interactable/Pickup/MortisPickupBase.h"
-#include "Components/WidgetComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 AMortisPickupBase::AMortisPickupBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SetActorTickEnabled(false);
 
-	SelectionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SelectionWidget"));
-	SelectionWidget->SetupAttachment(RootComponent);
-	SelectionWidget->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
-	SelectionWidget->SetVisibility(false);
+	SelectionIndicatorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionIndicatorMesh"));
+	SelectionIndicatorMesh->SetupAttachment(RootComponent);
+	SelectionIndicatorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SelectionIndicatorMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SelectionIndicatorMesh->SetGenerateOverlapEvents(false);
+	SelectionIndicatorMesh->SetCastShadow(false);
+	SelectionIndicatorMesh->SetVisibility(false);
+	SelectionIndicatorMesh->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
 }
 
 void AMortisPickupBase::Tick(float DeltaSeconds)
@@ -55,10 +59,10 @@ void AMortisPickupBase::StartArcMove(const FVector& InStartLocation, const FVect
 	SetActorTickEnabled(true);
 }
 
-void AMortisPickupBase::SetSelectionUIVisible(bool bVisible)
+void AMortisPickupBase::SetSelectionIndicatorVisible(bool bVisible)
 {
-	if (SelectionWidget)
-		SelectionWidget->SetVisibility(bVisible);
+	if (SelectionIndicatorMesh)
+		SelectionIndicatorMesh->SetVisibility(bVisible, true);
 }
 
 void AMortisPickupBase::OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded)

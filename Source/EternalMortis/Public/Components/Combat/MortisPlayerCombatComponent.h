@@ -28,4 +28,7 @@ public:
 
 	virtual void OnHitTargetActor(AActor* HitActor) override;
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor) override;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Mortis|Combat")
+	int32 PotionCount = 5;
 };
