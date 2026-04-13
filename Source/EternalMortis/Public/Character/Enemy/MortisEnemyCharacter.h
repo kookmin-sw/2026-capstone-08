@@ -10,6 +10,8 @@
 
 class UMortisEnemyCombatComponent;
 class UMortisEnemyData;
+class UMortisEnemyUIComponent;
+class UWidgetComponent;
 /**
  * 
  */
@@ -22,6 +24,7 @@ public:
 	AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer);
 
 	void InitializeEnemyCharacter();
+	void SetEnemyHealthBarCombatVisibility(bool bShouldShow);
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -36,16 +39,28 @@ public:
 	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override;
 	//~ End IMortisCombatInterfac
 	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
+	FORCEINLINE UMortisEnemyUIComponent* GetEnemyUIComponent() const { return EnemyUIComponent; }
 
 	float GetRandomStrafingDistance() const;
 protected:
 	void InitializeEnemyByData();
+	void InitializeEnemyHUD();
+	void UpdateEnemyHealthBarWidgetLocation();
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Data")
 	TObjectPtr<UMortisEnemyData> EnemyData;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
 	TObjectPtr<UMortisEnemyCombatComponent> EnemyCombatComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
+	TObjectPtr<UMortisEnemyUIComponent> EnemyUIComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|UI")
+	TObjectPtr<UWidgetComponent> EnemyHealthBarWidgetComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|UI")
+	float EnemyHealthBarHeightOffset = 30.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
 	FGameplayTag CurrentPhase = MortisGameplayTags::State_Enemy_Phase_1;

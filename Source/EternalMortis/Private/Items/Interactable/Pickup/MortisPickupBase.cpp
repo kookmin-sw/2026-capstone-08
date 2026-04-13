@@ -3,6 +3,8 @@
 
 #include "Items/Interactable/Pickup/MortisPickupBase.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
+#include "UI/MortisPickupPreviewWidget.h"
 
 AMortisPickupBase::AMortisPickupBase()
 {
@@ -17,6 +19,17 @@ AMortisPickupBase::AMortisPickupBase()
 	SelectionIndicatorMesh->SetCastShadow(false);
 	SelectionIndicatorMesh->SetVisibility(false);
 	SelectionIndicatorMesh->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
+	
+	SelectionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("SelectionWidget"));
+	SelectionWidget->SetupAttachment(RootComponent);
+	SelectionWidget->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
+	SelectionWidget->SetWidgetClass(UMortisPickupPreviewWidget::StaticClass());
+	SelectionWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	SelectionWidget->SetDrawAtDesiredSize(true);
+	SelectionWidget->SetGenerateOverlapEvents(false);
+	SelectionWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SelectionWidget->SetPivot(FVector2D(0.5f, 1.f));
+	SelectionWidget->SetVisibility(false);
 }
 
 void AMortisPickupBase::Tick(float DeltaSeconds)
@@ -63,6 +76,20 @@ void AMortisPickupBase::SetSelectionIndicatorVisible(bool bVisible)
 {
 	if (SelectionIndicatorMesh)
 		SelectionIndicatorMesh->SetVisibility(bVisible, true);
+	
+	if (SelectionWidget)
+	{
+		if (bVisible)
+		{
+			RefreshPickupPreviewWidget();
+		}
+		else if (UMortisPickupPreviewWidget* PickupPreviewWidget = GetPickupPreviewWidget())
+		{
+			PickupPreviewWidget->ClearPreview();
+		}
+
+		SelectionWidget->SetVisibility(bVisible);
+	}
 }
 
 void AMortisPickupBase::OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded)
@@ -74,6 +101,38 @@ void AMortisPickupBase::OnInteractionFinished(APawn* InteractingPawn, bool bSucc
 	}
 
 	DisableInteraction();
+}
+
+bool AMortisPickupBase::BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const
+{
+	return false;
+}
+
+void AMortisPickupBase::RefreshPickupPreviewWidget()
+{
+	if (UMortisPickupPreviewWidget* PickupPreviewWidget = GetPickupPreviewWidget())
+	{
+		FMortisPickupPreviewData PreviewData;
+		if (BuildPickupPreviewData(PreviewData))
+		{
+			PickupPreviewWidget->ApplyPreviewData(PreviewData);
+		}
+		else
+		{
+			PickupPreviewWidget->ClearPreview();
+		}
+	}
+}
+
+UMortisPickupPreviewWidget* AMortisPickupBase::GetPickupPreviewWidget() const
+{
+	if (!SelectionWidget)
+	{
+		return nullptr;
+	}
+
+	SelectionWidget->InitWidget();
+	return Cast<UMortisPickupPreviewWidget>(SelectionWidget->GetUserWidgetObject());
 }
 
 void AMortisPickupBase::FinishArcMove()

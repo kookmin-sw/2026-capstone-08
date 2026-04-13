@@ -160,7 +160,6 @@ void UMortisRuneInventorySubsystem::UpdateSetCount(const FGameplayTag& SetTagToC
             NewState.Variables.Emplace(Tmp);
         }
 
-        //NewState.Variables[0].Icon = SetRow->Icon[0];
         NewState.CurrentCount = 0;
         NewState.CurrentLevel = 0;
     }

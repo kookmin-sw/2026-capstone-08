@@ -22,6 +22,9 @@ public:
     const FMortisRuneSetRow* GetRuneSetRow(FGameplayTag SetTag) const;
     const FMortisRuneDropRuleRow* GetDropRuleForFloor(int32 Floor) const;
 
+    UFUNCTION(BlueprintPure)
+    FText GetRuneSetDisplayName(FGameplayTag SetTag) const;
+
     UFUNCTION(BlueprintCallable)
     FMortisRuneInstance GenerateRune(int32 CurrentFloor) const;
 

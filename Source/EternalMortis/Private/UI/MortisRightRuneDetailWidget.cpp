@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
+#include "Styling/SlateColor.h"
 #include "UI/MortisRuneSynergyEntryWidget.h"
 
 void UMortisRightRuneDetailWidget::NativeConstruct()
@@ -38,9 +39,30 @@ void UMortisRightRuneDetailWidget::ApplyData(const FMortisRightRuneDetailViewDat
 
 void UMortisRightRuneDetailWidget::RefreshVisual()
 {
+    CurrentPresentationStyle = CurrentData.RunePresentationStyle;
+
+    if (Image_SelectedRuneCore)
+    {
+        Image_SelectedRuneCore->SetBrushTintColor(FSlateColor(CurrentPresentationStyle.CoreTint));
+        Image_SelectedRuneCore->SetColorAndOpacity(CurrentPresentationStyle.CoreTint);
+    }
+
+    if (Image_SelectedRuneGlow)
+    {
+        Image_SelectedRuneGlow->SetBrushFromTexture(CurrentData.RuneIcon, false);
+        Image_SelectedRuneGlow->SetBrushTintColor(FSlateColor(CurrentPresentationStyle.GlyphGlowTint));
+        Image_SelectedRuneGlow->SetColorAndOpacity(FLinearColor::White);
+        Image_SelectedRuneGlow->SetRenderOpacity(CurrentData.RuneIcon ? CurrentPresentationStyle.GlyphGlowOpacity : 0.0f);
+    }
+
     if (Image_SelectedRuneIcon)
     {
         Image_SelectedRuneIcon->SetBrushFromTexture(CurrentData.RuneIcon, false);
+
+        // Mirror the card-path tint behavior so the large detail glyph keeps the same
+        // RuneSet color even if the widget image falls back to a white widget tint.
+        Image_SelectedRuneIcon->SetBrushTintColor(FSlateColor(CurrentData.RuneIcon ? CurrentPresentationStyle.GlyphTint : FLinearColor::White));
+        Image_SelectedRuneIcon->SetColorAndOpacity(FLinearColor::White);
     }
 
     if (Text_SelectedRuneName)
@@ -83,6 +105,7 @@ void UMortisRightRuneDetailWidget::RefreshVisual()
         Button_EquipRune->SetIsEnabled(CurrentData.bCanEquip);
     }
 
+    ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
     RefreshSynergyEntries();
 }
 

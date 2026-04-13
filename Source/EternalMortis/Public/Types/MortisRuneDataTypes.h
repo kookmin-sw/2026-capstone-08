@@ -33,6 +33,16 @@ enum class EMortisRuneSymbol : uint8
     Strength,
     Dexterity,
     Intelligence,
+    Wisdom,
+    Karma,
+    Pierce,
+    Strike,
+    Slash,
+    Magic,
+    PierceResistance,
+    StrikeResistance,
+    SlashResistance,
+    MagicResistance,
 };
 
 USTRUCT(BlueprintType)
@@ -225,10 +235,18 @@ struct FMortisRuneSetRow : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FText SetName;
 
+    // 좌측 RuneSet 목록에서만 사용하는 대표 이미지
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TObjectPtr<UTexture2D> ListIcon = nullptr;
+
+    // 중앙 Rune Glyph에 적용할 RuneSet 고유 색상
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FLinearColor GlyphTint = FLinearColor::White;
+
+    // 우측 시너지 엔트리와 세트 활성 상태에서 사용하는 tier 아이콘 배열
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    //TObjectPtr<UTexture2D> Icon = nullptr;
     TArray<TObjectPtr<UTexture2D>> Icon;
-    
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TArray<EMortisRuneSymbol> AllowedSymbols;
 

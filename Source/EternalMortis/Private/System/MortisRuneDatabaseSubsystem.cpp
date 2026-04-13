@@ -173,6 +173,24 @@ const FMortisRuneSetRow* UMortisRuneDatabaseSubsystem::GetRuneSetRow(FGameplayTa
 	return RuneSetMap.Find(SetTag);
 }
 
+FText UMortisRuneDatabaseSubsystem::GetRuneSetDisplayName(FGameplayTag SetTag) const
+{
+    if (!SetTag.IsValid())
+    {
+        return FText::GetEmpty();
+    }
+
+    if (const FMortisRuneSetRow* RuneSetRow = GetRuneSetRow(SetTag))
+    {
+        if (!RuneSetRow->SetName.IsEmpty())
+        {
+            return RuneSetRow->SetName;
+        }
+    }
+
+    return FText::FromName(SetTag.GetTagName());
+}
+
 const FMortisRuneDropRuleRow* UMortisRuneDatabaseSubsystem::GetDropRuleForFloor(int32 Floor) const
 {
     for (const FMortisRuneDropRuleRow& Rule : DropRules)

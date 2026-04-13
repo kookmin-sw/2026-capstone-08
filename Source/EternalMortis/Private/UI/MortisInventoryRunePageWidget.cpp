@@ -12,6 +12,7 @@
 #include "System/MortisGameDataSettings.h"
 #include "System/MortisRuneInventorySubsystem.h"
 #include "UI/MortisRuneCardWidget.h"
+#include "UI/MortisRunePresentationStyle.h"
 #include "UI/MortisRightRuneDetailWidget.h"
 #include "UI/MortisRuneSetEntryWidget.h"
 
@@ -187,7 +188,7 @@ void UMortisInventoryRunePageWidget::RefreshSetList()
             continue;
         }
 
-        UTexture2D* DisplayIcon = SetRow->Icon.Num() > 0 ? SetRow->Icon[0] : nullptr;
+        UTexture2D* DisplayIcon = SetRow->ListIcon;
         const int32 OwnedCount = GetTotalOwnedCountBySetTag(SetRow->SetTag);
         const bool bIsSelected = SelectedSetTag.IsValid() && SelectedSetTag == SetRow->SetTag;
 
@@ -299,10 +300,12 @@ void UMortisInventoryRunePageWidget::RefreshEquippedRuneGrid()
         }
 
         UTexture2D* DisplayIcon = nullptr;
+        FLinearColor DisplayIconTint = FLinearColor::White;
         if (RuneDatabaseSubsystemRef)
         {
             const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef->GetRuneSymbolRow(RuneInstance.SymbolType);
             DisplayIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
+            DisplayIconTint = GetGlyphTintBySetTag(RuneInstance.SetTag);
         }
 
         UMortisRuneCardWidget* RuneCard = CreateWidget<UMortisRuneCardWidget>(this, RuneCardClass);
@@ -312,7 +315,7 @@ void UMortisInventoryRunePageWidget::RefreshEquippedRuneGrid()
         }
 
         const bool bIsSelected = HasSelectedRune() && SelectedRune.InstanceId == RuneInstance.InstanceId;
-        RuneCard->ApplyData(RuneInstance, DisplayIcon, bIsSelected, true);
+        RuneCard->ApplyData(RuneInstance, DisplayIcon, DisplayIconTint, bIsSelected, true);
         RuneCard->OnRuneCardClicked.RemoveDynamic(this, &ThisClass::HandleRuneCardClicked);
         RuneCard->OnRuneCardClicked.AddDynamic(this, &ThisClass::HandleRuneCardClicked);
         RuneCard->SetIsEnabled(true);
@@ -378,10 +381,11 @@ void UMortisInventoryRunePageWidget::RefreshRuneGrid()
 
         const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef->GetRuneSymbolRow(Rune.SymbolType);
         UTexture2D* DisplayIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
+        const FLinearColor DisplayIconTint = GetGlyphTintBySetTag(Rune.SetTag);
         const bool bIsSelected = HasSelectedRune() && SelectedRune.InstanceId == Rune.InstanceId;
         const bool bIsEquipped = IsRuneEquipped(Rune.InstanceId);
 
-        RuneCard->ApplyData(Rune, DisplayIcon, bIsSelected, bIsEquipped);
+        RuneCard->ApplyData(Rune, DisplayIcon, DisplayIconTint, bIsSelected, bIsEquipped);
         RuneCard->OnRuneCardClicked.RemoveDynamic(this, &ThisClass::HandleRuneCardClicked);
         RuneCard->OnRuneCardClicked.AddDynamic(this, &ThisClass::HandleRuneCardClicked);
 
@@ -390,8 +394,8 @@ void UMortisInventoryRunePageWidget::RefreshRuneGrid()
 
         if (UUniformGridSlot* GridSlot = UniformGrid_RuneGrid->AddChildToUniformGrid(RuneCard, Row, Column))
         {
-            GridSlot->SetHorizontalAlignment(HAlign_Fill);
-            GridSlot->SetVerticalAlignment(VAlign_Fill);
+            // GridSlot->SetHorizontalAlignment(HAlign_Fill);
+            // GridSlot->SetVerticalAlignment(VAlign_Fill);
         }
 
         CreatedRuneCards.Add(RuneCard);
@@ -559,6 +563,17 @@ int32 UMortisInventoryRunePageWidget::GetEquippedCountBySetTag(const FGameplayTa
     return EquippedCount;
 }
 
+FLinearColor UMortisInventoryRunePageWidget::GetGlyphTintBySetTag(const FGameplayTag& SetTag) const
+{
+    if (!RuneDatabaseSubsystemRef || !SetTag.IsValid())
+    {
+        return FLinearColor::White;
+    }
+
+    const FMortisRuneSetRow* SetRow = RuneDatabaseSubsystemRef->GetRuneSetRow(SetTag);
+    return SetRow ? SetRow->GlyphTint : FLinearColor::White;
+}
+
 void UMortisInventoryRunePageWidget::UpdateRightOverview()
 {
     if (Text_RightOverviewTitle)
@@ -667,6 +682,8 @@ void UMortisInventoryRunePageWidget::UpdateRightRuneDetail()
         : nullptr;
 
     ViewData.RuneIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
+    ViewData.RuneIconTint = GetGlyphTintBySetTag(DetailSetTag);
+    ViewData.RunePresentationStyle = MortisRunePresentation::BuildStyle(SelectedRune.Grade, ViewData.RuneIconTint);
     ViewData.RuneName = GetSelectedRuneNameText();
     ViewData.RuneStatValue = BuildRuneStatValueText();
     ViewData.SetName = SetRow ? SetRow->SetName : FText::GetEmpty();

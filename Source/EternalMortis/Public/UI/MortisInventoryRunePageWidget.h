@@ -174,6 +174,7 @@ private:
     bool HasSelectedRune() const;
     int32 GetEquippedRuneCount() const;
     int32 GetEquippedCountBySetTag(const FGameplayTag& SetTag) const;
+    FLinearColor GetGlyphTintBySetTag(const FGameplayTag& SetTag) const;
     int32 FindFirstEmptyRuneSlot() const;
     bool CanEquipSelectedRune() const;
     FText BuildEquippedSummaryText() const;

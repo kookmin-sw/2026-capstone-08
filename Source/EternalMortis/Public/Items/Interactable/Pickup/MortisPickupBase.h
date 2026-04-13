@@ -7,6 +7,9 @@
 #include "MortisPickupBase.generated.h"
 
 class UStaticMeshComponent;
+struct FMortisPickupPreviewData;
+class UWidgetComponent;
+class UMortisPickupPreviewWidget;
 
 /**
  * 
@@ -34,6 +37,9 @@ public:
 	virtual void SetSelectionIndicatorVisible(bool bVisible) override;
 
 protected:
+	virtual bool BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const;
+	void RefreshPickupPreviewWidget();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
 	float DefaultArcDuration = 0.35f;
 
@@ -42,10 +48,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup|Indicator")
 	TObjectPtr<UStaticMeshComponent> SelectionIndicatorMesh;
-
-protected:
+	
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
 
+	UMortisPickupPreviewWidget* GetPickupPreviewWidget() const;
 	void FinishArcMove();
 
 protected:
