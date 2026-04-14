@@ -32,10 +32,23 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	FGameplayAttributeData BaseDamage;
 	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, BaseDamage)
-
+	
 	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	FGameplayAttributeData IncomingDamage;
 	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, IncomingDamage)
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData MaxPoise;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, MaxPoise)
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData CurrentPoise;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, CurrentPoise)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData IncomingPoiseDamage;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, IncomingPoiseDamage)
+
 
 	UMortisAttributeSet();
 

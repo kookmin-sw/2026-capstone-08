@@ -6,7 +6,10 @@
 #include "Items/Interactable/MortisInteractableActorBase.h"
 #include "MortisPickupBase.generated.h"
 
+class UStaticMeshComponent;
+struct FMortisPickupPreviewData;
 class UWidgetComponent;
+class UMortisPickupPreviewWidget;
 
 /**
  * 
@@ -31,21 +34,29 @@ public:
 	bool IsArcMoving() const { return bArcMoving; }
 
 	// AMortisInteractableActorBase Override
-	virtual void SetSelectionUIVisible(bool bVisible) override;
+	virtual void SetSelectionIndicatorVisible(bool bVisible) override;
 
 protected:
+	virtual bool BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const;
+	void RefreshPickupPreviewWidget();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
+	UWidgetComponent* SelectionWidget;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
 	float DefaultArcDuration = 0.35f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup|Arc")
 	float DefaultArcHeight = 80.f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TObjectPtr<UWidgetComponent> SelectionWidget;
-
-protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup|Indicator")
+	TObjectPtr<UStaticMeshComponent> SelectionIndicatorMesh;
+	
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
 
+
+	
+	UMortisPickupPreviewWidget* GetPickupPreviewWidget() const;
 	void FinishArcMove();
 
 protected:

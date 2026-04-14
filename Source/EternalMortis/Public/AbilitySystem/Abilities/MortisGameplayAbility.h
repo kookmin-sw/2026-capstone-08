@@ -51,4 +51,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Ability")
 	EMortisAbilityActivationPolicy AbilityActivationPolicy = EMortisAbilityActivationPolicy::OnTriggered;
+	
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	FGameplayEffectSpecHandle MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float Damage, float PoiseDamage, const FGameplayTag DamageTag);
 };

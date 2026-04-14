@@ -13,6 +13,7 @@ class UMortisPlayerLinkedAnimLayer;
 class UInputMappingContext;
 class UMortisPlayerGameplayAbility;
 enum class EMortisStatGrade : uint8;
+enum class EMortisShopTransactionType : uint8;
 
 USTRUCT(BlueprintType)
 struct FMortisAbilityInputBinding
@@ -26,6 +27,19 @@ struct FMortisAbilityInputBinding
 	TSubclassOf<UMortisPlayerGameplayAbility> AbilityToGrant;
 
 	bool IsValid() const;
+};
+
+USTRUCT(BlueprintType)
+struct FMortisWeaponCommonData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float WeaponDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float PoiseDamage;
+	
 };
 
 USTRUCT(BlueprintType)
@@ -59,7 +73,7 @@ struct FMortisEnemyWeaponData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float WeaponDamage;
+	FMortisWeaponCommonData CommonData;
 };
 
 USTRUCT(BlueprintType)
@@ -153,4 +167,55 @@ struct FMortisDistanceRange
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Distance")
 	float MaxDistance;
+};
+
+// 상점 아이템용
+USTRUCT(BlueprintType)
+struct FMortisShopItemState
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shop")
+	int32 Price = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shop")
+	bool bCanSteal = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
+	bool bSold = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
+	bool bStolen = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
+	EMortisShopTransactionType PendingTransaction;
+
+	void ResetRuntimeState()
+	{
+		bSold = false;
+		bStolen = false;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FMortisAttackTraceConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	float Radius = 5.f;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FName StartSocket;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName EndSocket;
+
+	UPROPERTY(EditDefaultsOnly)
+	EMortisMeshSource MeshSource = EMortisMeshSource::WeaponMesh;
+	
+	bool operator==(const FMortisAttackTraceConfig& Config) const
+	{
+		return StartSocket == Config.StartSocket && EndSocket == Config.EndSocket && MeshSource == Config.MeshSource;
+	}
 };

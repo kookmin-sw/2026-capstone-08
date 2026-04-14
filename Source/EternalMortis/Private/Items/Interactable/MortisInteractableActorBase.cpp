@@ -63,7 +63,7 @@ void AMortisInteractableActorBase::DisableInteraction()
 {
 	bCanInteract = false;
 
-	SetSelectionUIVisible(false);
+	SetSelectionIndicatorVisible(false);
 
 	if (InteractionCollision)
 	{
@@ -76,7 +76,13 @@ bool AMortisInteractableActorBase::IsInteractionEnabled() const
 	return bCanInteract;
 }
 
-void AMortisInteractableActorBase::SetSelectionUIVisible(bool bVisible)
+void AMortisInteractableActorBase::SetSelectionIndicatorVisible(bool bVisible)
 {
 	// 기본적으로 아무것도 안하니 Override하여 사용할 것
+}
+
+bool AMortisInteractableActorBase::CanBeInteractionCandidate(APawn* InteractingPawn) const
+{
+	// 일반 아이템류는 기존처럼 그냥 후보 가능
+	return true;
 }

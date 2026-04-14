@@ -5,6 +5,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MortisDebugHelper.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Character/Enemy/MortisEnemyData.h"
 #include "Items/Weapons/MortisEnemyWeapon.h"
 
@@ -12,7 +13,11 @@ void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
 	Super::OnHitTargetActor(HitActor);
 	
-	MORTIS_LOG("OnHitTargetActor");
+	if (!AddUniqueOverlappedActor(HitActor))
+	{
+		return;
+	}
+	
 	FGameplayEventData EventData;
 	EventData.Instigator = GetOwningPawn();
 	EventData.Target = HitActor;
@@ -29,7 +34,6 @@ void UMortisEnemyCombatComponent::OnShieldBeginBlock(AActor* Weapon)
 {
 	Super::OnShieldBeginBlock(Weapon);
 	
-	MORTIS_LOG("");
 	AActor* WeaponActor = Weapon->GetOwner();
 	if (!WeaponActor)
 	{
@@ -46,7 +50,7 @@ void UMortisEnemyCombatComponent::OnShieldBeginBlock(AActor* Weapon)
 	EventData.Instigator = GetOwningPawn();
 	EventData.Target = Attacker;
 	
-	MORTIS_LOG("Send Gameplay Event To %s", *Attacker->GetActorNameOrLabel());
+	// MORTIS_LOG("Send Gameplay Event To %s", *Attacker->GetActorNameOrLabel());
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_Block_Success, EventData);
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Attacker, MortisGameplayTags::Event_Combat_Attack_Blocked, EventData);
 }
@@ -56,23 +60,39 @@ void UMortisEnemyCombatComponent::OnShieldEndBlock(AActor* Weapon)
 	Super::OnShieldEndBlock(Weapon);
 }
 
-void UMortisEnemyCombatComponent::SetAttackPattern(UMortisAttackPatternData* PatternData)
+FMortisWeaponCommonData UMortisEnemyCombatComponent::GetUnarmedData() const
 {
+	if (AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(GetOwner()))
+	{
+		if (const UMortisEnemyData* Data = EnemyCharacter->GetEnemyData())
+		{
+			return Data->UnarmedData;
+		}
+	}
+	return FMortisWeaponCommonData();
+}
+
+void UMortisEnemyCombatComponent::SetAttackPattern(const UMortisAttackPatternData* PatternData)
+{
+	AttackPatternWeights.Empty();
 	if (PatternData)
 	{
-		// MORTIS_LOG("");
-		AttackPatterns = PatternData->AttackPatterns;
+		AttackPatternData = PatternData;
+		for (const FMortisAttackPattern& AttackPattern : PatternData->AttackPatterns)
+		{
+			AttackPatternWeights.Add(AttackPattern.Weight);
+		}
 	}
 }
 
 const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex(int32 Index) const
 {
-	if (!AttackPatterns.IsValidIndex(Index))
+	if (!AttackPatternData || !AttackPatternData->AttackPatterns.IsValidIndex(Index))
 	{
 		MORTIS_LOG("%d is Invalid index", Index);
 		return nullptr;
 	}
-	return &AttackPatterns[Index];
+	return &AttackPatternData->AttackPatterns[Index];
 }
 
 AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetEnemyWeapon() const
@@ -80,38 +100,56 @@ AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetEnemyWeapon() const
 	return Cast<AMortisEnemyWeapon>(GetCharacterCurrentEquippedWeapon());
 }
 
-int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget) const
+int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget)
 {
+	if (!AttackPatternData)
+	{
+		return INDEX_NONE;
+	}
 	// MORTIS_LOG("");
 	TArray<int32> ValidIndices;
 	float TotalWeight = 0.f;
-	for (int32 i = 0; i < AttackPatterns.Num(); i++)
+	for (int32 i = 0; i < AttackPatternData->AttackPatterns.Num(); i++)
 	{
-		MORTIS_LOG("DistanceToTarget: %s, AngleToTarget: %s, RequiredPhase: %s",
-			(DistanceToTarget >= AttackPatterns[i].MinRange && DistanceToTarget <= AttackPatterns[i].MaxRange) ? TEXT("true") : TEXT("false"), 
-			(AngleToTarget >= AttackPatterns[i].MinAngle && AngleToTarget <= AttackPatterns[i].MaxAngle) ? TEXT("true") : TEXT("false"), 
-			AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
-		if (DistanceToTarget >= AttackPatterns[i].MinRange &&
-			DistanceToTarget <= AttackPatterns[i].MaxRange &&
-			AngleToTarget >= AttackPatterns[i].MinAngle &&
-			AngleToTarget <= AttackPatterns[i].MaxAngle &&
-			(!AttackPatterns[i].RequiredPhases.IsValid() || AttackPatterns[i].RequiredPhases.HasTagExact(CurrentPhase)))
+		const FMortisAttackPattern& AttackPattern = AttackPatternData->AttackPatterns[i];
+		// MORTIS_LOG("DistanceToTarget: %s, AngleToTarget: %s, RequiredPhase: %s",
+		// 	(DistanceToTarget >= AttackPattern.MinRange && DistanceToTarget <= AttackPattern.MaxRange) ? TEXT("true") : TEXT("false"), 
+		// 	(AngleToTarget >= AttackPattern.MinAngle && AngleToTarget <= AttackPattern.MaxAngle) ? TEXT("true") : TEXT("false"), 
+		// 	AttackPattern.RequiredPhases.HasTagExact(CurrentPhase) ? TEXT("true") : TEXT("false"));
+		if (DistanceToTarget >= AttackPattern.MinRange &&
+			DistanceToTarget <= AttackPattern.MaxRange &&
+			AngleToTarget >= AttackPattern.MinAngle &&
+			AngleToTarget <= AttackPattern.MaxAngle &&
+			(!AttackPattern.RequiredPhases.IsValid() || AttackPattern.RequiredPhases.HasTagExact(CurrentPhase)))
 		{
 			// MORTIS_LOG("Add: %d", i);
 			ValidIndices.Add(i);
-			TotalWeight += AttackPatterns[i].Weight;
+			TotalWeight += AttackPatternWeights[i];
 		}
 	}
 
 	float Accumulated = 0.f;
 	float RandomValue = FMath::FRandRange(0.f, TotalWeight);
+	int32 SelectedIndex = INDEX_NONE;
 	for (const int32 ValidIndex : ValidIndices)
 	{
-		Accumulated += AttackPatterns[ValidIndex].Weight;
+		Accumulated += AttackPatternWeights[ValidIndex];
 		if (Accumulated >= RandomValue)
 		{
-			return ValidIndex;
+			AttackPatternWeights[ValidIndex] /= 2.f;
+			float MinWeight = AttackPatternData->AttackPatterns[ValidIndex].Weight * 0.1f;
+			AttackPatternWeights[ValidIndex] = FMath::Max(MinWeight, AttackPatternWeights[ValidIndex]);
+			SelectedIndex = ValidIndex;
+			break;
 		}
 	}
-	return INDEX_NONE;
+	
+	for (int32 i = 0; i < AttackPatternWeights.Num(); i++)
+	{
+		if (i != SelectedIndex)
+		{
+			AttackPatternWeights[i] = FMath::Min(AttackPatternWeights[i] * 2.f, AttackPatternData->AttackPatterns[i].Weight);
+		}
+	}
+	return SelectedIndex;
 }

@@ -52,4 +52,14 @@ void UMortisPlayerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectM
 			PlayerUIComponent->OnStaminaChanged.Broadcast(NewCurrentStamina, GetMaxStamina());
 		}
 	}
+	else if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
+	{
+		const float NewCurrentMana = FMath::Clamp(GetCurrentMana(), 0, GetMaxMana());
+		SetCurrentMana(NewCurrentMana);
+
+		if (UMortisPlayerUIComponent* PlayerUIComponent = GetPlayerUIComponentFromPlayerAttributeData(Data))
+		{
+			PlayerUIComponent->OnManaChanged.Broadcast(NewCurrentMana, GetMaxMana());
+		}
+	}
 }

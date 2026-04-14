@@ -2,9 +2,12 @@
 
 
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Components/UI/MortisUIComponent.h"
 #include "GameplayEffectExtension.h"
 #include "MortisDebugHelper.h"
+#include "MortisGameplayTags.h"
 
 namespace
 {
@@ -50,13 +53,32 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
 		{
 			UIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
-			MORTIS_LOG("");
-			
 		}
 
 		// TODO: 사망 상태 태그 추가
 	}
-
+	else if (Data.EvaluatedData.Attribute == GetIncomingPoiseDamageAttribute())
+	{
+		float NewPoise = FMath::Clamp(GetCurrentPoise() - GetIncomingPoiseDamage(), 0.f, GetMaxPoise());
+		SetCurrentPoise(NewPoise);
+		SetIncomingPoiseDamage(0.f);
+		
+		// if Poise == 0, send HitReact Event to target
+		if (FMath::IsNearlyZero(NewPoise))
+		{
+			FGameplayEffectContextHandle Context = Data.EffectSpec.GetContext();
+			FGameplayEventData EventData;
+			EventData.Instigator = Context.GetInstigator();
+			EventData.Target = Data.Target.GetAvatarActor();
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+				GetOwningActor(),
+				MortisGameplayTags::Event_Action_HitReact,
+				EventData
+			);
+			// Reset MaxPoise
+			SetCurrentPoise(GetMaxPoise());
+		}
+	}
 }
 
 void UMortisAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)

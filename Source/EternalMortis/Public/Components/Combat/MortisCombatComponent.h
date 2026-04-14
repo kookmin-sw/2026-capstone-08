@@ -6,6 +6,7 @@
 #include "Components/PawnExtensionComponentBase.h"
 #include "GameplayTagContainer.h"
 #include "Items/Weapons/MortisShieldBase.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisCombatComponent.generated.h"
 
 class AMortisWeaponBase;
@@ -16,8 +17,7 @@ UENUM(BlueprintType)
 enum class EToggleCollisionType : uint8
 {
 	CurrentWeapon,
-	Shield,
-	Body
+	Body,
 };
 /**
  * 
@@ -29,13 +29,13 @@ class ETERNALMORTIS_API UMortisCombatComponent : public UPawnExtensionComponentB
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
-	void RegisterCombatItem(FGameplayTag ItemTag, AMortisCombatItemBase* ItemToRegister, bool bRegisterAsEquippedWeapon);
+	void RegisterWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	bool UnregisterSpawnedWeapon(FGameplayTag WeaponTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
-	AMortisWeaponBase* GetCharacterCarriedItemByTag(FGameplayTag TagToGet) const;
+	AMortisWeaponBase* GetCharacterCarriedWeaponByTag(FGameplayTag TagToGet) const;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Mortis|Combat")
 	FGameplayTag CurrentEquippedWeaponTag;
@@ -55,21 +55,35 @@ public:
 	virtual void OnShieldEndBlock(AActor* Weapon);
 	
 	/* Attack Trace */
-	void BeginAttackTrace(FName SocketName, float Radius);
-	void UpdateAttackTrace();
-	void EndAttackTrace();
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|AttackTrace")
+	TArray<TEnumAsByte<EObjectTypeQuery>> AttackTraceObjectTypes;
 	
+	UPROPERTY()
+	TArray<FMortisAttackTraceConfig> AttackTraceConfigs;
+	
+	void BeginAttackTrace(const FMortisAttackTraceConfig& Config);
+	void UpdateAttackTrace();
+	void EndAttackTrace(const FMortisAttackTraceConfig& Config);
+
 protected:
 	virtual void ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 	virtual void ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|AttackTrace")
+	TArray<TObjectPtr<AActor>> OverlappedActors;
+	
+	bool AddUniqueOverlappedActor(AActor* NewActor);
+	FORCEINLINE void ClearOverlappedActors() { OverlappedActors.Empty(); }
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Mortis|Combat")
-	TMap<FGameplayTag, AMortisWeaponBase*> CharacterWeaponMap;
+	TMap<FGameplayTag, TObjectPtr<AMortisWeaponBase>> CharacterWeaponMap;
 
 	/* Attack Trace */
 	FName CurrentTraceSocket;
-	float CurrentTraceRadius;
-	FVector PreviousLocation;
+	TArray<FVector> PreviousTraceStartLocations;
+	TArray<FVector> PreviousTraceEndLocations;
 	bool bIsTracing = false;
+	
+	FVector GetSocketLocation(const FMortisAttackTraceConfig& Config, bool bStart) const;
 };

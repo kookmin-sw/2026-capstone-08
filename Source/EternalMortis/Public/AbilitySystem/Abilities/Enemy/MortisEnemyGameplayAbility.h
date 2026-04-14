@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/MortisGameplayAbility.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisEnemyGameplayAbility.generated.h"
 
 class UMortisEnemyCombatComponent;
@@ -22,5 +23,5 @@ public:
 	AMortisAIController* GetAIControllerFromActorInfo() const;
 	UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
 
-	FGameplayEffectSpecHandle MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float WeaponDamage, const FGameplayTag& DamageTag);
+	FGameplayEffectSpecHandle MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisWeaponCommonData& WeaponData, const FGameplayTag& DamageTag);
 };

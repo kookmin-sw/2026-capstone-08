@@ -9,22 +9,24 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "InputTag.Move");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Look, "InputTag.Look");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Zoom, "InputTag.Zoom");
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "InputTag.Interact");
 
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_Select_Left, "InputTag.Select.Left");
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_Select_Right, "InputTag.Select.Right");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_TargetChange, "InputTag.TargetChange");
+
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Toggle, "InputTag.Toggle");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Toggle_LockOn, "InputTag.Toggle.LockOn");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold, "InputTag.Hold");
-
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Run, "InputTag.Hold.Ability.Sprint");
+
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Roll, "InputTag.Ability.Roll");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Interact, "InputTag.Ability.Interact");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Steal, "InputTag.Ability.Steal");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Potion, "InputTag.Ability.Potion");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_LightAttack, "InputTag.Ability.LightAttack");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_WeaponSkill, "InputTag.Ability.WeaponSkill");
 
 	// ====================		Ability Tags	====================
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Run, "Ability.Sprint");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Roll, "Ability.Roll");
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_EquipWeapon, "Ability.EquipWeapon");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_UnequipWeapon, "Ability.UnequipWeapon");
@@ -38,9 +40,15 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Turn, "Ability.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Stagger, "Ability.Action.Stagger");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Sprint, "Ability.Action.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Roll, "Ability.Action.Roll");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Interact, "Ability.Action.Interact");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Potion, "Ability.Action.Potion");
 
 	// ====================		State Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
+	UE_DEFINE_GAMEPLAY_TAG(State_LockOn, "State.LockOn");
+	UE_DEFINE_GAMEPLAY_TAG(State_Invincible, "State.Invincible");
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attacking, "State.Action.Attacking");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Turning, "State.Action.Turning");
@@ -59,6 +67,9 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Complete_Roll, "Event.Player.Complete.Roll");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Success_LightAttack, "Event.Player.Success.LightAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Success_SkillAttack, "Event.Player.Success.SkillAttack");
+
+	UE_DEFINE_GAMEPLAY_TAG(Event_Select_Left, "Event.Select.Left");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Select_Right, "Event.Select.Right");
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_RuneSet_Slash_Exaltation_Done, "Event.RuneSet.Slash.Exaltation.Done");
 	
@@ -81,14 +92,14 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Special, "Data.CollisionType.Weapon.Special");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Shield, "Data.CollisionType.Shield");
-	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Body_LeftHand, "Data.CollisionType.Body.LeftHand");
-	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Body_RightHand, "Data.CollisionType.Body.RightHand");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Pierce, "Data.AttackType.Pierce");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Blunt, "Data.AttackType.Blunt");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Slash, "Data.AttackType.Slash");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Magic, "Data.AttackType.Magic");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackScale, "Data.AttackScale");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Data_Stat_PoiseDamage, "Data.Stat.PoiseDamage");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_RuneValue, "Data.RuneValue");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Health, "Data.Cost.Health");

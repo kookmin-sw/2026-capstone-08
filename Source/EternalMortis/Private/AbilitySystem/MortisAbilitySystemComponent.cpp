@@ -13,9 +13,18 @@ void UMortisAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& In
 
 	for (const FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
-		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		if (!AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) continue;
+		
+		if (InputTag.MatchesTag(MortisGameplayTags::InputTag_Toggle) && AbilitySpec.IsActive())
+		{
+			CancelAbilityHandle(AbilitySpec.Handle);
+			break;
+		}
+		else
+		{
 			TryActivateAbility(AbilitySpec.Handle);
-		// break를 넣을지 말지 고민해볼 것
+			break;
+		}
 	}
 }
 
@@ -26,8 +35,10 @@ void UMortisAbilitySystemComponent::OnAbilityInputReleased(const FGameplayTag& I
 	for (const FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
 		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag) && AbilitySpec.IsActive())
+		{
 			CancelAbilityHandle(AbilitySpec.Handle);
-		// break를 넣을지 말지 고민해볼 것
+			break;
+		}
 	}
 }
 

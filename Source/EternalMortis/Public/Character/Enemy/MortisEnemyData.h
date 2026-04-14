@@ -81,6 +81,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
 	float ElbowBackOffset = 30.f;
 	
+	/* Combat */
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	FMortisWeaponCommonData UnarmedData;
+	
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	FRotator RotationRate = FRotator(0.f, 180.f, 0.f);

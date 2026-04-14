@@ -16,6 +16,7 @@
 #include "Components/UI/MortisPlayerUIComponent.h"
 #include "Components/Movement/MortisPlayerMovementComponent.h"
 #include "Components/Collisions/MortisInteractionComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "MortisGameplayTags.h"
 
 #include "MortisDebugHelper.h"
@@ -99,6 +100,19 @@ UMortisCombatComponent* AMortisPlayerCharacter::GetCombatComponent() const
 	return MortisPlayerCombatComponent;
 }
 
+void AMortisPlayerCharacter::SetAllInputEnabled(bool bMoveEnabled, bool bLookEnabled, bool bAbilityEnabled)
+{
+	bCanMoveInput = bMoveEnabled;
+	bCanLookInput = bLookEnabled;
+	bCanAbilityInput = bAbilityEnabled;
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->SetIgnoreMoveInput(!bCanMoveInput);
+		PC->SetIgnoreLookInput(!bCanLookInput);
+	}
+}
+
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -127,6 +141,7 @@ void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Zoom, ETriggerEvent::Triggered, this, &ThisClass::Input_Zoom);
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_TargetChange, ETriggerEvent::Started, this, &ThisClass::Input_TargetChange);
 
 	MortisInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
 }
@@ -151,6 +166,8 @@ void AMortisPlayerCharacter::Tick(float DeltaTime)
 
 void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
+	if (!bCanMoveInput) return;
+
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
@@ -172,9 +189,10 @@ void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValu
 
 void AMortisPlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
 {
+	if (!bCanLookInput) return;
+
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
-	if (LookAxisVector.X != 0.0f)
 	{
 		AddControllerYawInput(LookAxisVector.X);
 	}
@@ -186,6 +204,8 @@ void AMortisPlayerCharacter::Input_Look(const FInputActionValue& InputActionValu
 
 void AMortisPlayerCharacter::Input_Zoom(const FInputActionValue& InputActionValue)
 {
+	if (!bCanLookInput) return;
+
 	const float AxisValue = InputActionValue.Get<float>();
 	if (FMath::IsNearlyZero(AxisValue)) return;
 
@@ -196,8 +216,22 @@ void AMortisPlayerCharacter::Input_Zoom(const FInputActionValue& InputActionValu
 	);
 }
 
+void AMortisPlayerCharacter::Input_TargetChange(const FInputActionValue& InputActionValue)
+{
+	if (!bCanAbilityInput) return;
+
+	const float AxisValue = InputActionValue.Get<float>();
+
+	if (AxisValue > 0.5f)
+		HandleTargetChange(1);
+	else if (AxisValue < -0.5f)
+		HandleTargetChange(-1);
+}
+
 void AMortisPlayerCharacter::Input_AbilityInputPressed(FGameplayTag InputTag)
 {
+	if (!bCanAbilityInput) return;
+
 	if (bCanBufferInput && IsBufferableAbility(InputTag))
 	{
 		BufferedInputTag = InputTag;
@@ -224,4 +258,32 @@ void AMortisPlayerCharacter::ChangeMovementMaxSpeed(const FOnAttributeChangeData
 {
 	if (UMortisPlayerMovementComponent* MovementComp = Cast<UMortisPlayerMovementComponent>(GetCharacterMovement()))
 		MovementComp->SetTargetSpeed(Data.NewValue);
+}
+
+void AMortisPlayerCharacter::HandleTargetChange(int32 Direction)
+{
+	if (MortisAbilitySystemComponent && MortisAbilitySystemComponent->HasMatchingGameplayTag(MortisGameplayTags::State_LockOn))
+	{
+		// 락온 오른쪽 타겟 전환
+		const FGameplayTag EventTag = (Direction > 0)
+			? MortisGameplayTags::Event_Select_Right
+			: MortisGameplayTags::Event_Select_Left;
+		FGameplayEventData Payload;
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, EventTag, Payload);
+		return;
+	}
+
+	if (!InteractionComponent)
+	{
+		return;
+	}
+
+	if (Direction > 0)
+	{
+		InteractionComponent->SelectNextTarget();
+	}
+	else
+	{
+		InteractionComponent->SelectPreviousTarget();
+	}
 }
