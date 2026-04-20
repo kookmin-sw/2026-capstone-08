@@ -29,9 +29,15 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetSetTargetSpeed() const { return TargetSpeedCap; }
 
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Acceleration")
+	void SetMaxSpeedChangeable(bool bInCanChangeMaxSpeed);
+
 protected:
 	float CurrentSpeedCap = 375.f;
 	float TargetSpeedCap = 375.f;
+
+	UPROPERTY(VisibleAnywhere, Category = "Mortis|Accerleration")
+	bool bCanChangeMaxSpeed = true;
 
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	virtual float GetMaxSpeed() const override;

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -19,6 +19,9 @@ class ETERNALMORTIS_API UMortisPlayerAnimInstance : public UMortisCharacterAnimI
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData|References")
 	AMortisPlayerCharacter* OwningPlayerCharacter;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "AnimData|References")
+	bool bIsRunning = false;
 
 public:
 	// UMortisCharacterAnimInstanceBase override

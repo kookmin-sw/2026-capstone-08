@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Components/UI/MortisUIComponent.h"
 #include "GameplayEffectExtension.h"
+#include "MortisFunctionLibrary.h"
 #include "MortisDebugHelper.h"
 #include "MortisGameplayTags.h"
 
@@ -55,7 +56,8 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			UIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
 		}
 
-		// TODO: 사망 상태 태그 추가
+		if (GetCurrentHealth() <= 0.0f)
+			Data.Target.AddLooseGameplayTag(MortisGameplayTags::State_Dead);
 	}
 	else if (Data.EvaluatedData.Attribute == GetIncomingPoiseDamageAttribute())
 	{

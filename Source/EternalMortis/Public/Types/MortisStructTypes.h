@@ -12,6 +12,7 @@ class UGameplayEffect;
 class UMortisPlayerLinkedAnimLayer;
 class UInputMappingContext;
 class UMortisPlayerGameplayAbility;
+class UAnimMontage;
 enum class EMortisStatGrade : uint8;
 enum class EMortisShopTransactionType : uint8;
 
@@ -58,6 +59,8 @@ struct FMortisPlayerWeaponData
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float WeaponDamage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float PoiseDamage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EMortisStatGrade StrGrade;
@@ -217,5 +220,74 @@ struct FMortisAttackTraceConfig
 	bool operator==(const FMortisAttackTraceConfig& Config) const
 	{
 		return StartSocket == Config.StartSocket && EndSocket == Config.EndSocket && MeshSource == Config.MeshSource;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponAttackData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> AttackMontage = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> RecoveryMontage = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag AttackType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float StaminaCost = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float ManaCost = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AttackCoef = 1.0f;
+};
+
+USTRUCT(BlueprintType)
+struct FMortisGradeWeights
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Common = 70.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Rare = 20.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Epic = 8.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Legendary = 2.f;
+
+	bool HasAnyPositiveWeight() const
+	{
+		return Common > 0.f || Rare > 0.f || Epic > 0.f || Legendary > 0.f;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FMortisDropRuleRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Floor = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FMortisGradeWeights WeaponGradeWeights;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FMortisGradeWeights RuneGradeWeights;
+
+	bool IsValid() const
+	{
+		return Floor > 0
+			&& WeaponGradeWeights.HasAnyPositiveWeight()
+			&& RuneGradeWeights.HasAnyPositiveWeight();
 	}
 };

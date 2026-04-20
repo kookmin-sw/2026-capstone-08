@@ -45,6 +45,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Interact, "Ability.Action.Interact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Potion, "Ability.Action.Potion");
 
+	UE_DEFINE_GAMEPLAY_TAG(Ability_LockOn, "Ability.LockOn");
+
 	// ====================		State Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
 	UE_DEFINE_GAMEPLAY_TAG(State_LockOn, "State.LockOn");
@@ -76,6 +78,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_ExecutePattern, "Event.Action.ExecutePattern");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_Turn, "Event.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_HitReact, "Event.Action.HitReact");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Action_ImpactReact, "Event.Action.ImpactReact");
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_AttackHit, "Event.Combat.AttackHit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Combo_Next, "Event.Combat.Combo.Next");
@@ -85,8 +88,10 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_EndWarpUpdate, "Event.Montage.EndWarpUpdate");
 
 	// ====================		Data Tags		====================
-	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DefaultSword, "Data.Weapon.DefaultSword");
-	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FallenKnightSword, "Data.Weapon.FallenKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DarkIronSword, "Data.Weapon.DarkIronSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_CastleKnightSword, "Data.Weapon.CastleKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FrostSlayer, "Data.Weapon.FrostSlayer");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Finger, "Data.Weapon.Finger");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Shield, "Data.Shield");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
@@ -142,6 +147,11 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Combo, "Rune.Set.Combo");
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Mystery, "Rune.Set.Mystery");
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Inspiration, "Rune.Set.Inspiration");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Impact, "Rune.Set.Impact");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Weight, "Rune.Set.Weight");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fortitude, "Rune.Set.Fortitude");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Thorns, "Rune.Set.Thorns");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fury, "Rune.Set.Fury");
 
 	// ====================		Character Tags	====================
 }

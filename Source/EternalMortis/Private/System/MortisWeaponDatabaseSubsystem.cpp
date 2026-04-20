@@ -14,11 +14,11 @@ void UMortisWeaponDatabaseSubsystem::Initialize(FSubsystemCollectionBase& Collec
     check(Settings);
 
     WeaponTable = Settings->WeaponTable.LoadSynchronous();
-    WeaponDropRuleTable = Settings->WeaponDropRuleTable.LoadSynchronous();
+    DropRuleTable = Settings->DropRuleTable.LoadSynchronous();
     WeaponGradeStyleTable = Settings->WeaponGradeStyleTable.LoadSynchronous();
 
     checkf(WeaponTable, TEXT("WeaponTable is not set in MortisGameDataSettings."));
-    checkf(WeaponDropRuleTable, TEXT("WeaponDropRuleTable is not set in MortisGameDataSettings."));
+    checkf(DropRuleTable, TEXT("DropRuleTable is not set in MortisGameDataSettings."));
     checkf(WeaponGradeStyleTable, TEXT("WeaponGradeStyleTable is not set in MortisGameDataSettings."));
 
     BuildWeaponCaches();
@@ -43,23 +43,23 @@ bool UMortisWeaponDatabaseSubsystem::GenerateWeaponByTag(FGameplayTag WeaponTag,
 
 bool UMortisWeaponDatabaseSubsystem::GenerateRandomWeaponForFloor(int32 Floor, FMortisWeaponRow& OutWeaponRow) const
 {
-    const FMortisWeaponDropRuleRow* DropRule = GetDropRuleForFloor(Floor);
+    const FMortisDropRuleRow* DropRule = GetDropRuleForFloor(Floor);
     if (!DropRule)
         return false;
 
     EMortisWeaponGrade PickedGrade;
-    if (!PickRandomGrade(DropRule->GradeWeights, PickedGrade))
+    if (!PickRandomGrade(DropRule->WeaponGradeWeights, PickedGrade))
         return false;
 
     return GenerateRandomWeaponByGrade(PickedGrade, OutWeaponRow);
 }
 
-const FMortisWeaponDropRuleRow* UMortisWeaponDatabaseSubsystem::GetDropRuleForFloor(int32 Floor) const
+const FMortisDropRuleRow* UMortisWeaponDatabaseSubsystem::GetDropRuleForFloor(int32 Floor) const
 {
     if (Floor <= 0 || DropRulesByFloor.Num() == 0)
         return nullptr;
 
-    if (const FMortisWeaponDropRuleRow* ExactRule = DropRulesByFloor.Find(Floor))
+    if (const FMortisDropRuleRow* ExactRule = DropRulesByFloor.Find(Floor))
         return ExactRule;
 
     return nullptr;
@@ -118,12 +118,12 @@ void UMortisWeaponDatabaseSubsystem::BuildDropRuleCaches()
 {
     DropRulesByFloor.Empty();
 
-    checkf(WeaponDropRuleTable, TEXT("WeaponDropRuleTable is not Correct!"));
+    checkf(DropRuleTable, TEXT("DropRuleTable is not Correct!"));
 
-    TArray<FMortisWeaponDropRuleRow*> AllRows;
-    WeaponDropRuleTable->GetAllRows(TEXT("BuildDropRuleCaches"), AllRows);
+    TArray<FMortisDropRuleRow*> AllRows;
+    DropRuleTable->GetAllRows(TEXT("BuildDropRuleCaches"), AllRows);
 
-    for (const FMortisWeaponDropRuleRow* Row : AllRows)
+    for (const FMortisDropRuleRow* Row : AllRows)
     {
         if (!Row || !Row->IsValid())
             continue;
@@ -132,7 +132,7 @@ void UMortisWeaponDatabaseSubsystem::BuildDropRuleCaches()
     }
 }
 
-bool UMortisWeaponDatabaseSubsystem::PickRandomGrade(const FMortisWeaponGradeWeights& InWeights, EMortisWeaponGrade& OutGrade) const
+bool UMortisWeaponDatabaseSubsystem::PickRandomGrade(const FMortisGradeWeights& InWeights, EMortisWeaponGrade& OutGrade) const
 {
     const float TotalWeight =
         InWeights.Common +

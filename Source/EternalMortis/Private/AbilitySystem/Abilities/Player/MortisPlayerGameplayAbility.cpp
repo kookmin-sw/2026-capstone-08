@@ -31,7 +31,7 @@ UMortisPlayerCombatComponent* UMortisPlayerGameplayAbility::GetMortisPlayerComba
 	return GetMortisPlayerCharacterFromActorInfo()->GetMortisPlayerCombatComponent();
 }
 
-FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType)
+FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType)
 {
 	check(EffectClass);
 
@@ -65,11 +65,15 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 		MortisGameplayTags::Data_Player_Stat_Coefficient_Intelligence,
 		UMortisFunctionLibrary::GetGradeCoef(WeaponData.IntGrade)
 	);
+	
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		MortisGameplayTags::Data_AttackScale,
+		AttackScale
+	);
 
-	/* for poise test */
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		MortisGameplayTags::Data_Stat_PoiseDamage,
-		20.f
+		WeaponData.PoiseDamage
 	);
 	
 	if (!AttackType.IsValid()) AttackType = MortisGameplayTags::Data_AttackType_Slash;
