@@ -46,7 +46,7 @@ void UMortisBTS_FocusTarget::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp,
 	AActor* TargetActor = Cast<AActor>(BBComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
 	if (!TargetActor)
 	{
-		MORTIS_LOG("Target Actor is null");
+		// MORTIS_LOG("Target Actor is null");
 		return;
 	}
 

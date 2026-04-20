@@ -9,10 +9,12 @@
 #include "Components/Combat/MortisEnemyCombatComponent.h"
 #include "Components/UI/MortisEnemyUIComponent.h"
 #include "AbilitySystem/Attributes/MortisEnemyAttributeSet.h"
+#include "BehaviorTree/BehaviorTree.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Controllers/MortisAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -75,11 +77,22 @@ void AMortisEnemyCharacter::Tick(float DeltaSeconds)
 	//
 }
 
+void AMortisEnemyCharacter::StartDeath()
+{
+	Super::StartDeath();
+	
+	if (AMortisAIController* AIC = Cast<AMortisAIController>(GetController()))
+	{
+		AIC->OnEnemyDead();
+	}
+	SetEnemyHealthBarCombatVisibility(false);
+	// GetMesh()->SetSimulatePhysics(true);
+}
 
-// void AMortisEnemyCharacter::PossessedBy(AController* NewController)
-// {
-// 	Super::PossessedBy(NewController);
-// }
+void AMortisEnemyCharacter::FinishDeath()
+{
+	Super::FinishDeath();
+}
 
 void AMortisEnemyCharacter::InitializeEnemyHUD()
 {
@@ -101,7 +114,25 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 	check(GetCapsuleComponent() && GetMesh() && GetCharacterMovement());
 	
 	GetCapsuleComponent()->InitCapsuleSize(EnemyData->CapsuleRadius, EnemyData->CapsuleHalfHeight);
-	GetMesh()->SetSkeletalMesh(EnemyData->EnemyMesh);
+	
+	USkeletalMesh* SelectedMesh = EnemyData->EnemyMesh;
+	if (EnemyData->bEnableVisualVariations && !EnemyData->MeshPool.IsEmpty())
+	{
+		int32 RandomIndex = FMath::RandRange(0, EnemyData->MeshPool.Num() - 1);
+		if (EnemyData->MeshPool[RandomIndex])
+		{
+			SelectedMesh = EnemyData->MeshPool[RandomIndex];
+		}
+	}
+
+	GetMesh()->SetSkeletalMesh(SelectedMesh);
+	
+	if (EnemyData->bEnableVisualVariations && !EnemyData->MaterialSetPool.IsEmpty())
+	{
+		int32 RandomIndex = FMath::RandRange(0, EnemyData->MaterialSetPool.Num() - 1);
+		ApplyMaterialSet(EnemyData->MaterialSetPool[RandomIndex]);
+	}
+	
 	GetMesh()->SetRelativeScale3D(EnemyData->MeshScale);
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -EnemyData->CapsuleHalfHeight));
 	GetMesh()->SetRelativeRotation(EnemyData->MeshRotation);
@@ -183,6 +214,17 @@ void AMortisEnemyCharacter::UpdateEnemyHealthBarWidgetLocation()
 
 	const float CapsuleHalfHeight = GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
 	EnemyHealthBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, CapsuleHalfHeight + EnemyHealthBarHeightOffset));
+}
+
+void AMortisEnemyCharacter::ApplyMaterialSet(const FMortisMaterialSet& MaterialSet)
+{
+	for (int32 i = 0; i < MaterialSet.Materials.Num(); i++)
+	{
+		if (UMaterialInterface* Material = MaterialSet.Materials[i])
+		{
+			GetMesh()->SetMaterial(i, Material);
+		}
+	}
 }
 
 #if WITH_EDITOR

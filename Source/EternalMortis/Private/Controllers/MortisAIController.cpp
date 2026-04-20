@@ -4,6 +4,7 @@
 #include "Controllers/MortisAIController.h"
 #include "MortisDebugHelper.h"
 #include "MortisFunctionLibrary.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Character/Enemy/MortisEnemyData.h"
@@ -23,28 +24,33 @@ AMortisAIController::AMortisAIController(const FObjectInitializer& ObjectInitial
 	
 	PerceptionComponent->ConfigureSense(*SightConfig);
 	PerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
-
 	PerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetPerceptionUpdated);
 }
 
 ETeamAttitude::Type AMortisAIController::GetTeamAttitudeTowards(const AActor& Other) const
 {
-	if (const APawn* OtherPawn = Cast<APawn>(&Other))
+	const APawn* OtherPawn = Cast<APawn>(&Other);
+	if (!OtherPawn)
 	{
-		if (const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(OtherPawn->GetController()))
-		{
-			if (GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId())
-			{
-				return ETeamAttitude::Friendly;
-			}
-			if (GetGenericTeamId() != OtherTeamAgent->GetGenericTeamId()
-				&& OtherTeamAgent->GetGenericTeamId() != static_cast<uint8>(EMortisTeam::Neutral))
-			{
-				return ETeamAttitude::Hostile;
-			}
-		}
+		return ETeamAttitude::Neutral;
 	}
-	return ETeamAttitude::Neutral;
+	
+	const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(OtherPawn->GetController());
+	if (!OtherTeamAgent)
+	{
+		return ETeamAttitude::Neutral;
+	}
+
+	// MORTIS_LOG("Actor: %s, TeamID: %d, SelfTeamID: %d", *OtherPawn->GetActorNameOrLabel(), OtherTeamAgent->GetGenericTeamId().GetId(), GetGenericTeamId().GetId());
+	if (GetGenericTeamId() == FGenericTeamId::NoTeam || OtherTeamAgent->GetGenericTeamId() == FGenericTeamId::NoTeam)
+	{
+		return ETeamAttitude::Neutral;
+	}
+	if (OtherTeamAgent->GetGenericTeamId() == static_cast<uint8>(EMortisTeam::Neutral))
+	{				
+		return ETeamAttitude::Neutral;
+	}
+	return GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId() ? ETeamAttitude::Friendly : ETeamAttitude::Hostile; 
 }
 
 void AMortisAIController::ConfigurePerceptionFromData(const UMortisEnemyData* EnemyData)
@@ -88,6 +94,10 @@ void AMortisAIController::ConfigurePerceptionFromData(const UMortisEnemyData* En
 	}
 
 	SetGenericTeamId(static_cast<uint8>(EnemyData->Affiliation));
+	if (PerceptionComponent)
+	{
+		PerceptionComponent->RequestStimuliListenerUpdate();
+	}
 }
 
 AActor* AMortisAIController::GetTargetActor() const
@@ -97,6 +107,27 @@ AActor* AMortisAIController::GetTargetActor() const
 		return Cast<AActor>(BBComp->GetValueAsObject(MortisBlackboardKeys::TargetActor));
 	}
 	return nullptr;
+}
+
+void AMortisAIController::OnEnemyDead()
+{
+	if (UBehaviorTreeComponent* BT = Cast<UBehaviorTreeComponent>(BrainComponent))
+	{
+		BT->StopTree(EBTStopMode::Safe);
+	}
+	
+	if (UBlackboardComponent* BBComp = GetBlackboardComponent())
+	{
+		BBComp->ClearValue(MortisBlackboardKeys::TargetActor);
+	}
+	
+	if (PerceptionComponent)
+	{
+		PerceptionComponent->SetComponentTickEnabled(false);
+	}
+	
+	ClearFocus(EAIFocusPriority::Gameplay);
+	StopMovement();
 }
 
 void AMortisAIController::OnPossess(APawn* InPawn)

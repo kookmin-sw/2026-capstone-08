@@ -43,7 +43,17 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 	FRotator MeshRotation = FRotator(0.f, -90.f, 0.f);
+	
+	/* Variation */
+	UPROPERTY(EditDefaultsOnly, Category = "Mesh|Variation")
+	bool bEnableVisualVariations = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Mesh|Variation", meta = (EditCondition = "bEnableVisualVariations"))
+	TArray<TObjectPtr<USkeletalMesh>> MeshPool;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Mesh|Variation", meta = (EditCondition = "bEnableVisualVariations"))
+	TArray<FMortisMaterialSet> MaterialSetPool;
+	
 	/* Linked Anim Layer */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TSubclassOf<UAnimInstance> LinkedAnimLayerClass;
@@ -115,13 +125,13 @@ public:
 	
 	/* Perception */
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
-	float SightRadius = 5000.f;
+	float SightRadius = 2000.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
-	float LoseSightRadius = 5500.f;
+	float LoseSightRadius = 2500.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
-	float PeripheralVisionAngleDegrees = 360.f;
+	float PeripheralVisionAngleDegrees = 210.f;
 
 	/* Detour Crowd Avoidance */
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Detour Crowd Avoidance Config")

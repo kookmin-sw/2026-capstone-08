@@ -37,6 +37,8 @@ public:
 
 	AActor* GetTargetActor() const;
 	
+	void OnEnemyDead();
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	TObjectPtr<UAISenseConfig_Sight> SightConfig;

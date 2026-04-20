@@ -45,7 +45,7 @@ public:
 	
 	FORCEINLINE const FMortisAttackPattern* GetAttackPatternByIndex(int32 Index) const;
 
-	FORCEINLINE AMortisEnemyWeapon* GetEnemyWeapon() const;
+	FORCEINLINE AMortisEnemyWeapon* GetCurrentEnemyWeapon() const;
 	int32 SelectAttackPattern(float DistanceToTarget, float AngleToTarget);
 	
 private:

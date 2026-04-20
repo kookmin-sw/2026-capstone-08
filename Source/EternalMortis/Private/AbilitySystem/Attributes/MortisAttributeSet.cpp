@@ -56,8 +56,12 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			UIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
 		}
 
+		// TODO: 사망 상태 태그 추가
 		if (GetCurrentHealth() <= 0.0f)
+		{
 			Data.Target.AddLooseGameplayTag(MortisGameplayTags::State_Dead);
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningActor(), MortisGameplayTags::Event_Dead, FGameplayEventData());
+		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetIncomingPoiseDamageAttribute())
 	{

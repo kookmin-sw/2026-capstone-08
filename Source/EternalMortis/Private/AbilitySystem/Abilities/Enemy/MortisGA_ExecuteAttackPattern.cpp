@@ -54,7 +54,7 @@ void UMortisGA_ExecuteAttackPattern::ActivateAbility(const FGameplayAbilitySpecH
 	CachedTargetActor = const_cast<AActor*>(TriggerEventData->Target.Get());
 	if (!CachedTargetActor.IsValid())
 	{
-		MORTIS_LOG("Target Actor is null");
+		// MORTIS_LOG("Target Actor is null");
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
@@ -278,7 +278,7 @@ void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Paylo
 		return;
 	}
 
-	AMortisEnemyWeapon* Weapon = CombatComponent->GetEnemyWeapon();
+	AMortisEnemyWeapon* Weapon = CombatComponent->GetCurrentEnemyWeapon();
 	const FMortisWeaponCommonData& WeaponData = Weapon ? Weapon->GetEnemyWeaponData().CommonData : CombatComponent->GetUnarmedData();
 	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, WeaponData, DamageTag);
 	
