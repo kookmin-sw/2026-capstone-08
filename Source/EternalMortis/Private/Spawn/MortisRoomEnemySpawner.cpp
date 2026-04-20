@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Spawn/MortisRoomEnemySpawner.h"
@@ -44,7 +44,9 @@ void AMortisRoomEnemySpawner::Tick(float DeltaTime)
 	
 	if (GIsEditor && !GetWorld()->IsGameWorld())
 	{
+#if WITH_EDITOR
 		DrawDebugPoints();
+#endif
 	}
 }
 

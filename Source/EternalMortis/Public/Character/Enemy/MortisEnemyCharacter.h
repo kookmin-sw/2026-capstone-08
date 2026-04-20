@@ -43,7 +43,7 @@ public:
 
 	void SetEnemyHealthBarCombatVisibility(bool bShouldShow);
 	
-	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
+	UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
 	FORCEINLINE UMortisEnemyUIComponent* GetEnemyUIComponent() const { return EnemyUIComponent; }
 
 	float GetRandomStrafingDistance() const;

@@ -1,4 +1,4 @@
-#include "UI/MortisInventoryStatusPageWidget.h"
+﻿#include "UI/MortisInventoryStatusPageWidget.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
@@ -13,6 +13,7 @@
 #include "System/MortisRuneInventorySubsystem.h"
 #include "System/MortisWeaponInventorySubsystem.h"
 #include "UObject/FieldIterator.h"
+#include "UObject/UnrealType.h"
 
 namespace
 {
@@ -218,11 +219,21 @@ void UMortisInventoryStatusPageWidget::CollectPlayerAttributes(AActor* PlayerAct
 		FMortisInventoryStatusAttributeValue AttributeValue;
 		AttributeValue.Attribute = Attribute;
 		AttributeValue.AttributeName = AttributeProperty->GetFName();
-		AttributeValue.DisplayName = AttributeProperty->GetDisplayNameText();
 		AttributeValue.AttributeSetClass = OwnerClass;
 		AttributeValue.AttributeSetName = OwnerClass->GetFName();
-		AttributeValue.CategoryName = FName(*AttributeProperty->GetMetaData(TEXT("Category")));
 		AttributeValue.Value = AbilitySystemComponent->GetNumericAttribute(Attribute);
+
+#if WITH_EDITOR
+		AttributeValue.DisplayName = AttributeProperty->GetDisplayNameText();
+
+		const FString CategoryString = AttributeProperty->GetMetaData(TEXT("Category"));
+		AttributeValue.CategoryName = CategoryString.IsEmpty()
+			? OwnerClass->GetFName()
+			: FName(*CategoryString);
+#else
+		AttributeValue.DisplayName = FText::FromName(AttributeProperty->GetFName());
+		AttributeValue.CategoryName = OwnerClass->GetFName();
+#endif
 
 		OutSnapshot.PlayerAttributes.Add(AttributeValue);
 	}
