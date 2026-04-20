@@ -2,7 +2,9 @@
 
 
 #include "Components/Combat/MortisPlayerCombatComponent.h"
+#include "Character/Player/MortisPlayerCharacter.h"
 #include "Items/Weapons/MortisPlayerWeapon.h"
+#include "Components/UI/MortisPlayerUIComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MortisGameplayTags.h"
 
@@ -28,6 +30,12 @@ FMortisPlayerWeaponData UMortisPlayerCombatComponent::GetPlayerCurrentWeaponData
 	return GetPlayerCurrentEquippedWeapon()->PlayerWeaponData;
 }
 
+void UMortisPlayerCombatComponent::SetPotionCount(int32 NewPotionCount)
+{
+	PotionCount = FMath::Max(0, NewPotionCount);
+	BroadcastPotionCountChanged();
+}
+
 void UMortisPlayerCombatComponent::OnHitTargetActor(AActor* HitActor)
 {
 	if (!AddUniqueOverlappedActor(HitActor))
@@ -48,4 +56,18 @@ void UMortisPlayerCombatComponent::OnHitTargetActor(AActor* HitActor)
 void UMortisPlayerCombatComponent::OnWeaponPulledFromTargetActor(AActor* InteractedActor)
 {
 
+}
+
+void UMortisPlayerCombatComponent::BroadcastPotionCountChanged() const
+{
+	const AMortisPlayerCharacter* PlayerCharacter = Cast<AMortisPlayerCharacter>(GetOwner());
+	if (!PlayerCharacter)
+	{
+		return;
+	}
+
+	if (UMortisPlayerUIComponent* PlayerUIComponent = PlayerCharacter->GetPlayerUIComponent())
+	{
+		PlayerUIComponent->OnPotionCountChanged.Broadcast(PotionCount);
+	}
 }

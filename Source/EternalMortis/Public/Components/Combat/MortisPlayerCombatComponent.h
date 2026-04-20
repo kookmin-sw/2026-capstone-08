@@ -8,9 +8,7 @@
 
 class AMortisPlayerWeapon;
 struct FMortisPlayerWeaponData;
-/**
- * 
- */
+
 UCLASS()
 class ETERNALMORTIS_API UMortisPlayerCombatComponent : public UMortisCombatComponent
 {
@@ -26,9 +24,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	FMortisPlayerWeaponData GetPlayerCurrentWeaponData() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
+	void SetPotionCount(int32 NewPotionCount);
+
 	virtual void OnHitTargetActor(AActor* HitActor) override;
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor) override;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Mortis|Combat")
 	int32 PotionCount = 5;
+
+private:
+	void BroadcastPotionCountChanged() const;
 };
