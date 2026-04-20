@@ -26,16 +26,18 @@ public:
 	FORCEINLINE EMortisSpawnMode GetSpawnMode() const { return SpawnMode; }
 	FORCEINLINE FDataTableRowHandle GetCustomSpawnRowHandle() const { return CustomEnemySpawnRowHandle; }
 	
-	UFUNCTION(CallInEditor, Category = "Mortis")
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Mortis")
 	void GenerateSpawnPoints();
 	
-	UFUNCTION(CallInEditor, Category = "Mortis")
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Mortis")
 	void ClearPoints();
 	
 	TArray<FTransform> GetWorldSpawnTransforms() const;
 	
 	void SetEnemiesToSpawn(const TArray<TSubclassOf<AMortisEnemyCharacter>>& NewEnemiesToSpawn);
-	void SpawnEnemies() const;
+	
+	UFUNCTION(BlueprintCallable)
+	TArray<AMortisEnemyCharacter*> SpawnEnemies() const;
 	
 protected:
 	UPROPERTY()
@@ -65,7 +67,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Mortis|Spawn", meta = (EditCondition = "SpawnPattern == EMortisSpawnPattern::Grid"))
 	float GridSpacing = 300.f;
 
-	UPROPERTY(VisibleAnywhere, Category = "Mortis|Spawn", meta = (MakeEditWidget))
+	UPROPERTY(EditAnywhere, Category = "Mortis|Spawn", meta = (MakeEditWidget))
 	TArray<FTransform> RelativeSpawnTransforms;
 	
 	UPROPERTY(EditAnywhere, Category = "Mortis|Spawn")

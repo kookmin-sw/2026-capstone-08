@@ -22,6 +22,9 @@ public:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	//~ End UWorldSubsystem Interfaces
 	
+	UFUNCTION(BlueprintCallable)
+	void InitializeSpawnPoints();
+	
 	void AssignEnemies();
 	void AssignEnemiesByFloor(AMortisRoomEnemySpawner* RoomSpawner, const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget);
 	void AssignEnemiesFromCustomRow(AMortisRoomEnemySpawner* RoomSpawner, const FDataTableRowHandle& CustomSpawnRowHandle);
