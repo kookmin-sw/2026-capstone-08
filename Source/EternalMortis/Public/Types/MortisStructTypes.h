@@ -217,6 +217,9 @@ struct FMortisAttackTraceConfig
 	UPROPERTY(EditDefaultsOnly)
 	EMortisMeshSource MeshSource = EMortisMeshSource::WeaponMesh;
 	
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "MeshSource == EMortisMeshSource::WeaponMesh", Categories = "Data.Weapon.Slot"))
+	FGameplayTag SlotTag = MortisGameplayTags::Data_Weapon_Slot_MainHand;
+	
 	bool operator==(const FMortisAttackTraceConfig& Config) const
 	{
 		return StartSocket == Config.StartSocket && EndSocket == Config.EndSocket && MeshSource == Config.MeshSource;
@@ -224,6 +227,14 @@ struct FMortisAttackTraceConfig
 };
 
 USTRUCT(BlueprintType)
+struct FMortisMaterialSet
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Material")
+	TArray<TObjectPtr<UMaterialInterface>> Materials;
+};
+
 struct FWeaponAttackData
 {
 	GENERATED_BODY()

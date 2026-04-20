@@ -32,7 +32,12 @@ public:
 	void RegisterWeapon(FGameplayTag WeaponTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
+	void RegisterWeaponToSlot(FGameplayTag SlotTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon);
+	
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	bool UnregisterSpawnedWeapon(FGameplayTag WeaponTag);
+	
+	bool UnRegisterWeapon(const FGameplayTag& SlotTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	AMortisWeaponBase* GetCharacterCarriedWeaponByTag(FGameplayTag TagToGet) const;
@@ -42,10 +47,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	AMortisWeaponBase* GetCharacterCurrentEquippedWeapon() const;
-
+	
+	FORCEINLINE AMortisWeaponBase* GetEquippedWeaponBySlotTag(const FGameplayTag& SlotTag) const { return WeaponBySlotTag.FindRef(SlotTag); }
+	
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Combat")
 	void ToggleDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle, EToggleCollisionType ToggleDamageType = EToggleCollisionType::CurrentWeapon);
 
+	void ClearWeapons(float LifeSpan = 0.f);
+	
 	// 아래의 두 Functions은 상속한 CombatComponent에서 구현하기
 	virtual void OnHitTargetActor(AActor* HitActor);
 	virtual void OnWeaponPulledFromTargetActor(AActor* InteractedActor);
@@ -64,7 +73,9 @@ public:
 	void BeginAttackTrace(const FMortisAttackTraceConfig& Config);
 	void UpdateAttackTrace();
 	void EndAttackTrace(const FMortisAttackTraceConfig& Config);
-
+	
+	FORCEINLINE void SetCurrentSlotTag(const FGameplayTag& NewSlotTag) { CurrentAttackSlot = NewSlotTag; }
+	AMortisWeaponBase* GetCurrentWeapon() const;
 protected:
 	virtual void ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 	virtual void ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle);
@@ -79,6 +90,11 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Mortis|Combat")
 	TMap<FGameplayTag, TObjectPtr<AMortisWeaponBase>> CharacterWeaponMap;
 
+	UPROPERTY(VisibleAnywhere, Category = "Mortis|Combat")
+	TMap<FGameplayTag, TObjectPtr<AMortisWeaponBase>> WeaponBySlotTag;
+	
+	FGameplayTag CurrentAttackSlot = FGameplayTag::EmptyTag;
+	
 	/* Attack Trace */
 	FName CurrentTraceSocket;
 	TArray<FVector> PreviousTraceStartLocations;

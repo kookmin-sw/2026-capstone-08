@@ -29,6 +29,7 @@ void UMortisANS_AttackTracing::NotifyTick(USkeletalMeshComponent* MeshComp, UAni
 	{
 		if (UMortisCombatComponent* CombatComp = CombatInterface->GetCombatComponent())
 		{
+			CombatComp->SetCurrentSlotTag(TraceConfig.SlotTag);
 			CombatComp->UpdateAttackTrace();
 		}
 	}

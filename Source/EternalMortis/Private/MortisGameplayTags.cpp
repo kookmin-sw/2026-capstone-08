@@ -27,6 +27,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_WeaponSkill, "InputTag.Ability.WeaponSkill");
 
 	// ====================		Ability Tags	====================
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Death, "Ability.Death");
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_EquipWeapon, "Ability.EquipWeapon");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_UnequipWeapon, "Ability.UnequipWeapon");
@@ -65,6 +66,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_2, "State.Enemy.Phase.2");
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_3, "State.Enemy.Phase.3");
 	// ====================		Event Tags		====================
+	UE_DEFINE_GAMEPLAY_TAG(Event_Dead, "Event.Dead");
+	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_SwitchWeapon, "Event.Player.SwitchWeapon");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Complete_Roll, "Event.Player.Complete.Roll");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Success_LightAttack, "Event.Player.Success.LightAttack");
@@ -97,6 +100,9 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Special, "Data.CollisionType.Weapon.Special");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Shield, "Data.CollisionType.Shield");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Slot_MainHand, "Data.Weapon.Slot.MainHand");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Slot_OffHand, "Data.Weapon.Slot.OffHand");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Pierce, "Data.AttackType.Pierce");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Blunt, "Data.AttackType.Blunt");

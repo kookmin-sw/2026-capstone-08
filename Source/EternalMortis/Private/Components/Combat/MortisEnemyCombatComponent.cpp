@@ -96,9 +96,9 @@ const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex
 	return &AttackPatternData->AttackPatterns[Index];
 }
 
-AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetEnemyWeapon() const
+AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetCurrentEnemyWeapon() const
 {
-	return Cast<AMortisEnemyWeapon>(GetCharacterCurrentEquippedWeapon());
+	return Cast<AMortisEnemyWeapon>(GetCurrentWeapon());
 }
 
 int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget)
@@ -140,6 +140,7 @@ int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, f
 			AttackPatternWeights[ValidIndex] /= 2.f;
 			float MinWeight = AttackPatternData->AttackPatterns[ValidIndex].Weight * 0.1f;
 			AttackPatternWeights[ValidIndex] = FMath::Max(MinWeight, AttackPatternWeights[ValidIndex]);
+			// MORTIS_LOG("ValidIndex: %d", ValidIndex);
 			SelectedIndex = ValidIndex;
 			break;
 		}

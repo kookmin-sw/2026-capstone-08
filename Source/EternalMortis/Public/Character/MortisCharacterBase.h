@@ -15,6 +15,7 @@ class UMortisAbilitySystemComponent;
 class UMortisAttributeSet;
 class UMortisAbilitySetBase;
 
+
 UCLASS()
 class ETERNALMORTIS_API AMortisCharacterBase : public ACharacter, public IAbilitySystemInterface, public IMortisCombatInterface
 {
@@ -29,6 +30,12 @@ public:
 
 	// IMortisCombatInterface Override
 	virtual UMortisCombatComponent* GetCombatComponent() const override { return nullptr; }
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void StartDeath();
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void FinishDeath();
 	
 protected:
 	// APawn Override

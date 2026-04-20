@@ -3,9 +3,13 @@
 
 #include "Character/MortisCharacterBase.h"
 
+#include "MortisDebugHelper.h"
 #include "MotionWarpingComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/Combat/MortisCombatComponent.h"
+#include "Items/Weapons/MortisWeaponBase.h"
 
 // Sets default values
 AMortisCharacterBase::AMortisCharacterBase(const FObjectInitializer& ObjectInitializer)
@@ -25,6 +29,28 @@ AMortisCharacterBase::AMortisCharacterBase(const FObjectInitializer& ObjectIniti
 UAbilitySystemComponent* AMortisCharacterBase::GetAbilitySystemComponent() const
 {
 	return GetMortisAbilitySystemComponent();
+}
+
+void AMortisCharacterBase::StartDeath()
+{
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+}
+
+void AMortisCharacterBase::FinishDeath()
+{
+	if (UMortisCombatComponent* CombatComponent = GetCombatComponent())
+	{
+		CombatComponent->ClearWeapons(3.f);
+	}
+	
+	if (GetMesh())
+	{
+		GetMesh()->bPauseAnims = true;
+	}
+	SetLifeSpan(3.f);
 }
 
 void AMortisCharacterBase::PossessedBy(AController* NewController)

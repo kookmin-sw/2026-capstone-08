@@ -51,6 +51,7 @@ FGameplayEffectSpecHandle UMortisEnemyGameplayAbility::MakeDamageEffectSpecHandl
 		ContextHandle
 	);
 
+	// MORTIS_LOG("WeaponDamage: %f, PoiseDamage: %f", WeaponData.WeaponDamage, WeaponData.PoiseDamage);
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		DamageTag,
 		WeaponData.WeaponDamage
