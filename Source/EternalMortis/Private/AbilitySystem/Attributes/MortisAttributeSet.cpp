@@ -38,6 +38,18 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			UIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, GetMaxHealth());
 		}
 	}
+	// 최대 체력 변경
+	if (Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
+	{
+		const float NexMaxHealth = GetMaxHealth();
+		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth());
+		SetMaxHealth(NexMaxHealth);
+
+		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
+		{
+			UIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, NexMaxHealth);
+		}
+	}
 	// 데미지를 입었을 때
 	else if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{

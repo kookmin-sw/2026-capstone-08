@@ -14,12 +14,14 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "UI/MortisEnemyHealthBarWidget.h"
+#include "UI/MortisWidgetBase.h"
 #include "UObject/ConstructorHelpers.h"
 
 AMortisEnemyCharacter::AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMortisEnemyAttributeSet>(TEXT("MortisAttributeSet")))
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> EnemyHealthBarWidgetClass(TEXT("/Game/UI/HUD/WBP/WBP_Bar"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> EnemyHealthBarWidgetClass(TEXT("/Game/UI/EnemyHUD/WBP_EnemyHPBar"));
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
@@ -40,7 +42,7 @@ AMortisEnemyCharacter::AMortisEnemyCharacter(const FObjectInitializer& ObjectIni
 	EnemyHealthBarWidgetComponent->SetGenerateOverlapEvents(false);
 	EnemyHealthBarWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	EnemyHealthBarWidgetComponent->SetPivot(FVector2D(0.5f, 1.f));
-	EnemyHealthBarWidgetComponent->SetVisibility(false);
+	EnemyHealthBarWidgetComponent->SetVisibility(true);
 
 	if (EnemyHealthBarWidgetClass.Succeeded())
 	{
@@ -85,9 +87,29 @@ void AMortisEnemyCharacter::InitializeEnemyHUD()
 {
 	UpdateEnemyHealthBarWidgetLocation();
 
-	if (EnemyUIComponent)
+	if (!EnemyHealthBarWidgetComponent)
 	{
-		EnemyUIComponent->InitializeEnemyHealthBar(EnemyHealthBarWidgetComponent);
+		return;
+	}
+
+	EnemyHealthBarWidgetComponent->InitWidget();
+	EnemyHealthBarWidgetComponent->SetVisibility(true);
+
+	UUserWidget* UserWidget = EnemyHealthBarWidgetComponent->GetUserWidgetObject();
+	if (!UserWidget || !EnemyUIComponent)
+	{
+		return;
+	}
+
+	if (UMortisWidgetBase* MortisWidget = Cast<UMortisWidgetBase>(UserWidget))
+	{
+		MortisWidget->BP_BindUIComponent(EnemyUIComponent);
+	}
+
+	// Keep the legacy binding path alive until the enemy HP bar blueprints are reparented.
+	if (UMortisEnemyHealthBarWidget* LegacyHealthBarWidget = Cast<UMortisEnemyHealthBarWidget>(UserWidget))
+	{
+		LegacyHealthBarWidget->InitializeFromUIComponent(EnemyUIComponent);
 	}
 }
 
@@ -168,10 +190,9 @@ float AMortisEnemyCharacter::GetRandomStrafingDistance() const
 
 void AMortisEnemyCharacter::SetEnemyHealthBarCombatVisibility(bool bShouldShow)
 {
-	if (EnemyUIComponent)
-	{
-		EnemyUIComponent->SetCombatHUDVisible(bShouldShow);
-	}
+	(void)bShouldShow;
+
+	// Deprecated: enemy HUD visibility is now owned by the widget blueprint.
 }
 
 void AMortisEnemyCharacter::UpdateEnemyHealthBarWidgetLocation()

@@ -7,6 +7,7 @@
 #include "Character/Player/MortisPlayerCharacter.h"
 #include "Controllers/MortisPlayerController.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
+#include "Components/UI/MortisPlayerUIComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
 #include "MortisGameplayTags.h"
@@ -29,6 +30,16 @@ AMortisPlayerController* UMortisPlayerGameplayAbility::GetMortisPlayerController
 UMortisPlayerCombatComponent* UMortisPlayerGameplayAbility::GetMortisPlayerCombatComponent()
 {
 	return GetMortisPlayerCharacterFromActorInfo()->GetMortisPlayerCombatComponent();
+}
+
+UMortisPlayerUIComponent* UMortisPlayerGameplayAbility::GetMortisPlayerUIComponent()
+{
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+	{
+		return PlayerCharacter->GetPlayerUIComponent();
+	}
+
+	return nullptr;
 }
 
 FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType)
@@ -130,4 +141,12 @@ bool UMortisPlayerGameplayAbility::CheckManaCost(float BaseCost, float& OutFinal
 		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute()) + AdditionalReduceRate;
 
 	return CurrentMana >= -OutFinalCost;
+}
+
+void UMortisPlayerGameplayAbility::BroadcastEquippedWeaponMeshChanged(UMeshComponent* NewWeaponMesh)
+{
+	if (UMortisPlayerUIComponent* PlayerUIComponent = GetMortisPlayerUIComponent())
+	{
+		PlayerUIComponent->OnEquippedWeaponMeshChanged.Broadcast(NewWeaponMesh);
+	}
 }
