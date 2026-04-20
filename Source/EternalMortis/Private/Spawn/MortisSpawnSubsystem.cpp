@@ -14,12 +14,16 @@ void UMortisSpawnSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 	
+	// AssignEnemies();
+}
+
+void UMortisSpawnSubsystem::InitializeSpawnPoints()
+{
 	AssignEnemies();
 }
 
 void UMortisSpawnSubsystem::AssignEnemies()
 {
-	// MORTIS_LOG("Assign Enemies");
 	AMortisGameState* GS = GetWorld()->GetGameState<AMortisGameState>();;
 	if (!GS)
 	{

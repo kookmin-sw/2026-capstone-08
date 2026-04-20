@@ -4,10 +4,12 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MortisDebugHelper.h"
+#include "MortisFunctionLibrary.h"
 #include "Abilities/GameplayAbilityTypes.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Character/Enemy/MortisEnemyData.h"
 #include "Character/Player/MortisPlayerCharacter.h"
+#include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "Items/Weapons/MortisEnemyWeapon.h"
 
 void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
@@ -25,6 +27,10 @@ void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
 	
 	if (AMortisPlayerCharacter* Player = Cast<AMortisPlayerCharacter>(HitActor))
 	{
+		if (UMortisFunctionLibrary::HasGameplayTag(Player, MortisGameplayTags::State_Invincible))
+		{
+			return;
+		}
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_AttackHit, EventData);
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, MortisGameplayTags::Event_Action_ImpactReact, EventData);	
 	}

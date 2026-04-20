@@ -76,6 +76,7 @@ void AMortisRoomEnemySpawner::GeneratePoint()
 
 void AMortisRoomEnemySpawner::GenerateCircle()
 {
+	// MORTIS_LOG("Generate Circle");
 	RelativeSpawnTransforms.Add(FTransform(FVector::ZeroVector));
 	for (int32 i = 0; i < CircleCount; i++)
 	{
@@ -120,9 +121,9 @@ void AMortisRoomEnemySpawner::SetEnemiesToSpawn(const TArray<TSubclassOf<AMortis
 	EnemiesToSpawn = NewEnemiesToSpawn;
 }
 
-void AMortisRoomEnemySpawner::SpawnEnemies() const
+TArray<AMortisEnemyCharacter*> AMortisRoomEnemySpawner::SpawnEnemies() const
 {
-	// MORTIS_LOG("Spawn Enemies");
+	TArray<AMortisEnemyCharacter*> SpawnedEnemies;
 	TArray<FTransform> WorldTransforms = GetWorldSpawnTransforms();
 	for (int32 i = 0; i < WorldTransforms.Num(); i++)
 	{
@@ -136,8 +137,12 @@ void AMortisRoomEnemySpawner::SpawnEnemies() const
 		}
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		GetWorld()->SpawnActor<AMortisEnemyCharacter>(EnemiesToSpawn[i], WorldTransforms[i], SpawnParams);
+		if (AMortisEnemyCharacter* NewEnemy = GetWorld()->SpawnActor<AMortisEnemyCharacter>(EnemiesToSpawn[i], WorldTransforms[i], SpawnParams))
+		{
+			SpawnedEnemies.Add(NewEnemy);
+		}
 	}
+	return SpawnedEnemies;
 }
 
 void AMortisRoomEnemySpawner::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

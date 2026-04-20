@@ -18,7 +18,7 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
+	
 	// MORTIS_LOG("");
 	
 	if (!ActorInfo || !ActorInfo->AvatarActor.IsValid() || !TriggerEventData)
@@ -50,12 +50,14 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		{
 			MORTIS_LOG("MotionWarpingComp is null");
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+			return;
 		}
 
 		if (!TriggerEventData || !TriggerEventData->Target)
 		{
 			MORTIS_LOG("Target is null");
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+			return;
 		}
 	
 		FMotionWarpingTarget WarpTarget;
