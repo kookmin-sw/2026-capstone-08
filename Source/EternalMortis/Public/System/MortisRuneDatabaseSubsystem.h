@@ -32,6 +32,8 @@ public:
 
     const FMortisRuneSymbolRow* GetRuneSymbolRow(EMortisRuneSymbol SymbolType) const;
     const FMortisRuneSetRow* GetRuneSetRow(FGameplayTag SetTag) const;
+
+    UFUNCTION(BlueprintCallable)
     FText GetRuneSetDisplayName(FGameplayTag SetTag) const;
 
 private:
