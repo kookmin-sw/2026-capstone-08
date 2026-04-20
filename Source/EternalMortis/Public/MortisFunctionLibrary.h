@@ -32,6 +32,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
 	static FString GetGradeText(EMortisStatGrade Grade);
 
+	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
+	static EMortisHitDirection ComputeHitReactDirectionTag(AActor* InAttacker, AActor* InVictim, float& OutAngleDifference);
+
 	/* Combat */
 	static UMortisCombatComponent* GetCombatComponent(const AActor* Actor);
 

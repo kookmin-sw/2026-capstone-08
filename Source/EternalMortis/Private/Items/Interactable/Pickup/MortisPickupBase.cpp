@@ -64,7 +64,7 @@ void AMortisPickupBase::StartArcMove(const FVector& InStartLocation, const FVect
 	ArcTarget = InTargetLocation;
 	ArcElapsed = 0.f;
 	ArcDuration = InDuration > 0.f ? InDuration : DefaultArcDuration;
-	ArcHeight = InArcHeight;
+	ArcHeight = InArcHeight > 0.f ? InArcHeight : DefaultArcHeight;
 
 	SetActorLocation(ArcStart);
 

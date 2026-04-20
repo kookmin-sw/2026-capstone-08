@@ -95,30 +95,6 @@ struct FMortisRuneValueRange
 };
 
 USTRUCT(BlueprintType)
-struct FMortisRuneSetWeight
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    FGameplayTag SetTag;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    int32 Weight = 1;
-};
-
-USTRUCT(BlueprintType)
-struct FMortisRuneGradeWeight
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    EMortisRuneGrade Grade;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    int32 Weight = 1;
-};
-
-USTRUCT(BlueprintType)
 struct FMortisRuneInstance
 {
     GENERATED_BODY()
@@ -134,6 +110,9 @@ struct FMortisRuneInstance
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EMortisRuneGrade Grade;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FDataTableRowHandle GradeStyleRow;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float RolledValue = 0.f;
@@ -185,6 +164,18 @@ struct FMortisSetTierDef
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TArray<TSubclassOf<UGameplayAbility>> GrantedAbilities;
+};
+
+USTRUCT(BlueprintType)
+struct FMortisRuneGradeStyleRow : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    EMortisRuneGrade Grade = EMortisRuneGrade::Common;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FLinearColor GradeColor = FLinearColor::White;
 };
 
 USTRUCT(BlueprintType)
@@ -252,22 +243,4 @@ struct FMortisRuneSetRow : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TArray<FMortisSetTierDef> TierDefs;
-};
-
-USTRUCT(BlueprintType)
-struct FMortisRuneDropRuleRow : public FTableRowBase
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    int32 MinFloor = 1;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    int32 MaxFloor = 999;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    TArray<FMortisRuneSetWeight> SetWeights;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    TArray<FMortisRuneGradeWeight> GradeWeights;
 };

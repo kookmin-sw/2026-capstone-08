@@ -17,6 +17,7 @@
 #include "Components/Movement/MortisPlayerMovementComponent.h"
 #include "Components/Collisions/MortisInteractionComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "MotionWarpingComponent.h"
 #include "MortisGameplayTags.h"
 
 #include "MortisDebugHelper.h"
@@ -113,6 +114,38 @@ void AMortisPlayerCharacter::SetAllInputEnabled(bool bMoveEnabled, bool bLookEna
 	}
 }
 
+void AMortisPlayerCharacter::SetMoveInputByAbility(bool bMoveEnabled)
+{
+	bCanMoveInputByAbility = bMoveEnabled;
+}
+
+void AMortisPlayerCharacter::UpdateAttackDirectionWarpTarget(const FRotator& InRotation)
+{
+	if (!MotionWarpingComponent)
+		return;
+
+	const FTransform WarpTargetTransform(
+		FRotator(0.f, InRotation.Yaw, 0.f),
+		GetActorLocation()
+	);
+
+	MotionWarpingComponent->AddOrUpdateWarpTargetFromTransform(
+		TEXT("AttackDirection"),
+		WarpTargetTransform
+	);
+}
+
+void AMortisPlayerCharacter::SetLockOnZoomAlpha(float InAlpha)
+{
+	const float ClampedAlpha = FMath::Clamp(InAlpha, 0.f, 1.f);
+	TargetZoomLength = FMath::Lerp(MinZoomLength, MaxZoomLength, ClampedAlpha);
+}
+
+void AMortisPlayerCharacter::SetLockOnHeightOffsetEnabled(bool bEnabled)
+{
+	bLockOnHeightOffsetEnabled = bEnabled;
+}
+
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -162,16 +195,45 @@ void AMortisPlayerCharacter::Tick(float DeltaTime)
 		DeltaTime,
 		ZoomInterpSpeed
 	);
+
+	const float ZoomAlpha = FMath::GetMappedRangeValueClamped(
+		FVector2D(MinZoomLength, MaxZoomLength),
+		FVector2D(0.f, 1.f),
+		CameraArm->TargetArmLength
+	);
+
+	const float TargetHeightOffset = FMath::Lerp(ZoomInHeightOffset, ZoomOutHeightOffset, ZoomAlpha) + (bLockOnHeightOffsetEnabled ? LockOnHeightOffset : 0.f);
+
+	FVector SocketOffset = CameraArm->SocketOffset;
+	SocketOffset.Z = FMath::FInterpTo(
+		SocketOffset.Z,
+		TargetHeightOffset,
+		DeltaTime,
+		ZoomHeightInterpSpeed
+	);
+
+	CameraArm->SocketOffset = SocketOffset;
 }
 
 void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
-	if (!bCanMoveInput) return;
+	if (!bCanMoveInput || !bCanMoveInputByAbility) return;
 
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
-	if (MovementVector.SizeSquared() > 0.01f) { StopRecoveryMontage(RecoveryBlendOutTime); }
+	if (MovementVector.SizeSquared() > 0.01f) { 
+		StopRecoveryMontage(RecoveryBlendOutTime);
+
+		const FVector WorldMoveDirection = (MovementRotation.RotateVector(FVector(MovementVector.Y, MovementVector.X, 0.0f))).GetSafeNormal();
+		if (!WorldMoveDirection.IsNearlyZero())
+		{
+			const FRotator AttackDirectionRotation = WorldMoveDirection.Rotation();
+			const FTransform WarpTargetTransform(AttackDirectionRotation, GetActorLocation());
+
+			MotionWarpingComponent->AddOrUpdateWarpTargetFromTransform(TEXT("AttackDirection"),WarpTargetTransform);
+		}
+	}
 
 	if (MovementVector.Y != 0.0f)
 	{

@@ -61,14 +61,10 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 		return;
 	}
 
+	const float DistanceAlpha = FMath::Clamp(DistanceToTarget / BreakLockDistance, 0.f, 1.f);
+	PlayerCharacter->SetLockOnZoomAlpha(DistanceAlpha);
+
 	SetTargetLockWidgetPosition();
-
-	const bool bShouldOverrideRotation =
-		!HasGameplayTagOnActor(PlayerCharacter, RollingStateTag) &&
-		!HasGameplayTagOnActor(PlayerCharacter, BlockingStateTag);
-
-	if (!bShouldOverrideRotation)
-		return;
 
 	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
 		PlayerCharacter->GetActorLocation(),
@@ -86,7 +82,29 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 	);
 
 	PlayerController->SetControlRotation(FRotator(TargetRot.Pitch, TargetRot.Yaw, 0.f));
-	PlayerCharacter->SetActorRotation(FRotator(0.f, TargetRot.Yaw, 0.f));
+
+	const bool bForceRotateToTarget =
+		HasAnyMatchingTagOnActor(PlayerCharacter, ForceCharacterRotateToTargetTags);
+
+	if (UCharacterMovementComponent* MovementComp = PlayerCharacter->GetCharacterMovement())
+	{
+		MovementComp->bOrientRotationToMovement = ShouldOrientRotationToMovement(PlayerCharacter);
+	}
+
+	if (ShouldRotateCharacterToTarget(PlayerCharacter))
+	{
+		const FRotator NewActorRot = FMath::RInterpTo(
+			PlayerCharacter->GetActorRotation(),
+			FRotator(0.f, TargetRot.Yaw, 0.f),
+			DeltaTime,
+			CharacterRotationInterpSpeed
+		);
+
+		PlayerCharacter->SetActorRotation(NewActorRot);
+	}
+
+	if (bForceRotateToTarget)
+		PlayerCharacter->UpdateAttackDirectionWarpTarget(TargetRot);
 }
 
 void UMortisGA_TargetLock::SwitchTarget(const FGameplayTag& InSwitchDirectionTag)
@@ -130,6 +148,9 @@ void UMortisGA_TargetLock::InitializeTargetLockState()
 	ApplyLockOnMoveSpeedEffect();
 	DrawTargetLockWidget();
 	SetTargetLockWidgetPosition();
+
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+		PlayerCharacter->SetLockOnHeightOffsetEnabled(true);
 }
 
 void UMortisGA_TargetLock::CleanupTargetLockState()
@@ -145,10 +166,16 @@ void UMortisGA_TargetLock::CleanupTargetLockState()
 		DrawnTargetLockWidget->RemoveFromParent();
 		DrawnTargetLockWidget = nullptr;
 	}
+
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+	{
+		PlayerCharacter->SetLockOnHeightOffsetEnabled(false);
+	}
 }
 
 void UMortisGA_TargetLock::CancelTargetLockAbility()
 {
+	CleanupTargetLockState();
 	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
 }
 
@@ -294,6 +321,41 @@ bool UMortisGA_TargetLock::HasGameplayTagOnActor(const AActor* InActor, const FG
 	return ASC && ASC->HasMatchingGameplayTag(InTag);
 }
 
+bool UMortisGA_TargetLock::HasAnyMatchingTagOnActor(const AActor* InActor, const FGameplayTagContainer& InTags) const
+{
+	if (!InActor || InTags.IsEmpty())
+		return false;
+
+	const IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(InActor);
+	if (!ASI)
+		return false;
+
+	const UAbilitySystemComponent* ASC = ASI->GetAbilitySystemComponent();
+	return ASC && ASC->HasAnyMatchingGameplayTags(InTags);
+}
+
+bool UMortisGA_TargetLock::ShouldRotateCharacterToTarget(const AMortisPlayerCharacter* PlayerCharacter) const
+{
+	if (!PlayerCharacter)
+		return false;
+
+	if (HasAnyMatchingTagOnActor(PlayerCharacter, ForceCharacterRotateToTargetTags))
+		return true;
+
+	return !HasAnyMatchingTagOnActor(PlayerCharacter, CameraOnlyLockTags);
+}
+
+bool UMortisGA_TargetLock::ShouldOrientRotationToMovement(const AMortisPlayerCharacter* PlayerCharacter) const
+{
+	if (!PlayerCharacter)
+		return false;
+
+	if (HasAnyMatchingTagOnActor(PlayerCharacter, ForceCharacterRotateToTargetTags))
+		return false;
+
+	return HasAnyMatchingTagOnActor(PlayerCharacter, OrientToMovementTags);
+}
+
 bool UMortisGA_TargetLock::HasLineOfSightToTarget(AActor* InActor) const
 {
 	const APlayerController* PlayerController = GetPlayerControllerFromActorInfo();
@@ -395,12 +457,10 @@ void UMortisGA_TargetLock::InitializeLockOnMovement()
 		return;
 	}
 
-	bCachedUseControllerRotationYaw = PlayerCharacter->bUseControllerRotationYaw;
 	PlayerCharacter->bUseControllerRotationYaw = false;
 
 	if (UCharacterMovementComponent* MovementComp = PlayerCharacter->GetCharacterMovement())
 	{
-		bCachedOrientRotationToMovement = MovementComp->bOrientRotationToMovement;
 		MovementComp->bOrientRotationToMovement = false;
 	}
 }
@@ -413,11 +473,11 @@ void UMortisGA_TargetLock::ResetLockOnMovement()
 		return;
 	}
 
-	PlayerCharacter->bUseControllerRotationYaw = bCachedUseControllerRotationYaw;
+	PlayerCharacter->bUseControllerRotationYaw = false;
 
 	if (UCharacterMovementComponent* MovementComp = PlayerCharacter->GetCharacterMovement())
 	{
-		MovementComp->bOrientRotationToMovement = bCachedOrientRotationToMovement;
+		MovementComp->bOrientRotationToMovement = true;
 	}
 }
 
@@ -462,11 +522,3 @@ APlayerController* UMortisGA_TargetLock::GetPlayerControllerFromActorInfo() cons
 {
 	return CurrentActorInfo ? Cast<APlayerController>(CurrentActorInfo->PlayerController.Get()) : nullptr;
 }
-
-
-
-
-
-
-
-

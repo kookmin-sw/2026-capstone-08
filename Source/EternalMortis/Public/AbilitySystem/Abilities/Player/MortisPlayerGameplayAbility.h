@@ -35,7 +35,7 @@ public:
 	UMortisPlayerUIComponent* GetMortisPlayerUIComponent();
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
-	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType);
+	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
 	float CalculateStaminaCost(float BaseCost, float AdditionalReduceRate = 0.0f) const;

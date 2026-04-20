@@ -119,7 +119,7 @@ void UMortisIncomingDamageExecCalc::Execute_Implementation(const FGameplayEffect
 		);
 	}
 	
-	const float PoiseDamage = EffectSpec.GetSetByCallerMagnitude(MortisGameplayTags::Data_Stat_PoiseDamage, false, 1.f);
+	const float PoiseDamage = EffectSpec.GetSetByCallerMagnitude(MortisGameplayTags::Data_Stat_PoiseDamage, false, 1.f) * MotionCoef;
 	if (PoiseDamage > 0.f)
 	{
 		OutExecutionOutput.AddOutputModifier(

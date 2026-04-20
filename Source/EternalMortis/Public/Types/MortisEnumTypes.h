@@ -58,3 +58,12 @@ enum class EMortisMeshSource : uint8
 	WeaponMesh UMETA(DisplayName = "Weapon Mesh"),
 	CharacterMesh UMETA(DisplayName = "Character Mesh"),
 };
+
+UENUM(BlueprintType)
+enum class EMortisHitDirection : uint8
+{
+	Left	UMETA(DisplayName = "Left"),
+	Front	UMETA(DisplayName = "Front"),
+	Right	UMETA(DisplayName = "Right"),
+	Back	UMETA(DisplayName = "Back"),
+};

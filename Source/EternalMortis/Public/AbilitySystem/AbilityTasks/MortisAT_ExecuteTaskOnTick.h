@@ -19,7 +19,7 @@ class ETERNALMORTIS_API UMortisAT_ExecuteTaskOnTick : public UAbilityTask
 public:
 	UMortisAT_ExecuteTaskOnTick();
 
-	UFUNCTION(BlueprintCallable, Category = "Warrior|AbilityTasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintCallable, Category = "Mortis|AbilityTasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UMortisAT_ExecuteTaskOnTick* ExecuteTaskOnTick(UGameplayAbility* OwningAbility);
 
 	//~ Begin UGameplayTask Interface

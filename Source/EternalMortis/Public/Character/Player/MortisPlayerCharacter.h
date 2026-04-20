@@ -34,12 +34,25 @@ public:
 	float ZoomStep = 50.f;
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomInterpSpeed = 10.f;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float ZoomInHeightOffset = 10.f;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float ZoomOutHeightOffset = -20.f;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float TargetZoomLength = 200.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float LockOnHeightOffset = 20.f;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float ZoomHeightInterpSpeed = 10.f;
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	bool bLockOnHeightOffsetEnabled = false;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Control")
 	bool bCanMoveInput = true;
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	bool bCanMoveInputByAbility = true;
 	UPROPERTY(BlueprintReadOnly, Category = "Control")
 	bool bCanLookInput = true;
 	UPROPERTY(BlueprintReadOnly, Category = "Control")
@@ -63,8 +76,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|InputBuffer")
 	inline void SetBufferEnabled(bool bEnabled) { bCanBufferInput = bEnabled; }
 
-	UFUNCTION(BlueprintCallable, Category = "Control")
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Control")
 	void SetAllInputEnabled(bool bMoveEnabled, bool bLookEnabled, bool bAbilityEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Control")
+	void SetMoveInputByAbility(bool bMoveEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|MotionWarping")
+	void UpdateAttackDirectionWarpTarget(const FRotator& InRotation);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Camera")
+	void SetLockOnZoomAlpha(float InAlpha);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Camera")
+	void SetLockOnHeightOffsetEnabled(bool bEnabled);
 
 protected:
 	// APawn Override
