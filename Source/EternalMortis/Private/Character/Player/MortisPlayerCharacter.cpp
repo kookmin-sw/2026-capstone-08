@@ -191,8 +191,8 @@ void AMortisPlayerCharacter::BeginPlay()
 void AMortisPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FString DebugString = MortisPlayerCombatComponent->CurrentEquippedWeaponTag.ToString(); 
-	DrawDebugString(GetWorld(), GetActorLocation() + FVector(0.f, 0.f, 100.f), DebugString, this, FColor::Yellow, 0.f);
+	// FString DebugString = MortisPlayerCombatComponent->CurrentEquippedWeaponTag.ToString(); 
+	// DrawDebugString(GetWorld(), GetActorLocation() + FVector(0.f, 0.f, 100.f), DebugString, this, FColor::Yellow, 0.f);
 	
 	CameraArm->TargetArmLength = FMath::FInterpTo(
 		CameraArm->TargetArmLength,

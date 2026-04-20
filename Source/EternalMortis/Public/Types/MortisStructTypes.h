@@ -235,6 +235,7 @@ struct FMortisMaterialSet
 	TArray<TObjectPtr<UMaterialInterface>> Materials;
 };
 
+USTRUCT(BlueprintType)
 struct FWeaponAttackData
 {
 	GENERATED_BODY()
