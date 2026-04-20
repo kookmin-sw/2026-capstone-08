@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "MortisWidgetBase.generated.h"
 
+class UMortisUIComponent;
+
 /**
  * 
  */
@@ -13,5 +15,8 @@ UCLASS()
 class ETERNALMORTIS_API UMortisWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Mortis|UI", meta = (DisplayName = "Bind UI Component"))
+	void BP_BindUIComponent(UMortisUIComponent* InUIComponent);
 };

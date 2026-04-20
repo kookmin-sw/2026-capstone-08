@@ -20,8 +20,9 @@ public:
 
 	FOnTargetInteractedDelegate OnWeaponHitTarget;
 	FOnTargetInteractedDelegate OnWeaponPulledFromTarget;
-
-	FORCEINLINE virtual UMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	
+	UFUNCTION(BlueprintCallable)
+	virtual UMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	
 	const TArray<TObjectPtr<UShapeComponent>>* GetCollisionComponentsByTag(FGameplayTag TagToToggle);
 	

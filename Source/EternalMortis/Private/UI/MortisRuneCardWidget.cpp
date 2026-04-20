@@ -1,9 +1,6 @@
 #include "UI/MortisRuneCardWidget.h"
 
-#include "Components/Border.h"
 #include "Components/Button.h"
-#include "Components/Image.h"
-#include "Styling/SlateColor.h"
 
 void UMortisRuneCardWidget::NativeConstruct()
 {
@@ -15,30 +12,104 @@ void UMortisRuneCardWidget::NativeConstruct()
         Button_Root->OnClicked.AddDynamic(this, &ThisClass::HandleRootButtonClicked);
     }
 
-    RefreshVisual();
+    RefreshVisualState();
+}
+
+void UMortisRuneCardWidget::ClearRuneData()
+{
+    RuneInstance = FMortisRuneInstance();
+    DisplayIcon = nullptr;
+    DisplayIconTint = FLinearColor::White;
+    bSelected = false;
+    bEquipped = false;
+}
+
+void UMortisRuneCardWidget::SetRuneInstance(const FMortisRuneInstance& InRuneInstance)
+{
+    RuneInstance = InRuneInstance;
+}
+
+void UMortisRuneCardWidget::SetDisplayIcon(UTexture2D* InDisplayIcon)
+{
+    DisplayIcon = InDisplayIcon;
+}
+
+void UMortisRuneCardWidget::SetDisplayIconTint(const FLinearColor& InDisplayIconTint)
+{
+    DisplayIconTint = InDisplayIconTint;
 }
 
 void UMortisRuneCardWidget::ApplyData(const FMortisRuneInstance& InRuneInstance, UTexture2D* InDisplayIcon, const FLinearColor& InDisplayIconTint, bool bInSelected, bool bInEquipped)
 {
-    RuneInstance = InRuneInstance;
-    DisplayIcon = InDisplayIcon;
-    DisplayIconTint = InDisplayIconTint;
-    bSelected = bInSelected;
-    bEquipped = bInEquipped;
-
-    RefreshVisual();
+    ClearRuneData();
+    SetRuneInstance(InRuneInstance);
+    SetDisplayIcon(InDisplayIcon);
+    SetDisplayIconTint(InDisplayIconTint);
+    SetSelected(bInSelected);
+    SetEquipped(bInEquipped);
+    RefreshVisualState();
 }
 
 void UMortisRuneCardWidget::SetSelected(bool bInSelected)
 {
     bSelected = bInSelected;
-    RefreshVisual();
 }
 
 void UMortisRuneCardWidget::SetEquipped(bool bInEquipped)
 {
     bEquipped = bInEquipped;
-    RefreshVisual();
+}
+
+void UMortisRuneCardWidget::RefreshVisualState()
+{
+    CurrentVisualData = FMortisRuneCardVisualData();
+    CurrentVisualData.GlyphScale = GlyphScale;
+    CurrentVisualData.bSelected = bSelected;
+    CurrentVisualData.bEquipped = bEquipped;
+
+    if (!HasValidRuneData())
+    {
+        CurrentPresentationStyle = FMortisRunePresentationStyle();
+        CurrentPresentationStyle.CoreTint = FLinearColor::Transparent;
+        CurrentPresentationStyle.CoreShadowTint = FLinearColor::Transparent;
+        CurrentPresentationStyle.FrameTint = FLinearColor::Transparent;
+        CurrentPresentationStyle.GlyphGlowTint = FLinearColor::Transparent;
+        CurrentPresentationStyle.GlyphGlowOpacity = 0.0f;
+
+        CurrentVisualData.CardBackgroundTint = FLinearColor::Transparent;
+        CurrentVisualData.FrameTint = FLinearColor::Transparent;
+        CurrentVisualData.CoreTint = FLinearColor::Transparent;
+        CurrentVisualData.GlyphGlowTint = FLinearColor::Transparent;
+        CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
+
+        ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
+        ReceiveRuneVisualDataChanged(CurrentVisualData);
+        return;
+    }
+
+    CurrentPresentationStyle = MortisRunePresentation::BuildStyle(RuneInstance.Grade, DisplayIconTint);
+
+    CurrentVisualData.bHasValidRuneData = true;
+    CurrentVisualData.GlyphImage = DisplayIcon;
+    CurrentVisualData.GlyphTint = DisplayIcon ? CurrentPresentationStyle.GlyphTint : FLinearColor::White;
+    CurrentVisualData.RuneGrade = RuneInstance.Grade;
+    CurrentVisualData.RuneGradeImage = ResolveRuneGradeImage(RuneInstance.Grade);
+    CurrentVisualData.CardBackgroundTint = BuildCardBackgroundTint();
+    CurrentVisualData.FrameTint = CurrentPresentationStyle.FrameTint;
+    CurrentVisualData.FrameTint.A = ResolveFrameAlpha();
+    CurrentVisualData.CoreTint = CurrentPresentationStyle.CoreTint;
+    CurrentVisualData.GlyphGlowTint = CurrentPresentationStyle.GlyphGlowTint;
+    CurrentVisualData.GlyphGlowOpacity = DisplayIcon ? (CurrentPresentationStyle.GlyphGlowOpacity * ResolveGlowOpacityMultiplier()) : 0.0f;
+    CurrentVisualData.GradeImageOpacity = CurrentVisualData.RuneGradeImage ? ResolveGradeImageOpacity() : 0.0f;
+    CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
+
+    ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
+    ReceiveRuneVisualDataChanged(CurrentVisualData);
+}
+
+void UMortisRuneCardWidget::RefreshVisual()
+{
+    RefreshVisualState();
 }
 
 FMortisRuneCardVisualData UMortisRuneCardWidget::GetRuneCardVisualData() const
@@ -133,66 +204,6 @@ float UMortisRuneCardWidget::ResolveGradeImageOpacity() const
     return 0.0f;
 }
 
-void UMortisRuneCardWidget::RefreshVisual()
-{
-    CurrentPresentationStyle = MortisRunePresentation::BuildStyle(RuneInstance.Grade, DisplayIconTint);
-
-    CurrentVisualData.GlyphImage = DisplayIcon;
-    CurrentVisualData.GlyphTint = DisplayIcon ? CurrentPresentationStyle.GlyphTint : FLinearColor::White;
-    CurrentVisualData.RuneGrade = RuneInstance.Grade;
-    CurrentVisualData.RuneGradeImage = ResolveRuneGradeImage(RuneInstance.Grade);
-    CurrentVisualData.CardBackgroundTint = BuildCardBackgroundTint();
-    CurrentVisualData.FrameTint = CurrentPresentationStyle.FrameTint;
-    CurrentVisualData.FrameTint.A = ResolveFrameAlpha();
-    CurrentVisualData.CoreTint = CurrentPresentationStyle.CoreTint;
-    CurrentVisualData.GlyphGlowTint = CurrentPresentationStyle.GlyphGlowTint;
-    CurrentVisualData.GlyphGlowOpacity = DisplayIcon ? (CurrentPresentationStyle.GlyphGlowOpacity * ResolveGlowOpacityMultiplier()) : 0.0f;
-    CurrentVisualData.GlyphScale = GlyphScale;
-    CurrentVisualData.GradeImageOpacity = CurrentVisualData.RuneGradeImage ? ResolveGradeImageOpacity() : 0.0f;
-    CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
-    CurrentVisualData.bSelected = bSelected;
-    CurrentVisualData.bEquipped = bEquipped;
-
-    if (Image_RuneCore)
-    {
-        Image_RuneCore->SetBrushTintColor(FSlateColor(CurrentVisualData.CoreTint));
-        Image_RuneCore->SetColorAndOpacity(CurrentVisualData.CoreTint);
-    }
-
-    if (Image_RuneGlow)
-    {
-        Image_RuneGlow->SetBrushFromTexture(DisplayIcon, false);
-        Image_RuneGlow->SetBrushTintColor(FSlateColor(CurrentVisualData.GlyphGlowTint));
-        Image_RuneGlow->SetColorAndOpacity(FLinearColor::White);
-        Image_RuneGlow->SetRenderOpacity(CurrentVisualData.GlyphGlowOpacity);
-        Image_RuneGlow->SetRenderScale(FVector2D(CurrentVisualData.GlyphScale, CurrentVisualData.GlyphScale));
-    }
-
-    if (Image_RuneIcon)
-    {
-        Image_RuneIcon->SetBrushFromTexture(DisplayIcon, false);
-
-        // Keep the RuneSet tint on the brush itself so designer-side image color defaults
-        // do not wash the glyph back to white at runtime.
-        Image_RuneIcon->SetBrushTintColor(FSlateColor(CurrentVisualData.GlyphTint));
-        Image_RuneIcon->SetColorAndOpacity(FLinearColor::White);
-        Image_RuneIcon->SetRenderScale(FVector2D(CurrentVisualData.GlyphScale, CurrentVisualData.GlyphScale));
-    }
-
-    if (Border_CardBg)
-    {
-        Border_CardBg->SetBrushColor(CurrentVisualData.CardBackgroundTint);
-    }
-
-    if (Border_RuneFrame)
-    {
-        Border_RuneFrame->SetBrushColor(CurrentVisualData.FrameTint);
-    }
-
-    ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
-    ReceiveRuneVisualDataChanged(CurrentVisualData);
-}
-
 void UMortisRuneCardWidget::HandleRootButtonClicked()
 {
     OnRuneCardClicked.Broadcast(RuneInstance);
@@ -215,4 +226,9 @@ UTexture2D* UMortisRuneCardWidget::ResolveRuneGradeImage(EMortisRuneGrade InGrad
     default:
         return CommonGradeImage;
     }
+}
+
+bool UMortisRuneCardWidget::HasValidRuneData() const
+{
+    return RuneInstance.InstanceId.IsValid();
 }

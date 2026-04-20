@@ -19,6 +19,9 @@ struct FMortisRuneCardVisualData
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
+    bool bHasValidRuneData = false;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
     TObjectPtr<UTexture2D> GlyphImage = nullptr;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
@@ -68,6 +71,18 @@ class ETERNALMORTIS_API UMortisRuneCardWidget : public UMortisWidgetBase
 
 public:
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void ClearRuneData();
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetRuneInstance(const FMortisRuneInstance& InRuneInstance);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetDisplayIcon(UTexture2D* InDisplayIcon);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetDisplayIconTint(const FLinearColor& InDisplayIconTint);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void ApplyData(const FMortisRuneInstance& InRuneInstance, UTexture2D* InDisplayIcon, const FLinearColor& InDisplayIconTint, bool bInSelected, bool bInEquipped);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
@@ -75,6 +90,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void SetEquipped(bool bInEquipped);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void RefreshVisualState();
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void RefreshVisual();
@@ -114,6 +132,7 @@ protected:
     float ResolveGlowOpacityMultiplier() const;
     float ResolveGradeImageOpacity() const;
     UTexture2D* ResolveRuneGradeImage(EMortisRuneGrade InGrade) const;
+    bool HasValidRuneData() const;
 
 protected:
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))

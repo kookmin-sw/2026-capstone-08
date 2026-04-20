@@ -163,6 +163,7 @@ private:
     void RefreshRightPanel();
     void ClearEquippedRuneGrid();
     void ClearRuneGrid();
+    void ConfigureRuneCard(UMortisRuneCardWidget* RuneCard, const FMortisRuneInstance& RuneInstance, bool bInSelected, bool bInEquipped);
     void UpdateRightOverview();
     void UpdateRightSetDetail();
     void UpdateRightRuneDetail();

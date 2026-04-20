@@ -10,6 +10,8 @@
 class AMortisPlayerCharacter;
 class AMortisPlayerController;
 class UMortisPlayerCombatComponent;
+class UMortisPlayerUIComponent;
+class UMeshComponent;
 
 /**
  * 
@@ -30,6 +32,9 @@ public:
 	UMortisPlayerCombatComponent* GetMortisPlayerCombatComponent();
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	UMortisPlayerUIComponent* GetMortisPlayerUIComponent();
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
 	FGameplayEffectSpecHandle MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType);
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
@@ -43,6 +48,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
 	bool CheckManaCost(float BaseCost, float& OutFinalCost, float AdditionalReduceRate = 0.0f) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Ability")
+	void BroadcastEquippedWeaponMeshChanged(UMeshComponent* NewWeaponMesh);
 
 private:
 	TWeakObjectPtr<AMortisPlayerCharacter> CachedMortisPlayerCharacter;
