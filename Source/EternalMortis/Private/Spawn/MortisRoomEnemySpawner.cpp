@@ -123,6 +123,7 @@ void AMortisRoomEnemySpawner::SetEnemiesToSpawn(const TArray<TSubclassOf<AMortis
 
 TArray<AMortisEnemyCharacter*> AMortisRoomEnemySpawner::SpawnEnemies() const
 {
+	// MORTIS_LOG("Spawn Enemies: %d", EnemiesToSpawn.Num());
 	TArray<AMortisEnemyCharacter*> SpawnedEnemies;
 	TArray<FTransform> WorldTransforms = GetWorldSpawnTransforms();
 	for (int32 i = 0; i < WorldTransforms.Num(); i++)

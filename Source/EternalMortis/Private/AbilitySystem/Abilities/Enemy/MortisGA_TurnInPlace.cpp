@@ -55,7 +55,7 @@ void UMortisGA_TurnInPlace::ActivateAbility(const FGameplayAbilitySpecHandle Han
 
 		if (!TriggerEventData || !TriggerEventData->Target)
 		{
-			MORTIS_LOG("Target is null");
+			// MORTIS_LOG("Target is null");
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 			return;
 		}
