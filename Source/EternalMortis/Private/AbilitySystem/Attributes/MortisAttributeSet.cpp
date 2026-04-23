@@ -17,6 +17,20 @@ namespace
 		const AActor* OwningActor = Data.Target.GetAvatarActor();
 		return OwningActor ? OwningActor->FindComponentByClass<UMortisUIComponent>() : nullptr;
 	}
+	
+	UMortisUIComponent* GetUIComponentFromAttributeSet(const UAttributeSet* AttributeSet)
+	{
+		if (!AttributeSet)
+		{
+			return nullptr;
+		}
+
+		const UAbilitySystemComponent* ASC = AttributeSet->GetOwningAbilitySystemComponent();
+		const AActor* AvatarActor = ASC ? ASC->GetAvatarActor() : AttributeSet->GetOwningActor();
+
+		return AvatarActor ? AvatarActor->FindComponentByClass<UMortisUIComponent>() : nullptr;
+	}
+
 }
 
 UMortisAttributeSet::UMortisAttributeSet()
@@ -113,5 +127,10 @@ void UMortisAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 		}
 		else if (GetCurrentHealth() > NewValue)
 			SetCurrentHealth(NewValue);
+	}
+	
+	if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeSet(this))
+	{
+		UIComponent->OnHealthChanged.Broadcast(GetCurrentHealth(), GetMaxHealth());
 	}
 }

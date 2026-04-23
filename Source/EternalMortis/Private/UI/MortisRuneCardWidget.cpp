@@ -1,6 +1,23 @@
 #include "UI/MortisRuneCardWidget.h"
 
 #include "Components/Button.h"
+#include "Components/Image.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
+
+namespace
+{
+constexpr TCHAR RuneStoneCompositeMaterialPath[] = TEXT("/Game/UI/Material/M_UI_RuneStoneComposite.M_UI_RuneStoneComposite");
+constexpr TCHAR StoneTexParameterName[] = TEXT("StoneTex");
+constexpr TCHAR GlyphTexParameterName[] = TEXT("GlyphTex");
+constexpr TCHAR GlyphTintParameterName[] = TEXT("GlyphTint");
+constexpr TCHAR GlyphScaleParameterName[] = TEXT("GlyphScale");
+constexpr TCHAR GlyphGlowTintParameterName[] = TEXT("GlyphGlowTint");
+constexpr TCHAR GlyphGlowOpacityParameterName[] = TEXT("GlyphGlowOpacity");
+constexpr TCHAR TraceWidthParameterName[] = TEXT("TraceWidth");
+constexpr TCHAR TraceDarknessParameterName[] = TEXT("TraceDarkness");
+constexpr TCHAR TraceOpacityParameterName[] = TEXT("TraceOpacity");
+}
 
 void UMortisRuneCardWidget::NativeConstruct()
 {
@@ -82,6 +99,7 @@ void UMortisRuneCardWidget::RefreshVisualState()
         CurrentVisualData.GlyphGlowTint = FLinearColor::Transparent;
         CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
 
+        UpdateRuneCoreMaterial();
         ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
         ReceiveRuneVisualDataChanged(CurrentVisualData);
         return;
@@ -103,6 +121,7 @@ void UMortisRuneCardWidget::RefreshVisualState()
     CurrentVisualData.GradeImageOpacity = CurrentVisualData.RuneGradeImage ? ResolveGradeImageOpacity() : 0.0f;
     CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
 
+    UpdateRuneCoreMaterial();
     ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
     ReceiveRuneVisualDataChanged(CurrentVisualData);
 }
@@ -231,4 +250,50 @@ UTexture2D* UMortisRuneCardWidget::ResolveRuneGradeImage(EMortisRuneGrade InGrad
 bool UMortisRuneCardWidget::HasValidRuneData() const
 {
     return RuneInstance.InstanceId.IsValid();
+}
+
+UMaterialInstanceDynamic* UMortisRuneCardWidget::ResolveRuneCoreMaterial()
+{
+    if (RuneCoreMaterial)
+    {
+        return RuneCoreMaterial;
+    }
+
+    if (!Image_RuneCore)
+    {
+        return nullptr;
+    }
+
+    RuneCoreMaterial = Image_RuneCore->GetDynamicMaterial();
+    if (RuneCoreMaterial)
+    {
+        return RuneCoreMaterial;
+    }
+
+    if (UMaterialInterface* FallbackMaterial = LoadObject<UMaterialInterface>(nullptr, RuneStoneCompositeMaterialPath))
+    {
+        Image_RuneCore->SetBrushFromMaterial(FallbackMaterial);
+        RuneCoreMaterial = Image_RuneCore->GetDynamicMaterial();
+    }
+
+    return RuneCoreMaterial;
+}
+
+void UMortisRuneCardWidget::UpdateRuneCoreMaterial()
+{
+    UMaterialInstanceDynamic* MaterialInstance = ResolveRuneCoreMaterial();
+    if (!MaterialInstance)
+    {
+        return;
+    }
+
+    MaterialInstance->SetTextureParameterValue(StoneTexParameterName, CurrentVisualData.RuneGradeImage);
+    MaterialInstance->SetTextureParameterValue(GlyphTexParameterName, CurrentVisualData.GlyphImage);
+    MaterialInstance->SetVectorParameterValue(GlyphTintParameterName, CurrentVisualData.GlyphTint);
+    MaterialInstance->SetScalarParameterValue(GlyphScaleParameterName, CurrentVisualData.GlyphScale);
+    MaterialInstance->SetVectorParameterValue(GlyphGlowTintParameterName, CurrentVisualData.GlyphGlowTint);
+    MaterialInstance->SetScalarParameterValue(GlyphGlowOpacityParameterName, CurrentVisualData.GlyphGlowOpacity);
+    MaterialInstance->SetScalarParameterValue(TraceWidthParameterName, TraceWidth);
+    MaterialInstance->SetScalarParameterValue(TraceDarknessParameterName, TraceDarkness);
+    MaterialInstance->SetScalarParameterValue(TraceOpacityParameterName, TraceOpacity);
 }

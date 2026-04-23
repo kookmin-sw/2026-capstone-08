@@ -9,6 +9,7 @@
 class UBorder;
 class UButton;
 class UImage;
+class UMaterialInstanceDynamic;
 class UTexture2D;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnRuneCardClicked, FMortisRuneInstance, ClickedRune);
@@ -127,6 +128,8 @@ protected:
     UFUNCTION(BlueprintImplementableEvent, Category = "Mortis|Inventory|Rune")
     void ReceiveRuneVisualDataChanged(const FMortisRuneCardVisualData& InVisualData);
 
+    void UpdateRuneCoreMaterial();
+    UMaterialInstanceDynamic* ResolveRuneCoreMaterial();
     FLinearColor BuildCardBackgroundTint() const;
     float ResolveFrameAlpha() const;
     float ResolveGlowOpacityMultiplier() const;
@@ -168,6 +171,9 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     FMortisRuneCardVisualData CurrentVisualData;
 
+    UPROPERTY(Transient)
+    TObjectPtr<UMaterialInstanceDynamic> RuneCoreMaterial = nullptr;
+
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     bool bSelected = false;
 
@@ -188,6 +194,15 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.1", ClampMax = "1.0"))
     float GlyphScale = 0.70f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "0.05"))
+    float TraceWidth = 0.004f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+    float TraceDarkness = 0.22f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+    float TraceOpacity = 0.55f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
     float IdleCardBgAlpha = 0.22f;
