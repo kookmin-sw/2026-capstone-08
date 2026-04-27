@@ -160,4 +160,5 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fury, "Rune.Set.Fury");
 
 	// ====================		Character Tags	====================
+	UE_DEFINE_GAMEPLAY_TAG(Experience_Test, "Experience.Test");
 }

@@ -168,6 +168,6 @@ namespace MortisGameplayTags
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Enemy_Stat_WeaponDamage);
 
-	// ====================		Character Tags	====================
-
+	// ====================		Buff Tags	====================
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Experience_Test);
 }

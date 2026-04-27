@@ -6,6 +6,8 @@
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "System/MortisRuneInventorySubsystem.h"
 #include "System/MortisRuneDatabaseSubsystem.h"
+#include "System/MortisCurseDatabaseSubsystem.h"
+#include "System/MortisCurseInventorySubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameplayEffectTypes.h"
 
@@ -21,6 +23,10 @@ void UMortisEquipmentComponent::BeginPlay()
     check(RuneDB);
     RuneInv = GI->GetSubsystem<UMortisRuneInventorySubsystem>();
     check(RuneInv);
+    CurseDB = GI->GetSubsystem<UMortisCurseDatabaseSubsystem>();
+    check(CurseDB);
+    CurseInv = GI->GetSubsystem<UMortisCurseInventorySubsystem>();
+    check(CurseInv);
 
     AMortisCharacterBase* MortisCharacter = GetOwningPawn<AMortisCharacterBase>();
     check(MortisCharacter);
@@ -31,7 +37,14 @@ void UMortisEquipmentComponent::BeginPlay()
     RuneInv->OnEquippedRuneRemoved.AddDynamic(this, &UMortisEquipmentComponent::RemoveRuneEffect);
     RuneInv->OnActivatedRuneSetsChanged.AddDynamic(this, &UMortisEquipmentComponent::UpdateRuneSetBonus);
 
+    CurseInv->OnCurseAdded.AddDynamic(this, &UMortisEquipmentComponent::ApplyCurseEffect);
+    CurseInv->OnCurseRemoved.AddDynamic(this, &UMortisEquipmentComponent::RemoveCurseEffect);
+
     EquippedRuneRuntimes.SetNum(10);
+
+    // 자동 장착
+    for (const FMortisCurseInstance& Curse : CurseInv->GetOwnedCurses())
+        ApplyCurseEffect(Curse);
 }
 
 void UMortisEquipmentComponent::ApplyRuneEffect(int32 SlotIndex, const FMortisRuneInstance& RuneToAdd)
@@ -176,11 +189,79 @@ void UMortisEquipmentComponent::UpdateRuneSetBonus(const TArray<FGameplayTag>& A
     }
 }
 
+void UMortisEquipmentComponent::ApplyCurseEffect(const FMortisCurseInstance& CurseToAdd)
+{
+    if (!ASC || !CurseDB || !CurseToAdd.CurseTag.IsValid())
+        return;
+
+    if (HasAppliedCurse(CurseToAdd.InstanceId))
+        return;
+
+    const FMortisCurseRow* CurseRow = CurseDB->GetCurseRow(CurseToAdd.CurseTag);
+    if (!CurseRow || !CurseRow->CurseEffect)
+        return;
+
+    const FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+    FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(CurseRow->CurseEffect, 1.f, Context);
+
+    if (!SpecHandle.IsValid())
+        return;
+
+    SpecHandle.Data->SetSetByCallerMagnitude(MortisGameplayTags::Data_RuneValue, CurseToAdd.RolledValue);
+
+    const FActiveGameplayEffectHandle Handle =
+        ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+    if (!Handle.WasSuccessfullyApplied())
+        return;
+
+    FMortisAppliedCurseRuntime Runtime;
+    Runtime.CurseInstanceId = CurseToAdd.InstanceId;
+    Runtime.Curse = CurseToAdd;
+    Runtime.EffectHandle = Handle;
+
+    AppliedCurseRuntimes.Add(Runtime);
+}
+
+void UMortisEquipmentComponent::RemoveCurseEffect(const FMortisCurseInstance& CurseToRemove)
+{
+    if (!ASC)
+        return;
+
+    for (int32 i = AppliedCurseRuntimes.Num() - 1; i >= 0; --i)
+    {
+        FMortisAppliedCurseRuntime& Runtime = AppliedCurseRuntimes[i];
+
+        if (Runtime.CurseInstanceId != CurseToRemove.InstanceId)
+            continue;
+
+        if (Runtime.EffectHandle.IsValid())
+            ASC->RemoveActiveGameplayEffect(Runtime.EffectHandle);
+
+        AppliedCurseRuntimes.RemoveAt(i);
+        return;
+    }
+}
+
 bool UMortisEquipmentComponent::HasAppliedTier(const FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount) const
 {
     for (const FMortisAppliedRuneSetTierRuntime& TierRuntime : SetRuntime.AppliedTiers)
     {
         if (TierRuntime.ActivateCount == ActivateCount)
+            return true;
+    }
+
+    return false;
+}
+
+bool UMortisEquipmentComponent::HasAppliedCurse(const FGuid& CurseInstanceId) const
+{
+    if (!CurseInstanceId.IsValid())
+        return false;
+
+    for (const FMortisAppliedCurseRuntime& Runtime : AppliedCurseRuntimes)
+    {
+        if (Runtime.CurseInstanceId == CurseInstanceId)
             return true;
     }
 
@@ -265,4 +346,21 @@ void UMortisEquipmentComponent::ClearSetRuntime(const FGameplayTag& SetTag)
     }
 
     AppliedRuneSetRuntimes.Remove(SetTag);
+}
+
+void UMortisEquipmentComponent::ClearCurseEffects()
+{
+    if (!ASC)
+    {
+        AppliedCurseRuntimes.Empty();
+        return;
+    }
+
+    for (const FMortisAppliedCurseRuntime& Runtime : AppliedCurseRuntimes)
+    {
+        if (Runtime.EffectHandle.IsValid())
+            ASC->RemoveActiveGameplayEffect(Runtime.EffectHandle);
+    }
+
+    AppliedCurseRuntimes.Empty();
 }
