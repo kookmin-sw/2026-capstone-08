@@ -38,16 +38,28 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 	AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
 	APlayerController* PlayerController = GetPlayerControllerFromActorInfo();
 
-	if (!PlayerCharacter || !PlayerController || !CurrentLockedActor)
+	if (!PlayerCharacter || !PlayerController)
 	{
 		CancelTargetLockAbility();
 		return;
 	}
 
+	if (IsTargetDeadOrInvalid(CurrentLockedActor))
+	{
+		if (!TrySwitchToBestAvailableTarget())
+		{
+			CancelTargetLockAbility();
+			return;
+		}
+	}
+
 	if (!CanMaintainLockOnTarget(CurrentLockedActor))
 	{
-		CancelTargetLockAbility();
-		return;
+		if (!TrySwitchToBestAvailableTarget())
+		{
+			CancelTargetLockAbility();
+			return;
+		}
 	}
 
 	const float DistanceToTarget = FVector::Distance(
@@ -57,8 +69,11 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 
 	if (DistanceToTarget > BreakLockDistance)
 	{
-		CancelTargetLockAbility();
-		return;
+		if (!TrySwitchToBestAvailableTarget())
+		{
+			CancelTargetLockAbility();
+			return;
+		}
 	}
 
 	const float DistanceAlpha = FMath::Clamp(DistanceToTarget / BreakLockDistance, 0.f, 1.f);
@@ -279,22 +294,14 @@ void UMortisGA_TargetLock::GetAvailableActorsOnScreenSides(const TArray<AActor*>
 bool UMortisGA_TargetLock::IsSelectableLockOnTarget(AActor* InActor) const
 {
 	const AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
-	const APlayerController* PlayerController = GetPlayerControllerFromActorInfo();
 
-	if (!PlayerCharacter || !PlayerController || !IsValid(InActor) || InActor == PlayerCharacter)
+	if (!PlayerCharacter || !IsValid(InActor) || InActor == PlayerCharacter)
 		return false;
 
 	if (DeadStateTag.IsValid() && HasGameplayTagOnActor(InActor, DeadStateTag))
 		return false;
 
-	FVector ViewLocation;
-	FRotator ViewRotation;
-	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
-
-	const FVector ToTarget = (InActor->GetActorLocation() - ViewLocation).GetSafeNormal();
-	const float ViewDot = FVector::DotProduct(ViewRotation.Vector(), ToTarget);
-
-	return ViewDot >= MinTargetViewDot;
+	return true;
 }
 
 bool UMortisGA_TargetLock::CanMaintainLockOnTarget(AActor* InActor) const
@@ -306,6 +313,35 @@ bool UMortisGA_TargetLock::CanMaintainLockOnTarget(AActor* InActor) const
 		return false;
 
 	return HasLineOfSightToTarget(InActor);
+}
+
+bool UMortisGA_TargetLock::TrySwitchToBestAvailableTarget()
+{
+	TArray<AActor*> FoundActors;
+	GetAvailableActorsToLock(FoundActors);
+
+	FoundActors.Remove(CurrentLockedActor);
+
+	AvailableActorsToLock = FoundActors;
+
+	CurrentLockedActor = GetBestTargetFromAvailableActors(FoundActors);
+
+	if (!IsValid(CurrentLockedActor))
+		return false;
+
+	SetTargetLockWidgetPosition();
+	return true;
+}
+
+bool UMortisGA_TargetLock::IsTargetDeadOrInvalid(const AActor* InActor) const
+{
+	if (!IsValid(InActor))
+		return true;
+
+	if (DeadStateTag.IsValid() && HasGameplayTagOnActor(InActor, DeadStateTag))
+		return true;
+
+	return false;
 }
 
 bool UMortisGA_TargetLock::HasGameplayTagOnActor(const AActor* InActor, const FGameplayTag& InTag) const

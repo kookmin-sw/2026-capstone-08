@@ -57,6 +57,9 @@ protected:
 	bool IsSelectableLockOnTarget(AActor* InActor) const;
 	bool CanMaintainLockOnTarget(AActor* InActor) const;
 
+	bool TrySwitchToBestAvailableTarget();
+	bool IsTargetDeadOrInvalid(const AActor* InActor) const;
+
 	bool HasGameplayTagOnActor(const AActor* InActor, const FGameplayTag& InTag) const;
 	bool HasAnyMatchingTagOnActor(const AActor* InActor, const FGameplayTagContainer& InTags) const;
 
