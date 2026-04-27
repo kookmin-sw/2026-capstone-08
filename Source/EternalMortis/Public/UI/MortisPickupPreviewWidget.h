@@ -16,16 +16,7 @@ struct FMortisPickupPreviewData
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Preview")
-	FText CategoryText;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Preview")
 	FText TitleText;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Preview")
-	FText SubtitleText;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Preview")
-	FText DetailText;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Preview")
 	FLinearColor AccentColor = FLinearColor(0.88f, 0.75f, 0.55f, 1.f);
@@ -60,18 +51,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
 	TObjectPtr<UBorder> Border_Background = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
-	TObjectPtr<UTextBlock> Text_Category = nullptr;
-
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
 	TObjectPtr<UTextBlock> Text_Title = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
-	TObjectPtr<UTextBlock> Text_Subtitle = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
-	TObjectPtr<UTextBlock> Text_Detail = nullptr;
 
 private:
 	void BuildWidgetTreeIfNeeded();

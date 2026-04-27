@@ -5,7 +5,13 @@
 
 void UMortisPlayerMovementComponent::SetTargetSpeed(float MoveSpeed)
 {
-	TargetSpeedCap = FMath::Max(0.0f, MoveSpeed);
+	if (bCanChangeMaxSpeed)
+		TargetSpeedCap = FMath::Max(0.0f, MoveSpeed);
+}
+
+void UMortisPlayerMovementComponent::SetMaxSpeedChangeable(bool bInCanChangeMaxSpeed)
+{
+	bCanChangeMaxSpeed = bInCanChangeMaxSpeed;
 }
 
 void UMortisPlayerMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)

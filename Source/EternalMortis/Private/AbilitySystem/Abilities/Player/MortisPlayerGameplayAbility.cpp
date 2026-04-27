@@ -7,6 +7,7 @@
 #include "Character/Player/MortisPlayerCharacter.h"
 #include "Controllers/MortisPlayerController.h"
 #include "Components/Combat/MortisPlayerCombatComponent.h"
+#include "Components/UI/MortisPlayerUIComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/MortisPlayerAttributeSet.h"
 #include "MortisGameplayTags.h"
@@ -31,7 +32,18 @@ UMortisPlayerCombatComponent* UMortisPlayerGameplayAbility::GetMortisPlayerComba
 	return GetMortisPlayerCharacterFromActorInfo()->GetMortisPlayerCombatComponent();
 }
 
-FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, FGameplayTag AttackType)
+UMortisPlayerUIComponent* UMortisPlayerGameplayAbility::GetMortisPlayerUIComponent()
+{
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+	{
+		return PlayerCharacter->GetPlayerUIComponent();
+	}
+
+	return nullptr;
+}
+
+
+FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType)
 {
 	check(EffectClass);
 
@@ -65,11 +77,16 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 		MortisGameplayTags::Data_Player_Stat_Coefficient_Intelligence,
 		UMortisFunctionLibrary::GetGradeCoef(WeaponData.IntGrade)
 	);
+	
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		MortisGameplayTags::Data_AttackScale,
+		AttackScale
+	);
 
 	/* for poise test */
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(
 		MortisGameplayTags::Data_Stat_PoiseDamage,
-		20.f
+		WeaponData.PoiseDamage
 	);
 	
 	if (!AttackType.IsValid()) AttackType = MortisGameplayTags::Data_AttackType_Slash;
@@ -130,4 +147,12 @@ bool UMortisPlayerGameplayAbility::CheckManaCost(float BaseCost, float& OutFinal
 		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute()) + AdditionalReduceRate;
 
 	return CurrentMana >= -OutFinalCost;
+}
+
+void UMortisPlayerGameplayAbility::BroadcastEquippedWeaponMeshChanged(UMeshComponent* NewWeaponMesh)
+{
+	if (UMortisPlayerUIComponent* PlayerUIComponent = GetMortisPlayerUIComponent())
+	{
+		PlayerUIComponent->OnEquippedWeaponMeshChanged.Broadcast(NewWeaponMesh);
+	}
 }

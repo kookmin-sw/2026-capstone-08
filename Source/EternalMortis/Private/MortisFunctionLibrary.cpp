@@ -5,6 +5,7 @@
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Controllers/MortisAIController.h"
 #include "Interfaces/MortisCombatInterface.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
@@ -52,6 +53,33 @@ FString UMortisFunctionLibrary::GetGradeText(EMortisStatGrade Grade)
 	case EMortisStatGrade::F: return TEXT("F");
 	default: return TEXT("F");
 	}
+}
+
+EMortisHitDirection UMortisFunctionLibrary::ComputeHitReactDirectionTag(AActor* InAttacker, AActor* InVictim, float& OutAngleDifference)
+{
+	check(InAttacker && InVictim);
+
+	const FVector VictimForward = InVictim->GetActorForwardVector();
+	const FVector VictimToAttackerNormalized = (InAttacker->GetActorLocation() - InVictim->GetActorLocation()).GetSafeNormal();
+
+	const float DotResult = FVector::DotProduct(VictimForward, VictimToAttackerNormalized);
+	OutAngleDifference = UKismetMathLibrary::DegAcos(DotResult);
+
+	const FVector CrossResult = FVector::CrossProduct(VictimForward, VictimToAttackerNormalized);
+
+	if (CrossResult.Z < 0.0f)
+		OutAngleDifference *= -1.0f;
+
+	if (OutAngleDifference >= -45.0f && OutAngleDifference <= 45.0f)
+		return EMortisHitDirection::Front;
+	else if (OutAngleDifference < -45.0f && OutAngleDifference >= -135.0f)
+		return EMortisHitDirection::Left;
+	else if (OutAngleDifference < -135.0f || OutAngleDifference > 135.0f)
+		return EMortisHitDirection::Back;
+	else if (OutAngleDifference > 45.0f && OutAngleDifference <= 135.0f)
+		return EMortisHitDirection::Right;
+
+	return EMortisHitDirection::Front;
 }
 
 UMortisCombatComponent* UMortisFunctionLibrary::GetCombatComponent(const AActor* Actor)

@@ -22,30 +22,37 @@ class ETERNALMORTIS_API AMortisEnemyCharacter : public AMortisCharacterBase
 
 public:
 	AMortisEnemyCharacter(const FObjectInitializer& ObjectInitializer);
-
 	void InitializeEnemyCharacter();
-	void SetEnemyHealthBarCombatVisibility(bool bShouldShow);
-protected:
+	
+	//~ Begin AActor Interfaces 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-	//~ Begin APawn Interface
-	// virtual void PossessedBy(AController* NewController) override;
-	//~ End APawn Interface
+	//~ End AActor Interfaces 
+	
+	//~ Begin AMortisCharacterBase Interfaces
+	virtual void StartDeath() override;
+	virtual void FinishDeath() override;
+	//~ End AMortisCharacterBase Interfaces
+
+	//~ Begin IMortisCombatInterface
+	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override;
+	//~ End IMortisCombatInterface
 
 public:
 	UMortisEnemyData* GetEnemyData() const;
 
-	//~ Begin IMortisCombatInterface
-	FORCEINLINE virtual UMortisCombatComponent* GetCombatComponent() const override;
-	//~ End IMortisCombatInterfac
-	FORCEINLINE UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
+	void SetEnemyHealthBarCombatVisibility(bool bShouldShow);
+	
+	UMortisEnemyCombatComponent* GetEnemyCombatComponent() const;
 	FORCEINLINE UMortisEnemyUIComponent* GetEnemyUIComponent() const { return EnemyUIComponent; }
 
 	float GetRandomStrafingDistance() const;
+	
 protected:
 	void InitializeEnemyByData();
 	void InitializeEnemyHUD();
 	void UpdateEnemyHealthBarWidgetLocation();
+	void ApplyMaterialSet(const FMortisMaterialSet& MaterialSet);
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Data")
 	TObjectPtr<UMortisEnemyData> EnemyData;

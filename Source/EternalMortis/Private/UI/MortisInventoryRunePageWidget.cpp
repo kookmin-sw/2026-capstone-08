@@ -299,15 +299,6 @@ void UMortisInventoryRunePageWidget::RefreshEquippedRuneGrid()
             continue;
         }
 
-        UTexture2D* DisplayIcon = nullptr;
-        FLinearColor DisplayIconTint = FLinearColor::White;
-        if (RuneDatabaseSubsystemRef)
-        {
-            const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef->GetRuneSymbolRow(RuneInstance.SymbolType);
-            DisplayIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
-            DisplayIconTint = GetGlyphTintBySetTag(RuneInstance.SetTag);
-        }
-
         UMortisRuneCardWidget* RuneCard = CreateWidget<UMortisRuneCardWidget>(this, RuneCardClass);
         if (!RuneCard)
         {
@@ -315,10 +306,7 @@ void UMortisInventoryRunePageWidget::RefreshEquippedRuneGrid()
         }
 
         const bool bIsSelected = HasSelectedRune() && SelectedRune.InstanceId == RuneInstance.InstanceId;
-        RuneCard->ApplyData(RuneInstance, DisplayIcon, DisplayIconTint, bIsSelected, true);
-        RuneCard->OnRuneCardClicked.RemoveDynamic(this, &ThisClass::HandleRuneCardClicked);
-        RuneCard->OnRuneCardClicked.AddDynamic(this, &ThisClass::HandleRuneCardClicked);
-        RuneCard->SetIsEnabled(true);
+        ConfigureRuneCard(RuneCard, RuneInstance, bIsSelected, true);
 
         const int32 Row = VisibleIndex / SafeColumns;
         const int32 Column = VisibleIndex % SafeColumns;
@@ -379,15 +367,10 @@ void UMortisInventoryRunePageWidget::RefreshRuneGrid()
             continue;
         }
 
-        const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef->GetRuneSymbolRow(Rune.SymbolType);
-        UTexture2D* DisplayIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
-        const FLinearColor DisplayIconTint = GetGlyphTintBySetTag(Rune.SetTag);
         const bool bIsSelected = HasSelectedRune() && SelectedRune.InstanceId == Rune.InstanceId;
         const bool bIsEquipped = IsRuneEquipped(Rune.InstanceId);
 
-        RuneCard->ApplyData(Rune, DisplayIcon, DisplayIconTint, bIsSelected, bIsEquipped);
-        RuneCard->OnRuneCardClicked.RemoveDynamic(this, &ThisClass::HandleRuneCardClicked);
-        RuneCard->OnRuneCardClicked.AddDynamic(this, &ThisClass::HandleRuneCardClicked);
+        ConfigureRuneCard(RuneCard, Rune, bIsSelected, bIsEquipped);
 
         const int32 Row = Index / SafeColumns;
         const int32 Column = Index % SafeColumns;
@@ -452,6 +435,35 @@ void UMortisInventoryRunePageWidget::ClearRuneGrid()
     {
         UniformGrid_RuneGrid->ClearChildren();
     }
+}
+
+void UMortisInventoryRunePageWidget::ConfigureRuneCard(UMortisRuneCardWidget* RuneCard, const FMortisRuneInstance& RuneInstance, bool bInSelected, bool bInEquipped)
+{
+    if (!RuneCard)
+    {
+        return;
+    }
+
+    UTexture2D* DisplayIcon = nullptr;
+    FLinearColor DisplayIconTint = FLinearColor::White;
+
+    if (RuneDatabaseSubsystemRef)
+    {
+        const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef->GetRuneSymbolRow(RuneInstance.SymbolType);
+        DisplayIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
+        DisplayIconTint = GetGlyphTintBySetTag(RuneInstance.SetTag);
+    }
+
+    RuneCard->ClearRuneData();
+    RuneCard->SetRuneInstance(RuneInstance);
+    RuneCard->SetDisplayIcon(DisplayIcon);
+    RuneCard->SetDisplayIconTint(DisplayIconTint);
+    RuneCard->SetSelected(bInSelected);
+    RuneCard->SetEquipped(bInEquipped);
+    RuneCard->RefreshVisualState();
+    RuneCard->OnRuneCardClicked.RemoveDynamic(this, &ThisClass::HandleRuneCardClicked);
+    RuneCard->OnRuneCardClicked.AddDynamic(this, &ThisClass::HandleRuneCardClicked);
+    RuneCard->SetIsEnabled(true);
 }
 
 int32 UMortisInventoryRunePageWidget::GetTotalOwnedCountBySetTag(const FGameplayTag& SetTag) const

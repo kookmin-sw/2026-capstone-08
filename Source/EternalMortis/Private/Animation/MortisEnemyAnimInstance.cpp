@@ -138,7 +138,7 @@ void UMortisEnemyAnimInstance::UpdateIKAlpha(float DeltaSeconds)
 		return;
 	}
 
-	AMortisWeaponBase* Weapon = CombatComp->GetCharacterCurrentEquippedWeapon();
+	AMortisWeaponBase* Weapon = CombatComp->GetCurrentWeapon();
 	if (!Weapon)
 	{
 		return;

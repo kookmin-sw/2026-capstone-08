@@ -9,6 +9,7 @@
 class UBorder;
 class UButton;
 class UImage;
+class UMaterialInstanceDynamic;
 class UTexture2D;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnRuneCardClicked, FMortisRuneInstance, ClickedRune);
@@ -17,6 +18,9 @@ USTRUCT(BlueprintType)
 struct FMortisRuneCardVisualData
 {
     GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
+    bool bHasValidRuneData = false;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
     TObjectPtr<UTexture2D> GlyphImage = nullptr;
@@ -68,6 +72,18 @@ class ETERNALMORTIS_API UMortisRuneCardWidget : public UMortisWidgetBase
 
 public:
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void ClearRuneData();
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetRuneInstance(const FMortisRuneInstance& InRuneInstance);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetDisplayIcon(UTexture2D* InDisplayIcon);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetDisplayIconTint(const FLinearColor& InDisplayIconTint);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void ApplyData(const FMortisRuneInstance& InRuneInstance, UTexture2D* InDisplayIcon, const FLinearColor& InDisplayIconTint, bool bInSelected, bool bInEquipped);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
@@ -75,6 +91,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void SetEquipped(bool bInEquipped);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void RefreshVisualState();
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void RefreshVisual();
@@ -109,11 +128,14 @@ protected:
     UFUNCTION(BlueprintImplementableEvent, Category = "Mortis|Inventory|Rune")
     void ReceiveRuneVisualDataChanged(const FMortisRuneCardVisualData& InVisualData);
 
+    void UpdateRuneCoreMaterial();
+    UMaterialInstanceDynamic* ResolveRuneCoreMaterial();
     FLinearColor BuildCardBackgroundTint() const;
     float ResolveFrameAlpha() const;
     float ResolveGlowOpacityMultiplier() const;
     float ResolveGradeImageOpacity() const;
     UTexture2D* ResolveRuneGradeImage(EMortisRuneGrade InGrade) const;
+    bool HasValidRuneData() const;
 
 protected:
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
@@ -149,6 +171,9 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     FMortisRuneCardVisualData CurrentVisualData;
 
+    UPROPERTY(Transient)
+    TObjectPtr<UMaterialInstanceDynamic> RuneCoreMaterial = nullptr;
+
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     bool bSelected = false;
 
@@ -169,6 +194,15 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.1", ClampMax = "1.0"))
     float GlyphScale = 0.70f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "0.05"))
+    float TraceWidth = 0.004f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+    float TraceDarkness = 0.22f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+    float TraceOpacity = 0.55f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
     float IdleCardBgAlpha = 0.22f;

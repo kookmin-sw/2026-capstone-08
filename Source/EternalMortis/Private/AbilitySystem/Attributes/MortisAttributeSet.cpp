@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Components/UI/MortisUIComponent.h"
 #include "GameplayEffectExtension.h"
+#include "MortisFunctionLibrary.h"
 #include "MortisDebugHelper.h"
 #include "MortisGameplayTags.h"
 
@@ -16,6 +17,20 @@ namespace
 		const AActor* OwningActor = Data.Target.GetAvatarActor();
 		return OwningActor ? OwningActor->FindComponentByClass<UMortisUIComponent>() : nullptr;
 	}
+	
+	UMortisUIComponent* GetUIComponentFromAttributeSet(const UAttributeSet* AttributeSet)
+	{
+		if (!AttributeSet)
+		{
+			return nullptr;
+		}
+
+		const UAbilitySystemComponent* ASC = AttributeSet->GetOwningAbilitySystemComponent();
+		const AActor* AvatarActor = ASC ? ASC->GetAvatarActor() : AttributeSet->GetOwningActor();
+
+		return AvatarActor ? AvatarActor->FindComponentByClass<UMortisUIComponent>() : nullptr;
+	}
+
 }
 
 UMortisAttributeSet::UMortisAttributeSet()
@@ -38,6 +53,18 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			UIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, GetMaxHealth());
 		}
 	}
+	// 최대 체력 변경
+	if (Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
+	{
+		const float NexMaxHealth = GetMaxHealth();
+		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth());
+		SetMaxHealth(NexMaxHealth);
+
+		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
+		{
+			UIComponent->OnHealthChanged.Broadcast(NewCurrentHealth, NexMaxHealth);
+		}
+	}
 	// 데미지를 입었을 때
 	else if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{
@@ -56,6 +83,11 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		}
 
 		// TODO: 사망 상태 태그 추가
+		if (GetCurrentHealth() <= 0.0f)
+		{
+			Data.Target.AddLooseGameplayTag(MortisGameplayTags::State_Dead);
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningActor(), MortisGameplayTags::Event_Dead, FGameplayEventData());
+		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetIncomingPoiseDamageAttribute())
 	{
@@ -95,5 +127,10 @@ void UMortisAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 		}
 		else if (GetCurrentHealth() > NewValue)
 			SetCurrentHealth(NewValue);
+	}
+	
+	if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeSet(this))
+	{
+		UIComponent->OnHealthChanged.Broadcast(GetCurrentHealth(), GetMaxHealth());
 	}
 }

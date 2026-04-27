@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -43,9 +43,9 @@ protected:
 public:
 	void SetAttackPattern(const UMortisAttackPatternData* PatternData);
 	
-	FORCEINLINE const FMortisAttackPattern* GetAttackPatternByIndex(int32 Index) const;
+	const FMortisAttackPattern* GetAttackPatternByIndex(int32 Index) const;
 
-	FORCEINLINE AMortisEnemyWeapon* GetEnemyWeapon() const;
+	AMortisEnemyWeapon* GetCurrentEnemyWeapon() const;
 	int32 SelectAttackPattern(float DistanceToTarget, float AngleToTarget);
 	
 private:

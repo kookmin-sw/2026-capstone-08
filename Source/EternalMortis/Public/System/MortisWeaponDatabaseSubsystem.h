@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Types/MortisStructTypes.h"
 #include "Types/MortisWeaponDataTypes.h"
 #include "MortisWeaponDatabaseSubsystem.generated.h"
 
@@ -34,13 +35,13 @@ public:
     UFUNCTION(BlueprintCallable)
     bool GetWeaponGradeStyleByHandle(const FDataTableRowHandle& InHandle, FMortisWeaponGradeStyleRow& OutStyleRow) const;
 
-    const FMortisWeaponDropRuleRow* GetDropRuleForFloor(int32 Floor) const;
+    const FMortisDropRuleRow* GetDropRuleForFloor(int32 Floor) const;
 
 protected:
     void BuildWeaponCaches();
     void BuildDropRuleCaches();
 
-    bool PickRandomGrade(const FMortisWeaponGradeWeights& InWeights, EMortisWeaponGrade& OutGrade) const;
+    bool PickRandomGrade(const FMortisGradeWeights& InWeights, EMortisWeaponGrade& OutGrade) const;
     bool HasAnyWeaponInGrade(EMortisWeaponGrade Grade) const;
 
 private:
@@ -48,12 +49,12 @@ private:
     TObjectPtr<UDataTable> WeaponTable = nullptr;
 
     UPROPERTY()
-    TObjectPtr<UDataTable> WeaponDropRuleTable = nullptr;
+    TObjectPtr<UDataTable> DropRuleTable = nullptr;
 
     UPROPERTY()
     TObjectPtr<UDataTable> WeaponGradeStyleTable = nullptr;
 
     TMap<FGameplayTag, FMortisWeaponRow> WeaponRowsByTag;
     TMap<EMortisWeaponGrade, TArray<FMortisWeaponRow>> WeaponRowsByGrade;
-    TMap<int32, FMortisWeaponDropRuleRow> DropRulesByFloor;
+    TMap<int32, FMortisDropRuleRow> DropRulesByFloor;
 };

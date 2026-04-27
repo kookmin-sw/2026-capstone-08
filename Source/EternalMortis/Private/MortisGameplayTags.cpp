@@ -27,6 +27,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_WeaponSkill, "InputTag.Ability.WeaponSkill");
 
 	// ====================		Ability Tags	====================
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Death, "Ability.Death");
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_EquipWeapon, "Ability.EquipWeapon");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_UnequipWeapon, "Ability.UnequipWeapon");
@@ -44,6 +45,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Roll, "Ability.Action.Roll");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Interact, "Ability.Action.Interact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Potion, "Ability.Action.Potion");
+
+	UE_DEFINE_GAMEPLAY_TAG(Ability_LockOn, "Ability.LockOn");
 
 	// ====================		State Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
@@ -63,6 +66,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_2, "State.Enemy.Phase.2");
 	UE_DEFINE_GAMEPLAY_TAG(State_Enemy_Phase_3, "State.Enemy.Phase.3");
 	// ====================		Event Tags		====================
+	UE_DEFINE_GAMEPLAY_TAG(Event_Dead, "Event.Dead");
+	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_SwitchWeapon, "Event.Player.SwitchWeapon");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Complete_Roll, "Event.Player.Complete.Roll");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Success_LightAttack, "Event.Player.Success.LightAttack");
@@ -76,6 +81,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_ExecutePattern, "Event.Action.ExecutePattern");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_Turn, "Event.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_HitReact, "Event.Action.HitReact");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Action_ImpactReact, "Event.Action.ImpactReact");
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_AttackHit, "Event.Combat.AttackHit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Combo_Next, "Event.Combat.Combo.Next");
@@ -85,13 +91,18 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_EndWarpUpdate, "Event.Montage.EndWarpUpdate");
 
 	// ====================		Data Tags		====================
-	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DefaultSword, "Data.Weapon.DefaultSword");
-	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FallenKnightSword, "Data.Weapon.FallenKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DarkIronSword, "Data.Weapon.DarkIronSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_CastleKnightSword, "Data.Weapon.CastleKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FrostSlayer, "Data.Weapon.FrostSlayer");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Finger, "Data.Weapon.Finger");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Shield, "Data.Shield");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Normal, "Data.CollisionType.Weapon.Normal");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Weapon_Special, "Data.CollisionType.Weapon.Special");
 	UE_DEFINE_GAMEPLAY_TAG(Data_CollisionType_Shield, "Data.CollisionType.Shield");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Slot_MainHand, "Data.Weapon.Slot.MainHand");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Slot_OffHand, "Data.Weapon.Slot.OffHand");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Pierce, "Data.AttackType.Pierce");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Blunt, "Data.AttackType.Blunt");
@@ -142,6 +153,12 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Combo, "Rune.Set.Combo");
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Mystery, "Rune.Set.Mystery");
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Inspiration, "Rune.Set.Inspiration");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Impact, "Rune.Set.Impact");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Weight, "Rune.Set.Weight");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fortitude, "Rune.Set.Fortitude");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Thorns, "Rune.Set.Thorns");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fury, "Rune.Set.Fury");
 
 	// ====================		Character Tags	====================
+	UE_DEFINE_GAMEPLAY_TAG(Experience_Test, "Experience.Test");
 }

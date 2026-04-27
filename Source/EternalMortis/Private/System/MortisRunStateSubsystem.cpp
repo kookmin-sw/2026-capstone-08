@@ -17,6 +17,7 @@ bool UMortisRunStateSubsystem::SpendGold(int32 Amount)
         return false;
 
     CurrentGold -= Amount;
+    OnGoldChanged.Broadcast(-Amount);
     return true;
 }
 
@@ -26,6 +27,7 @@ void UMortisRunStateSubsystem::AddGold(int32 Amount)
         return;
 
     CurrentGold += Amount;
+    OnGoldChanged.Broadcast(Amount);
 }
 
 void UMortisRunStateSubsystem::SetGold(int32 NewGold)

@@ -6,10 +6,9 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MortisRunStateSubsystem.generated.h"
 
-/**
- * 
- */
-UCLASS(BlueprintType)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoldChanged, int32, DeltaGold);
+
+UCLASS(BlueprintType, Blueprintable)
 class ETERNALMORTIS_API UMortisRunStateSubsystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
@@ -79,6 +78,11 @@ public:
     // ----- Run -----
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
     void ResetRunState();
+    
+    // ----- Delegate -----
+    UPROPERTY(BlueprintAssignable, BlueprintCallable)
+    FOnGoldChanged OnGoldChanged;
+
 
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")

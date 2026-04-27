@@ -24,7 +24,11 @@ void AMortisWeaponPickup::ReactivateAsDroppedWeapon(const FMortisWeaponRow& InOl
 bool AMortisWeaponPickup::BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const
 {
 	OutPreviewData.TitleText = WeaponData.WeaponName;
-
+	if (OutPreviewData.TitleText.IsEmpty() && WeaponData.WeaponTag.IsValid())
+	{
+		OutPreviewData.TitleText = FText::FromName(WeaponData.WeaponTag.GetTagName());
+	}
+	
 	if (const UGameInstance* GameInstance = GetGameInstance())
 	{
 		if (const UMortisWeaponDatabaseSubsystem* WeaponDatabase = GameInstance->GetSubsystem<UMortisWeaponDatabaseSubsystem>())
@@ -35,12 +39,7 @@ bool AMortisWeaponPickup::BuildPickupPreviewData(FMortisPickupPreviewData& OutPr
 				OutPreviewData.AccentColor = GradeStyleRow.GradeColor;
 			}
 		}
-	}
-
-	if (OutPreviewData.TitleText.IsEmpty() && WeaponData.WeaponTag.IsValid())
-	{
-		OutPreviewData.TitleText = FText::FromName(WeaponData.WeaponTag.GetTagName());
-	}
+	}	
 
 	return !OutPreviewData.TitleText.IsEmpty();
 }

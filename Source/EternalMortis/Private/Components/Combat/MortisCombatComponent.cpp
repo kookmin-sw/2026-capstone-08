@@ -14,29 +14,45 @@ void UMortisCombatComponent::RegisterWeapon(FGameplayTag WeaponTag, AMortisWeapo
 {
 	checkf(WeaponToRegister, TEXT("ItemToRegister is null for tag: %s"), *WeaponTag.ToString());
 	checkf(!CharacterWeaponMap.Contains(WeaponTag), TEXT("Item with tag %s is already registered"), *WeaponTag.ToString());
+	
+	CharacterWeaponMap.Emplace(WeaponTag, WeaponToRegister);
+	
+	WeaponToRegister->OnWeaponHitTarget.BindUObject(this, &ThisClass::OnHitTargetActor);
+	WeaponToRegister->OnWeaponPulledFromTarget.BindUObject(this, &ThisClass::OnWeaponPulledFromTargetActor);
     
-	if (AMortisWeaponBase* Weapon = Cast<AMortisWeaponBase>(WeaponToRegister))
+	if (bRegisterAsEquippedWeapon)
 	{
-		CharacterWeaponMap.Emplace(WeaponTag, Weapon);
-		
-		Weapon->OnWeaponHitTarget.BindUObject(this, &ThisClass::OnHitTargetActor);
-		Weapon->OnWeaponPulledFromTarget.BindUObject(this, &ThisClass::OnWeaponPulledFromTargetActor);
-        
-		if (bRegisterAsEquippedWeapon)
-		{
-			CurrentEquippedWeaponTag = WeaponTag;
-		}
-		// MORTIS_LOG("Weapon Registered: %s", *ItemTag.ToString());
-		
-		if (AMortisShieldBase* Shield = Cast<AMortisShieldBase>(WeaponToRegister))
-		{
-			Shield->OnShieldBeginBlock.BindUObject(this, &ThisClass::OnShieldBeginBlock);
-			Shield->OnShieldEndBlock.BindUObject(this, &ThisClass::OnShieldEndBlock);
-			// MORTIS_LOG("Shield Registered: %s", *ItemTag.ToString());
-		}
+		CurrentEquippedWeaponTag = WeaponTag;
 	}
-
+	// MORTIS_LOG("Weapon Registered: %s", *ItemTag.ToString());
+	
+	if (AMortisShieldBase* Shield = Cast<AMortisShieldBase>(WeaponToRegister))
+	{
+		Shield->OnShieldBeginBlock.BindUObject(this, &ThisClass::OnShieldBeginBlock);
+		Shield->OnShieldEndBlock.BindUObject(this, &ThisClass::OnShieldEndBlock);
+		// MORTIS_LOG("Shield Registered: %s", *ItemTag.ToString());
+	}
 }
+
+void UMortisCombatComponent::RegisterWeaponToSlot(FGameplayTag SlotTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon)
+{
+	if (WeaponBySlotTag.Contains(SlotTag))
+	{
+		UnRegisterWeapon(SlotTag);
+	}
+	WeaponBySlotTag.Add(SlotTag, WeaponToRegister);
+	if (bRegisterAsEquippedWeapon)
+	{
+		CurrentAttackSlot = SlotTag;
+	}
+	
+	if (AMortisShieldBase* Shield = Cast<AMortisShieldBase>(WeaponToRegister))
+	{
+		Shield->OnShieldBeginBlock.BindUObject(this, &ThisClass::OnShieldBeginBlock);
+		Shield->OnShieldEndBlock.BindUObject(this, &ThisClass::OnShieldEndBlock);
+	}
+}
+
 bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 {
 	if (!WeaponTag.IsValid())
@@ -61,18 +77,36 @@ bool UMortisCombatComponent::UnregisterSpawnedWeapon(FGameplayTag WeaponTag)
 		Weapon->OnWeaponHitTarget.Unbind();
 		Weapon->OnWeaponPulledFromTarget.Unbind();
 	}
-
+	
 	// 맵에서는 무조건 제거
 	return CharacterWeaponMap.Remove(WeaponTag) > 0;
 }
+
+bool UMortisCombatComponent::UnRegisterWeapon(const FGameplayTag& SlotTag)
+{
+	if (!SlotTag.IsValid())
+	{
+		return false;
+	}
+	
+	TObjectPtr<AMortisWeaponBase> WeaponToUnregister = nullptr;
+	if (WeaponBySlotTag.RemoveAndCopyValue(SlotTag, WeaponToUnregister))
+	{
+		WeaponToUnregister->Destroy();
+		return true;
+	}
+	return false;
+}
+
 AMortisWeaponBase* UMortisCombatComponent::GetCharacterCarriedWeaponByTag(FGameplayTag TagToGet) const
 {
-	if (CharacterWeaponMap.Contains(TagToGet))
-	{
-		if (TObjectPtr<AMortisWeaponBase> const* FoundWeapon = CharacterWeaponMap.Find(TagToGet))
-			return *FoundWeapon;
-	}
-	return nullptr;
+	return CharacterWeaponMap.FindRef(TagToGet);
+	// if (CharacterWeaponMap.Contains(TagToGet))
+	// {
+	// 	if (TObjectPtr<AMortisWeaponBase> const* FoundWeapon = CharacterWeaponMap.Find(TagToGet))
+	// 		return *FoundWeapon;
+	// }
+	// return nullptr;
 }
 
 AMortisWeaponBase* UMortisCombatComponent::GetCharacterCurrentEquippedWeapon() const
@@ -98,6 +132,50 @@ void UMortisCombatComponent::ToggleDamageCollision(bool bShouldEnable, FGameplay
 		ToggleBodyDamageCollision(bShouldEnable, TagToToggle);
 		break;
 	}
+}
+
+void UMortisCombatComponent::ClearWeapons(float LifeSpan)
+{
+	for (auto& TagWeaponPair : CharacterWeaponMap)
+	{
+		if (AMortisWeaponBase* WeaponBase = TagWeaponPair.Value)
+		{
+			if (LifeSpan > 0.f)
+			{
+				WeaponBase->SetLifeSpan(LifeSpan);
+			}
+			else
+			{
+				WeaponBase->Destroy();
+			}
+		}
+	}
+	CharacterWeaponMap.Empty();
+	
+	for (auto& SlotTagWeaponPair : WeaponBySlotTag)
+	{
+		if (AMortisWeaponBase* WeaponBase = SlotTagWeaponPair.Value)
+		{
+			if (LifeSpan > 0.f)
+			{
+				WeaponBase->SetLifeSpan(LifeSpan);
+			}
+			else
+			{
+				WeaponBase->Destroy();
+			}
+		}
+	}
+	WeaponBySlotTag.Empty();
+}
+
+AMortisWeaponBase* UMortisCombatComponent::GetCurrentWeapon() const
+{
+	if (!CurrentAttackSlot.IsValid())
+	{
+		return nullptr;
+	}
+	return WeaponBySlotTag.FindRef(CurrentAttackSlot);
 }
 
 void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)
@@ -178,7 +256,7 @@ void UMortisCombatComponent::UpdateAttackTrace()
 			AttackTraceObjectTypes,
 			false,
 			IgnoreActors,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			HitResults,
 			true,
 			FLinearColor::Green
@@ -218,7 +296,7 @@ FVector UMortisCombatComponent::GetSocketLocation(const FMortisAttackTraceConfig
 {
 	if (Config.MeshSource == EMortisMeshSource::WeaponMesh)
 	{
-		if (AMortisWeaponBase* CurrentWeapon = GetCharacterCurrentEquippedWeapon())
+		if (AMortisWeaponBase* CurrentWeapon = GetEquippedWeaponBySlotTag(Config.SlotTag))
 		{
 			if (UMeshComponent* Mesh = CurrentWeapon->GetWeaponMesh())
 			{

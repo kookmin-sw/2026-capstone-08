@@ -1,12 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Components/Combat/MortisEnemyCombatComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MortisDebugHelper.h"
+#include "MortisFunctionLibrary.h"
 #include "Abilities/GameplayAbilityTypes.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Character/Enemy/MortisEnemyData.h"
+#include "Character/Player/MortisPlayerCharacter.h"
+#include "Components/Combat/MortisPlayerCombatComponent.h"
 #include "Items/Weapons/MortisEnemyWeapon.h"
 
 void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
@@ -22,7 +25,15 @@ void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
 	EventData.Instigator = GetOwningPawn();
 	EventData.Target = HitActor;
 	
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_AttackHit, EventData);
+	if (AMortisPlayerCharacter* Player = Cast<AMortisPlayerCharacter>(HitActor))
+	{
+		if (UMortisFunctionLibrary::HasGameplayTag(Player, MortisGameplayTags::State_Invincible))
+		{
+			return;
+		}
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_AttackHit, EventData);
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, MortisGameplayTags::Event_Action_ImpactReact, EventData);	
+	}
 }
 
 void UMortisEnemyCombatComponent::OnWeaponPulledFromTargetActor(AActor* InteractedActor)
@@ -95,9 +106,9 @@ const FMortisAttackPattern* UMortisEnemyCombatComponent::GetAttackPatternByIndex
 	return &AttackPatternData->AttackPatterns[Index];
 }
 
-AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetEnemyWeapon() const
+AMortisEnemyWeapon* UMortisEnemyCombatComponent::GetCurrentEnemyWeapon() const
 {
-	return Cast<AMortisEnemyWeapon>(GetCharacterCurrentEquippedWeapon());
+	return Cast<AMortisEnemyWeapon>(GetCurrentWeapon());
 }
 
 int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, float AngleToTarget)
@@ -139,6 +150,7 @@ int32 UMortisEnemyCombatComponent::SelectAttackPattern(float DistanceToTarget, f
 			AttackPatternWeights[ValidIndex] /= 2.f;
 			float MinWeight = AttackPatternData->AttackPatterns[ValidIndex].Weight * 0.1f;
 			AttackPatternWeights[ValidIndex] = FMath::Max(MinWeight, AttackPatternWeights[ValidIndex]);
+			// MORTIS_LOG("ValidIndex: %d", ValidIndex);
 			SelectedIndex = ValidIndex;
 			break;
 		}

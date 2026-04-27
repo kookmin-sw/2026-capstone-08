@@ -6,10 +6,6 @@
 #include "Components/UI/MortisUIComponent.h"
 #include "MortisEnemyUIComponent.generated.h"
 
-class UProgressBar;
-class UWidgetComponent;
-class UMortisEnemyHealthBarWidget;
-
 /**
  * 
  */
@@ -19,27 +15,6 @@ class ETERNALMORTIS_API UMortisEnemyUIComponent : public UMortisUIComponent
 	GENERATED_BODY()
 
 public:
-	UMortisEnemyUIComponent();
-
-	virtual void BeginPlay() override;
-
-	void InitializeEnemyHealthBar(UWidgetComponent* InWidgetComponent);
-	void SetCombatHUDVisible(bool bShouldShow);
-	void RefreshHealthBar();
-
-protected:
-	UFUNCTION()
-	void HandleHealthChanged(float NewHealth, float MaxHealth);
-
-private:
-	void CacheHealthBarReferences();
-	void ApplyHealthBarVisuals(float NewHealth, float MaxHealth);
-	void ApplyHealthBarVisibility() const;
-
-	TWeakObjectPtr<UWidgetComponent> EnemyHealthBarWidgetComponent;
-	TWeakObjectPtr<UMortisEnemyHealthBarWidget> EnemyHealthBarWidget;
-	TWeakObjectPtr<UProgressBar> EnemyHealthProgressBar;
-
-	bool bHasCombatTarget = false;
-	bool bIsDead = false;
+	UFUNCTION(BlueprintCallable, Category = "Mortis|UI")
+	bool GetCurrentHealthSnapshot(float& OutCurrentHealth, float& OutMaxHealth) const;
 };

@@ -38,16 +38,28 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 	AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
 	APlayerController* PlayerController = GetPlayerControllerFromActorInfo();
 
-	if (!PlayerCharacter || !PlayerController || !CurrentLockedActor)
+	if (!PlayerCharacter || !PlayerController)
 	{
 		CancelTargetLockAbility();
 		return;
 	}
 
+	if (IsTargetDeadOrInvalid(CurrentLockedActor))
+	{
+		if (!TrySwitchToBestAvailableTarget())
+		{
+			CancelTargetLockAbility();
+			return;
+		}
+	}
+
 	if (!CanMaintainLockOnTarget(CurrentLockedActor))
 	{
-		CancelTargetLockAbility();
-		return;
+		if (!TrySwitchToBestAvailableTarget())
+		{
+			CancelTargetLockAbility();
+			return;
+		}
 	}
 
 	const float DistanceToTarget = FVector::Distance(
@@ -57,18 +69,17 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 
 	if (DistanceToTarget > BreakLockDistance)
 	{
-		CancelTargetLockAbility();
-		return;
+		if (!TrySwitchToBestAvailableTarget())
+		{
+			CancelTargetLockAbility();
+			return;
+		}
 	}
 
+	const float DistanceAlpha = FMath::Clamp(DistanceToTarget / BreakLockDistance, 0.f, 1.f);
+	PlayerCharacter->SetLockOnZoomAlpha(DistanceAlpha);
+
 	SetTargetLockWidgetPosition();
-
-	const bool bShouldOverrideRotation =
-		!HasGameplayTagOnActor(PlayerCharacter, RollingStateTag) &&
-		!HasGameplayTagOnActor(PlayerCharacter, BlockingStateTag);
-
-	if (!bShouldOverrideRotation)
-		return;
 
 	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
 		PlayerCharacter->GetActorLocation(),
@@ -86,7 +97,29 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 	);
 
 	PlayerController->SetControlRotation(FRotator(TargetRot.Pitch, TargetRot.Yaw, 0.f));
-	PlayerCharacter->SetActorRotation(FRotator(0.f, TargetRot.Yaw, 0.f));
+
+	const bool bForceRotateToTarget =
+		HasAnyMatchingTagOnActor(PlayerCharacter, ForceCharacterRotateToTargetTags);
+
+	if (UCharacterMovementComponent* MovementComp = PlayerCharacter->GetCharacterMovement())
+	{
+		MovementComp->bOrientRotationToMovement = ShouldOrientRotationToMovement(PlayerCharacter);
+	}
+
+	if (ShouldRotateCharacterToTarget(PlayerCharacter))
+	{
+		const FRotator NewActorRot = FMath::RInterpTo(
+			PlayerCharacter->GetActorRotation(),
+			FRotator(0.f, TargetRot.Yaw, 0.f),
+			DeltaTime,
+			CharacterRotationInterpSpeed
+		);
+
+		PlayerCharacter->SetActorRotation(NewActorRot);
+	}
+
+	if (bForceRotateToTarget)
+		PlayerCharacter->UpdateAttackDirectionWarpTarget(TargetRot);
 }
 
 void UMortisGA_TargetLock::SwitchTarget(const FGameplayTag& InSwitchDirectionTag)
@@ -130,6 +163,9 @@ void UMortisGA_TargetLock::InitializeTargetLockState()
 	ApplyLockOnMoveSpeedEffect();
 	DrawTargetLockWidget();
 	SetTargetLockWidgetPosition();
+
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+		PlayerCharacter->SetLockOnHeightOffsetEnabled(true);
 }
 
 void UMortisGA_TargetLock::CleanupTargetLockState()
@@ -145,10 +181,16 @@ void UMortisGA_TargetLock::CleanupTargetLockState()
 		DrawnTargetLockWidget->RemoveFromParent();
 		DrawnTargetLockWidget = nullptr;
 	}
+
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+	{
+		PlayerCharacter->SetLockOnHeightOffsetEnabled(false);
+	}
 }
 
 void UMortisGA_TargetLock::CancelTargetLockAbility()
 {
+	CleanupTargetLockState();
 	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
 }
 
@@ -252,22 +294,14 @@ void UMortisGA_TargetLock::GetAvailableActorsOnScreenSides(const TArray<AActor*>
 bool UMortisGA_TargetLock::IsSelectableLockOnTarget(AActor* InActor) const
 {
 	const AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
-	const APlayerController* PlayerController = GetPlayerControllerFromActorInfo();
 
-	if (!PlayerCharacter || !PlayerController || !IsValid(InActor) || InActor == PlayerCharacter)
+	if (!PlayerCharacter || !IsValid(InActor) || InActor == PlayerCharacter)
 		return false;
 
 	if (DeadStateTag.IsValid() && HasGameplayTagOnActor(InActor, DeadStateTag))
 		return false;
 
-	FVector ViewLocation;
-	FRotator ViewRotation;
-	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
-
-	const FVector ToTarget = (InActor->GetActorLocation() - ViewLocation).GetSafeNormal();
-	const float ViewDot = FVector::DotProduct(ViewRotation.Vector(), ToTarget);
-
-	return ViewDot >= MinTargetViewDot;
+	return true;
 }
 
 bool UMortisGA_TargetLock::CanMaintainLockOnTarget(AActor* InActor) const
@@ -281,6 +315,35 @@ bool UMortisGA_TargetLock::CanMaintainLockOnTarget(AActor* InActor) const
 	return HasLineOfSightToTarget(InActor);
 }
 
+bool UMortisGA_TargetLock::TrySwitchToBestAvailableTarget()
+{
+	TArray<AActor*> FoundActors;
+	GetAvailableActorsToLock(FoundActors);
+
+	FoundActors.Remove(CurrentLockedActor);
+
+	AvailableActorsToLock = FoundActors;
+
+	CurrentLockedActor = GetBestTargetFromAvailableActors(FoundActors);
+
+	if (!IsValid(CurrentLockedActor))
+		return false;
+
+	SetTargetLockWidgetPosition();
+	return true;
+}
+
+bool UMortisGA_TargetLock::IsTargetDeadOrInvalid(const AActor* InActor) const
+{
+	if (!IsValid(InActor))
+		return true;
+
+	if (DeadStateTag.IsValid() && HasGameplayTagOnActor(InActor, DeadStateTag))
+		return true;
+
+	return false;
+}
+
 bool UMortisGA_TargetLock::HasGameplayTagOnActor(const AActor* InActor, const FGameplayTag& InTag) const
 {
 	if (!InActor || !InTag.IsValid())
@@ -292,6 +355,41 @@ bool UMortisGA_TargetLock::HasGameplayTagOnActor(const AActor* InActor, const FG
 
 	const UAbilitySystemComponent* ASC = ASI->GetAbilitySystemComponent();
 	return ASC && ASC->HasMatchingGameplayTag(InTag);
+}
+
+bool UMortisGA_TargetLock::HasAnyMatchingTagOnActor(const AActor* InActor, const FGameplayTagContainer& InTags) const
+{
+	if (!InActor || InTags.IsEmpty())
+		return false;
+
+	const IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(InActor);
+	if (!ASI)
+		return false;
+
+	const UAbilitySystemComponent* ASC = ASI->GetAbilitySystemComponent();
+	return ASC && ASC->HasAnyMatchingGameplayTags(InTags);
+}
+
+bool UMortisGA_TargetLock::ShouldRotateCharacterToTarget(const AMortisPlayerCharacter* PlayerCharacter) const
+{
+	if (!PlayerCharacter)
+		return false;
+
+	if (HasAnyMatchingTagOnActor(PlayerCharacter, ForceCharacterRotateToTargetTags))
+		return true;
+
+	return !HasAnyMatchingTagOnActor(PlayerCharacter, CameraOnlyLockTags);
+}
+
+bool UMortisGA_TargetLock::ShouldOrientRotationToMovement(const AMortisPlayerCharacter* PlayerCharacter) const
+{
+	if (!PlayerCharacter)
+		return false;
+
+	if (HasAnyMatchingTagOnActor(PlayerCharacter, ForceCharacterRotateToTargetTags))
+		return false;
+
+	return HasAnyMatchingTagOnActor(PlayerCharacter, OrientToMovementTags);
 }
 
 bool UMortisGA_TargetLock::HasLineOfSightToTarget(AActor* InActor) const
@@ -395,12 +493,10 @@ void UMortisGA_TargetLock::InitializeLockOnMovement()
 		return;
 	}
 
-	bCachedUseControllerRotationYaw = PlayerCharacter->bUseControllerRotationYaw;
 	PlayerCharacter->bUseControllerRotationYaw = false;
 
 	if (UCharacterMovementComponent* MovementComp = PlayerCharacter->GetCharacterMovement())
 	{
-		bCachedOrientRotationToMovement = MovementComp->bOrientRotationToMovement;
 		MovementComp->bOrientRotationToMovement = false;
 	}
 }
@@ -413,11 +509,11 @@ void UMortisGA_TargetLock::ResetLockOnMovement()
 		return;
 	}
 
-	PlayerCharacter->bUseControllerRotationYaw = bCachedUseControllerRotationYaw;
+	PlayerCharacter->bUseControllerRotationYaw = false;
 
 	if (UCharacterMovementComponent* MovementComp = PlayerCharacter->GetCharacterMovement())
 	{
-		MovementComp->bOrientRotationToMovement = bCachedOrientRotationToMovement;
+		MovementComp->bOrientRotationToMovement = true;
 	}
 }
 
@@ -462,11 +558,3 @@ APlayerController* UMortisGA_TargetLock::GetPlayerControllerFromActorInfo() cons
 {
 	return CurrentActorInfo ? Cast<APlayerController>(CurrentActorInfo->PlayerController.Get()) : nullptr;
 }
-
-
-
-
-
-
-
-

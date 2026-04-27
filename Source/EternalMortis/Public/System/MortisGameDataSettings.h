@@ -21,14 +21,20 @@ public:
     TSoftObjectPtr<UDataTable> RuneSetTable;
 
     UPROPERTY(Config, EditAnywhere, Category = "Rune Data")
-    TSoftObjectPtr<UDataTable> RuneDropRuleTable;
+    TSoftObjectPtr<UDataTable> RuneGradeStyleTable;
 
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
     TSoftObjectPtr<UDataTable> WeaponTable;
 
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
-    TSoftObjectPtr<UDataTable> WeaponDropRuleTable;
-
-    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
     TSoftObjectPtr<UDataTable> WeaponGradeStyleTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Drop Data")
+    TSoftObjectPtr<UDataTable> DropRuleTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Curse Data")
+    TSoftObjectPtr<UDataTable> CurseTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Meta Progression")
+    TSoftObjectPtr<UDataTable> ExperienceTable;
 };

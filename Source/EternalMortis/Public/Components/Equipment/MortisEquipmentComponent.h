@@ -6,6 +6,7 @@
 #include "Components/PawnExtensionComponentBase.h"
 #include "MortisGameplayTags.h"
 #include "Types/MortisRuneDataTypes.h"
+#include "Types/MortisCurseDataTypes.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "MortisEquipmentComponent.generated.h"
 
@@ -15,6 +16,8 @@
 
 class UMortisRuneDatabaseSubsystem;
 class UMortisRuneInventorySubsystem;
+class UMortisCurseDatabaseSubsystem;
+class UMortisCurseInventorySubsystem;
 class UMortisAbilitySystemComponent;
 struct FGameplayAbilitySpecHandle;
 
@@ -63,6 +66,21 @@ struct FMortisAppliedRuneSetRuntime
     TArray<FMortisAppliedRuneSetTierRuntime> AppliedTiers;
 };
 
+USTRUCT()
+struct FMortisAppliedCurseRuntime
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FGuid CurseInstanceId;
+
+    UPROPERTY()
+    FMortisCurseInstance Curse;
+
+    UPROPERTY()
+    FActiveGameplayEffectHandle EffectHandle;
+};
+
 UCLASS()
 class ETERNALMORTIS_API UMortisEquipmentComponent : public UPawnExtensionComponentBase
 {
@@ -78,11 +96,16 @@ private:
     UPROPERTY()
 	UMortisRuneInventorySubsystem* RuneInv = nullptr;
     UPROPERTY()
+    UMortisCurseDatabaseSubsystem* CurseDB = nullptr;
+    UPROPERTY()
+    UMortisCurseInventorySubsystem* CurseInv = nullptr;
+    UPROPERTY()
     UMortisAbilitySystemComponent* ASC = nullptr;
-
 
     UPROPERTY()
     TArray<FMortisEquippedRuneRuntime> EquippedRuneRuntimes;
+    UPROPERTY()
+    TArray<FMortisAppliedCurseRuntime> AppliedCurseRuntimes;
     UPROPERTY()
     TMap<FGameplayTag, FMortisAppliedRuneSetRuntime> AppliedRuneSetRuntimes;
 
@@ -92,9 +115,15 @@ private:
     void RemoveRuneEffect(int32 SlotIndex, const FMortisRuneInstance& RuneToAdd);
     UFUNCTION()
     void UpdateRuneSetBonus(const TArray<FGameplayTag>& ActiveSetTags);
+    UFUNCTION()
+    void ApplyCurseEffect(const FMortisCurseInstance& CurseToAdd);
+    UFUNCTION()
+    void RemoveCurseEffect(const FMortisCurseInstance& CurseToRemove);
 
     bool HasAppliedTier(const FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount) const;
+    bool HasAppliedCurse(const FGuid& CurseInstanceId) const;
     void ApplySetTier(const FMortisSetTierDef& TierDef, FMortisAppliedRuneSetRuntime& SetRuntime);
     void RemoveSetTier(FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount);
     void ClearSetRuntime(const FGameplayTag& SetTag);
+    void ClearCurseEffects();
 };
