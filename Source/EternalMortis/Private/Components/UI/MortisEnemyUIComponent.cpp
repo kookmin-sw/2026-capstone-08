@@ -4,6 +4,8 @@
 #include "Components/UI/MortisEnemyUIComponent.h"
 
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
+#include "Character/Enemy/MortisEnemyCharacter.h"
+#include "Character/Enemy/MortisEnemyData.h"
 #include "Character/MortisCharacterBase.h"
 
 bool UMortisEnemyUIComponent::GetCurrentHealthSnapshot(float& OutCurrentHealth, float& OutMaxHealth) const
@@ -23,4 +25,23 @@ bool UMortisEnemyUIComponent::GetCurrentHealthSnapshot(float& OutCurrentHealth, 
 		? FMath::Clamp(AttributeSet->GetCurrentHealth(), 0.f, OutMaxHealth)
 		: 0.f;
 	return true;
+}
+
+bool UMortisEnemyUIComponent::IsBoss() const
+{
+	const AMortisEnemyCharacter* OwnerEnemy = Cast<AMortisEnemyCharacter>(GetOwner());
+	const UMortisEnemyData* EnemyData = OwnerEnemy ? OwnerEnemy->GetEnemyData() : nullptr;
+	return EnemyData && EnemyData->bIsBoss;
+}
+
+FText UMortisEnemyUIComponent::GetBossDisplayName() const
+{
+	const AMortisEnemyCharacter* OwnerEnemy = Cast<AMortisEnemyCharacter>(GetOwner());
+	const UMortisEnemyData* EnemyData = OwnerEnemy ? OwnerEnemy->GetEnemyData() : nullptr;
+	if (EnemyData && !EnemyData->BossDisplayName.IsEmpty())
+	{
+		return EnemyData->BossDisplayName;
+	}
+
+	return OwnerEnemy ? FText::FromString(OwnerEnemy->GetName()) : FText::GetEmpty();
 }

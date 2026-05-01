@@ -94,6 +94,13 @@ public:
 	/* Combat */
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	FMortisWeaponCommonData UnarmedData;
+
+	/* UI */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Boss")
+	bool bIsBoss = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Boss", meta = (EditCondition = "bIsBoss"))
+	FText BossDisplayName;
 	
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
