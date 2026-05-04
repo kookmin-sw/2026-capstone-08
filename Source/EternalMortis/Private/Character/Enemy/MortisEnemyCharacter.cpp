@@ -16,6 +16,8 @@
 #include "Components/WidgetComponent.h"
 #include "Controllers/MortisAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "System/MortisMetaProgressionSubsystem.h"
+#include "System/MortisRunStateSubsystem.h"
 #include "UI/MortisEnemyHealthBarWidget.h"
 #include "UI/MortisWidgetBase.h"
 #include "UObject/ConstructorHelpers.h"
@@ -93,6 +95,22 @@ void AMortisEnemyCharacter::StartDeath()
 
 void AMortisEnemyCharacter::FinishDeath()
 {
+	// Drop Items
+	if (GetWorld() && GetWorld()->GetGameInstance() && EnemyData)
+	{
+		if (UMortisRunStateSubsystem* RunStateSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMortisRunStateSubsystem>())
+		{
+			RunStateSubsystem->AddGold(FMath::RandRange(EnemyStats.DropData.MinGold, EnemyStats.DropData.MaxGold));
+			// MORTIS_LOG("Gold: %d", RunStateSubsystem->GetCurrentGold());
+		}
+		
+		if (UMortisMetaProgressionSubsystem* MetaProgressionSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMortisMetaProgressionSubsystem>())
+		{
+			MetaProgressionSubsystem->AddMemoryFragments(FMath::RandRange(EnemyStats.DropData.MinGold, EnemyStats.DropData.MaxGold));
+			// MORTIS_LOG("Memory Fragments: %d", MetaProgressionSubsystem->GetMemoryFragments());
+		}
+	}
+	
 	Super::FinishDeath();
 }
 
@@ -156,7 +174,7 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 	}
 	
 	GetMesh()->SetRelativeScale3D(EnemyData->MeshScale);
-	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -EnemyData->CapsuleHalfHeight));
+	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -EnemyData->CapsuleHalfHeight) + EnemyData->MeshOffset);
 	GetMesh()->SetRelativeRotation(EnemyData->MeshRotation);
 
 	if (EnemyData->AnimClass)
@@ -178,11 +196,6 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 	// is Game playing
 	if (GetWorld() && GetWorld()->IsGameWorld())
 	{
-		if (EnemyData->AbilitySet)
-		{
-			EnemyData->AbilitySet->GiveToAbilitySystemComponent(MortisAbilitySystemComponent);
-		}
-
 		if (EnemyData->AttackPatternData)
 		{
 			if (EnemyCombatComponent)
@@ -191,7 +204,6 @@ void AMortisEnemyCharacter::InitializeEnemyByData()
 			}
 		}
 	}
-
 	UpdateEnemyHealthBarWidgetLocation();
 }
 
@@ -217,6 +229,13 @@ float AMortisEnemyCharacter::GetRandomStrafingDistance() const
 		return 500.f;
 	}
 	return FMath::RandRange(EnemyData->PhaseStrafingRanges[CurrentPhase].MinDistance, EnemyData->PhaseStrafingRanges[CurrentPhase].MaxDistance);
+}
+
+void AMortisEnemyCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+	ApplyEnemyStats();
 }
 
 void AMortisEnemyCharacter::SetEnemyHealthBarCombatVisibility(bool bShouldShow)
@@ -265,6 +284,29 @@ void AMortisEnemyCharacter::PostEditChangeProperty(FPropertyChangedEvent& Proper
 	UpdateEnemyHealthBarWidgetLocation();
 }
 #endif
+
+void AMortisEnemyCharacter::ApplyEnemyStats()
+{
+	if (!EnemyData)
+	{
+		MORTIS_LOG("Enemy Data is null");
+		return;
+	}
+	
+	FMortisEnemyStats* EnemyStatPointer = EnemyData->StatRowHandle.GetRow<FMortisEnemyStats>(TEXT("Enemy Stats"));
+	if (!EnemyStatPointer)
+	{
+		MORTIS_LOG("Fail to get Stats");
+		return;
+	}
+	EnemyStats = *EnemyStatPointer;
+	
+	if (!EnemyData->AbilitySet)
+	{
+		return;
+	}
+	EnemyData->AbilitySet->GiveToEnemy(MortisAbilitySystemComponent, EnemyStats);
+}
 
 void AMortisEnemyCharacter::RegisterStateTagEvent()
 {

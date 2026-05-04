@@ -47,9 +47,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Mortis|Spawn")
 	TObjectPtr<UBillboardComponent> SpriteComponent;
 	
-	UPROPERTY(VisibleAnywhere, Category = "Mortis|Spawn")
-	TObjectPtr<UBoxComponent> SpawnTriggerBox;
-	
 	UPROPERTY(EditAnywhere, Category = "Mortis|Spawn")
 	EMortisSpawnPattern SpawnPattern = EMortisSpawnPattern::Custom;
 	
@@ -85,10 +82,6 @@ protected:
 	void GenerateGrid();
 	
 private:	
-	UFUNCTION()
-	void OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	// bool bHasSpawned = false;
 	
 #if WITH_EDITOR
 	void DrawDebugPoints();

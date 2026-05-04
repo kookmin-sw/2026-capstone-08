@@ -1,0 +1,10 @@
+RowName,MaxHealth,BaseDamage,MaxPoise,ResistPierce,ResistBlunt,ResistSlash,ResistMagic,DropData
+GreenGolem,80,30,40,0.1,-0.5,0.2,0.3,"(MinGold=30, MaxGold=80, MinMemoryFragmentCount=10, MaxMemoryFragmentCount=20)"
+RedGolem,100,25,40,0.1,-0.5,0.2,0.3,"(MinGold=30, MaxGold=80, MinMemoryFragmentCount=10, MaxMemoryFragmentCount=20)"
+FallenKnight,120,30,40,0,0,0,0,"(MinGold=40, MaxGold=80, MinMemoryFragmentCount=15, MaxMemoryFragmentCount=30)"
+Skeleton_DualWield,80,25,20,0,0,0,0,"(MinGold=15, MaxGold=40, MinMemoryFragmentCount=5, MaxMemoryFragmentCount=15)"
+Skeleton_OneArm,70,40,10,0,0,0,0,"(MinGold=15, MaxGold=40, MinMemoryFragmentCount=5, MaxMemoryFragmentCount=15)"
+SilverKnight,200,50,60,0,0.2,0.2,0.1,"(MinGold=50, MaxGold=100, MinMemoryFragmentCount=40, MaxMemoryFragmentCount=80)"
+GoldenKnight,500,50,80,0,0.2,0.2,0.1,"(MinGold=120, MaxGold=200, MinMemoryFragmentCount=60, MaxMemoryFragmentCount=100)"
+Grux,1000,60,100,0.1,0,0.1,0.2,"(MinGold=200, MaxGold=300, MinMemoryFragmentCount=150, MaxMemoryFragmentCount=200)"
+Sevarog,1000,60,100,0.1,0,0.1,0.2,"(MinGold=10000, MaxGold=10000, MinMemoryFragmentCount=10000, MaxMemoryFragmentCount=10000)"

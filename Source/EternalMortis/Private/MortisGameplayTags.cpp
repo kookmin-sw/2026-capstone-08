@@ -120,6 +120,14 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Stamina, "Data.Cost.Stamina");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Mana, "Data.Cost.Mana");
 
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_MaxHealth, "Data.Enemy.Stat.MaxHealth");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_MaxPoise, "Data.Enemy.Stat.MaxPoise");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_BaseDamage, "Data.Enemy.Stat.BaseDamage");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistPierce, "Data.Enemy.Stat.ResistPierce");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistBlunt, "Data.Enemy.Stat.ResistBlunt");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistSlash, "Data.Enemy.Stat.ResistSlash");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistMagic, "Data.Enemy.Stat.ResistMagic");
+	
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxHP, "Data.Player.Stat.MaxHP");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxStamina, "Data.Player.Stat.MaxStamina");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_StaminaReductionRate, "Data.Player.Stat.StaminaReductionRate");

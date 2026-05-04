@@ -5,7 +5,7 @@
 
 #include "MortisDebugHelper.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
-#include "Character/Player/MortisPlayerCharacter.h"
+
 #include "Components/BillboardComponent.h"
 #include "Components/BoxComponent.h"
 
@@ -18,10 +18,6 @@ AMortisRoomEnemySpawner::AMortisRoomEnemySpawner()
 	SpriteComponent = CreateDefaultSubobject<UBillboardComponent>("SpriteComponent");
 	SpriteComponent->SetupAttachment(SceneRoot);
 	// SpriteComponent->bIsScreenSizeScaled = true;
-	
-	SpawnTriggerBox = CreateDefaultSubobject<UBoxComponent>("SpawnTriggerBox");
-	SpawnTriggerBox->SetupAttachment(SceneRoot);
-	SpawnTriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTriggerOverlap);
 }
 
 void AMortisRoomEnemySpawner::OnConstruction(const FTransform& Transform)
@@ -144,24 +140,6 @@ TArray<AMortisEnemyCharacter*> AMortisRoomEnemySpawner::SpawnEnemies() const
 		}
 	}
 	return SpawnedEnemies;
-}
-
-void AMortisRoomEnemySpawner::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	// if (bHasSpawned)
-	// {
-	// 	return;
-	// }
-	if (AMortisPlayerCharacter* PlayerCharacter = Cast<AMortisPlayerCharacter>(OtherActor))
-	{
-		// MORTIS_LOG("%s: Trigger Box", *GetActorNameOrLabel());
-		// bHasSpawned = true;
-		
-		SpawnTriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SetActorTickEnabled(false);
-		SpawnEnemies();
-	}
 }
 
 #if WITH_EDITOR

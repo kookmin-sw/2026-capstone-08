@@ -21,11 +21,12 @@ class ETERNALMORTIS_API UMortisEnemyAnimInstance : public UMortisCharacterAnimIn
 	GENERATED_BODY()
 
 public:
+	//~ Begin UAnimInstance Interfaces
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
-
-
+	//~ End UAnimInstance Interfaces
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
 	float AimYaw;
@@ -33,6 +34,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
 	float AimPitch;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
+	float YawDelta;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
 	float AimOffsetInterpSpeed = 10.f;
 	
@@ -48,29 +52,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData")
 	bool bIsGuarding;
 	
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData|IK")
-    float CurrentIKAlpha = 0.f;
-    
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortls|AnimData|IK")
-    FTransform LeftHandIKTarget;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AnimData|IK")
-	FVector LeftElbowJointTarget;
-
-	UPROPERTY(VisibleAnywhere, Category = "AnimData|IK")
-	float ElbowOutOffset = 50.f;
-
-	UPROPERTY(VisibleAnywhere, Category = "AnimData|IK")
-	float ElbowBackOffset = 30.f;
-	
 private:
 	void UpdateAimOffset(float DeltaSeconds);
-	void UpdateIKAlpha(float DeltaSeconds);
-	void UpdateLeftElbowJointTarget();
 	void BindTagMappings(UAbilitySystemComponent* ASC);
 	void OnTagChanged(const FGameplayTag Tag, int32 NewCount, FName BoolPropertyName);
 
-	bool bUseTwoHandedIK = false;
-	FName LeftHandGripSocketName;
-	FName LeftUpperArmSocketName;
+	FRotator PrevRotation;
 };

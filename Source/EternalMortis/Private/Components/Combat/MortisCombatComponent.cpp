@@ -36,6 +36,7 @@ void UMortisCombatComponent::RegisterWeapon(FGameplayTag WeaponTag, AMortisWeapo
 
 void UMortisCombatComponent::RegisterWeaponToSlot(FGameplayTag SlotTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon)
 {
+	// MORTIS_LOG("Register Weapon: %s", *WeaponToRegister->GetActorNameOrLabel());
 	if (WeaponBySlotTag.Contains(SlotTag))
 	{
 		UnRegisterWeapon(SlotTag);

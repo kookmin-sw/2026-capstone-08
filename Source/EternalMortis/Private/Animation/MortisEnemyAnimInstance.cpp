@@ -32,13 +32,6 @@ void UMortisEnemyAnimInstance::NativeInitializeAnimation()
 		{
 			SpeedInterpSpeed = EnemyData->SpeedInterpSpeed;
 			DirectionInterpSpeed = EnemyData->DirectionInterpSpeed;
-
-			bUseTwoHandedIK = EnemyData->bUseTwoHandedIK;
-			LeftHandGripSocketName = EnemyData->LeftHandSocketName;
-			
-			LeftUpperArmSocketName = EnemyData->LeftUpperArmSocketName;
-			ElbowBackOffset = EnemyData->ElbowBackOffset;
-			ElbowOutOffset = EnemyData->ElbowOutOffset;
 		}
 	}
 }
@@ -46,12 +39,6 @@ void UMortisEnemyAnimInstance::NativeInitializeAnimation()
 void UMortisEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-
-	if (bUseTwoHandedIK)
-	{
-		UpdateIKAlpha(DeltaSeconds);
-		UpdateLeftElbowJointTarget();
-	}
 	
 	UpdateAimOffset(DeltaSeconds);
 	
@@ -127,61 +114,10 @@ void UMortisEnemyAnimInstance::UpdateAimOffset(float DeltaSeconds)
 	
 	AimPitch = AimOffset.Pitch;
 	AimYaw = AimOffset.Yaw;
-	// MORTIS_LOG("AimPitch: %f, AimYaw: %f", AimPitch, AimYaw);
-}
-
-void UMortisEnemyAnimInstance::UpdateIKAlpha(float DeltaSeconds)
-{
-	UMortisCombatComponent* CombatComp = OwningCharacter->GetCombatComponent();
-	if (!CombatComp)
-	{
-		return;
-	}
-
-	AMortisWeaponBase* Weapon = CombatComp->GetCurrentWeapon();
-	if (!Weapon)
-	{
-		return;
-	}
-		
-	UMeshComponent* WeaponMesh = Weapon->GetWeaponMesh();
-	if (!WeaponMesh)
-	{
-		return;
-	}
-
-	float TargetAlpha = 0.f;
-	if (WeaponMesh->DoesSocketExist(LeftHandGripSocketName))
-	{
-		FTransform SocketWorldTransform = WeaponMesh->GetSocketTransform(LeftHandGripSocketName, RTS_World);
-		FTransform MeshComponentTransform = OwningCharacter->GetMesh()->GetComponentTransform();
-
-		LeftHandIKTarget = SocketWorldTransform.GetRelativeTransform(MeshComponentTransform);
-		
-		TargetAlpha = 1.f;
-	}
 	
-	CurrentIKAlpha = FMath::FInterpTo(CurrentIKAlpha, TargetAlpha, DeltaSeconds, 10.f);
-}
-
-void UMortisEnemyAnimInstance::UpdateLeftElbowJointTarget()
-{
-	if (!OwningCharacter)
-	{
-		return;
-	}
-
-	if (USkeletalMeshComponent* Mesh = OwningCharacter->GetMesh())
-	{
-		FTransform ShoulderTransform = Mesh->GetSocketTransform(LeftUpperArmSocketName, RTS_Component);
-		
-		FTransform MeshTransform = Mesh->GetComponentTransform();
-		FVector CompLeft = MeshTransform.InverseTransformVector(OwningCharacter->GetActorRightVector() * -1.f);
-		FVector CompBack = MeshTransform.InverseTransformVector(OwningCharacter->GetActorForwardVector() * -1.f);
-		FVector ShoulderLoc = ShoulderTransform.GetLocation();
-		
-		LeftElbowJointTarget = ShoulderLoc + ElbowOutOffset * CompLeft + ElbowBackOffset * CompBack;
-	}
+	FRotator DeltaRotation = FMath::RInterpTo(PrevRotation, OwningCharacter->GetActorRotation(), DeltaSeconds, 6.f);
+	PrevRotation = OwningCharacter->GetActorRotation();
+	// MORTIS_LOG("AimPitch: %f, AimYaw: %f", AimPitch, AimYaw);
 }
 
 void UMortisEnemyAnimInstance::BindTagMappings(UAbilitySystemComponent* ASC)

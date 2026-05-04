@@ -303,3 +303,21 @@ struct FMortisDropRuleRow : public FTableRowBase
 			&& RuneGradeWeights.HasAnyPositiveWeight();
 	}
 };
+
+USTRUCT(BlueprintType)
+struct FMortisEnemyDropData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MinGold;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MaxGold;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MinMemoryFragmentCount;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MaxMemoryFragmentCount;
+};

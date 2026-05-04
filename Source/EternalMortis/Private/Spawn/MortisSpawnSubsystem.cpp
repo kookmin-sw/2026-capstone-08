@@ -5,6 +5,7 @@
 
 #include "MortisDebugHelper.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
+#include "Spawn/MortisEnemySpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Spawn/MortisRoomEnemySpawner.h"
 #include "Spawn/MortisSpawnSettings.h"
@@ -47,24 +48,24 @@ void UMortisSpawnSubsystem::AssignEnemies()
 		return;
 	}
 	
-	TArray<AActor*> FoundRoomEnemySpawners;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMortisRoomEnemySpawner::StaticClass(), FoundRoomEnemySpawners);
+	// TArray<AActor*> FoundRoomEnemySpawners;
+	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMortisRoomEnemySpawner::StaticClass(), FoundRoomEnemySpawners);
 	// MORTIS_LOG("Spawner Counts: %d", FoundRoomEnemySpawners.Num());
 	
-	for (AActor* EnemySpawnerActor : FoundRoomEnemySpawners)
+	for (TWeakObjectPtr<UMortisEnemySpawnerComponent>& SpawnerPtr : SpawnerComponents)
 	{
-		AMortisRoomEnemySpawner* RoomEnemySpawner = Cast<AMortisRoomEnemySpawner>(EnemySpawnerActor);
-		if (!RoomEnemySpawner)
+		if (!SpawnerPtr.IsValid())
 		{
 			continue;
 		}
-		switch (RoomEnemySpawner->GetSpawnMode())
+		UMortisEnemySpawnerComponent* Spawner = SpawnerPtr.Get();
+		switch (Spawner->GetSpawnMode())
 		{
 		case EMortisSpawnMode::RandomByFloor:
-			AssignEnemiesByFloor(RoomEnemySpawner, FloorSpawnRow, FloorSpawnRow->SpawnBudget);
+			AssignEnemiesByFloor(Spawner, FloorSpawnRow, FloorSpawnRow->SpawnBudget);
 			break;
 		case EMortisSpawnMode::FixedCustom:
-			AssignEnemiesFromCustomRow(RoomEnemySpawner, RoomEnemySpawner->GetCustomSpawnRowHandle());
+			AssignEnemiesFromCustomRow(Spawner, Spawner->GetCustomSpawnRowHandle());
 			break;
 		default:
 			break;
@@ -72,7 +73,7 @@ void UMortisSpawnSubsystem::AssignEnemies()
 	}
 }
 
-void UMortisSpawnSubsystem::AssignEnemiesByFloor(AMortisRoomEnemySpawner* RoomSpawner,
+void UMortisSpawnSubsystem::AssignEnemiesByFloor(UMortisEnemySpawnerComponent* RoomSpawner,
 	const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget)
 {
 	// MORTIS_LOG("Assign Enemy By Floor");
@@ -85,9 +86,10 @@ void UMortisSpawnSubsystem::AssignEnemiesByFloor(AMortisRoomEnemySpawner* RoomSp
 	RoomSpawner->SetEnemiesToSpawn(SelectedEnemies);
 }
 
-void UMortisSpawnSubsystem::AssignEnemiesFromCustomRow(AMortisRoomEnemySpawner* RoomSpawner,
+void UMortisSpawnSubsystem::AssignEnemiesFromCustomRow(UMortisEnemySpawnerComponent* RoomSpawner,
 	const FDataTableRowHandle& CustomSpawnRowHandle)
 {
+	// MORTIS_LOG("Assign Enemy By Custom");
 	if (CustomSpawnRowHandle.IsNull())
 	{
 		return;
@@ -106,6 +108,16 @@ void UMortisSpawnSubsystem::AssignEnemiesFromCustomRow(AMortisRoomEnemySpawner* 
 		EnemiesToSpawn.Add(EnemyRow->EnemyClass);
 	}
 	RoomSpawner->SetEnemiesToSpawn(EnemiesToSpawn);
+}
+
+void UMortisSpawnSubsystem::RegisterSpawner(UMortisEnemySpawnerComponent* NewSpawner)
+{
+	SpawnerComponents.Add(NewSpawner);
+}
+
+void UMortisSpawnSubsystem::UnregisterSpawner(UMortisEnemySpawnerComponent* Spawner)
+{
+	SpawnerComponents.Remove(Spawner);
 }
 
 TArray<TSubclassOf<AMortisEnemyCharacter>> UMortisSpawnSubsystem::SelectEnemiesToSpawn(
