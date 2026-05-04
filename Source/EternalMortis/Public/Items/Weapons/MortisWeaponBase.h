@@ -9,6 +9,8 @@
 
 DECLARE_DELEGATE_OneParam(FOnTargetInteractedDelegate, AActor*)
 
+class UNiagaraComponent;
+
 UCLASS()
 class ETERNALMORTIS_API AMortisWeaponBase : public AActor
 {
@@ -23,6 +25,11 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual UMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Weapon|Trail")
+	void StartWeaponTrail();
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Weapon|Trail")
+	void StopWeaponTrail();
 	
 	const TArray<TObjectPtr<UShapeComponent>>* GetCollisionComponentsByTag(FGameplayTag TagToToggle);
 	
@@ -38,6 +45,12 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UMeshComponent> WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon|Trail")
+	TObjectPtr<USceneComponent> TrailOrigin;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon|Trail")
+	TObjectPtr<UNiagaraComponent> WeaponTrailComponent;
 	
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Weapon")
 	TMap<FGameplayTag, TArray<TObjectPtr<UShapeComponent>>> CollisionComponentMap;

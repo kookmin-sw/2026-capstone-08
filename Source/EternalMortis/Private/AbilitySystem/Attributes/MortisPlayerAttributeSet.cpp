@@ -6,6 +6,8 @@
 #include "Components/UI/MortisPlayerUIComponent.h"
 #include "GameplayEffectExtension.h"
 
+#include "MortisDebugHelper.h"
+
 namespace
 {
 	UMortisPlayerUIComponent* GetPlayerUIComponentFromPlayerAttributeData(const FGameplayEffectModCallbackData& Data)
@@ -19,6 +21,8 @@ namespace
 
 UMortisPlayerAttributeSet::UMortisPlayerAttributeSet()
 {
+	InitHealingReceivedBonusRate(0.0f);
+	InitIncomingHeal(0.0f);
 	InitMaxStamina(1.0f);
 	InitCurrentStamina(1.0f);
 	InitStaminaRegen(1.0f);
@@ -61,5 +65,30 @@ void UMortisPlayerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectM
 		{
 			PlayerUIComponent->OnManaChanged.Broadcast(NewCurrentMana, GetMaxMana());
 		}
+	}
+	else if (Data.EvaluatedData.Attribute == GetIncomingHealAttribute())
+	{
+		const float RawHealAmount = GetIncomingHeal();
+		SetIncomingHeal(0.0f);
+
+		if (RawHealAmount <= 0.0f)
+			return;
+
+		const float OldHealth = GetCurrentHealth();
+		const float MaxHealthValue = GetMaxHealth();
+
+		const float HealBonusRate = GetHealingReceivedBonusRate();
+		const float FinalHealAmount = RawHealAmount * (1.0f + HealBonusRate);
+
+		const float CapRate = FMath::Clamp(GetRecoverableHealthCapRate(), 0.0f, 1.0f);
+		const float RecoverableHealthCap = MaxHealthValue * CapRate;
+
+		float NewHealth = OldHealth + FinalHealAmount;
+
+		NewHealth = FMath::Clamp(NewHealth, 0.0f, RecoverableHealthCap);
+		SetCurrentHealth(NewHealth);
+
+		if (UMortisUIComponent* UIComponent = GetPlayerUIComponentFromPlayerAttributeData(Data))
+			UIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
 	}
 }

@@ -9,6 +9,7 @@
 #include "MortisGA_TargetLock.generated.h"
 
 class AMortisPlayerCharacter;
+class USpringArmComponent;
 class UGameplayEffect;
 class UUserWidget;
 struct FGameplayEventData;
@@ -57,7 +58,7 @@ protected:
 	bool IsSelectableLockOnTarget(AActor* InActor) const;
 	bool CanMaintainLockOnTarget(AActor* InActor) const;
 
-	bool TrySwitchToBestAvailableTarget();
+	bool TrySwitchToBestAvailableTarget(bool bRequireInsideReacquireDistance = false);
 	bool IsTargetDeadOrInvalid(const AActor* InActor) const;
 
 	bool HasGameplayTagOnActor(const AActor* InActor, const FGameplayTag& InTag) const;
@@ -77,6 +78,11 @@ protected:
 
 	void ApplyLockOnMoveSpeedEffect();
 	void RemoveLockOnMoveSpeedEffect();
+
+	USpringArmComponent* GetTargetLockSpringArm() const;
+	void CacheOriginalSpringArmSocketOffset();
+	void UpdateLockOnSpringArmSideOffset(float DeltaTime, float DistanceAlpha);
+	void ResetLockOnSpringArmSideOffset();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|StateTags")
@@ -125,6 +131,9 @@ protected:
 	float BoxTraceDistance = 1200.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock")
+	float ReacquireTargetMaxDistance = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock")
 	FVector TraceBoxSize = FVector(500.f, 500.f, 300.f);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock")
@@ -147,6 +156,38 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Effect")
 	TSubclassOf<UGameplayEffect> LockOnMoveSpeedEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnCloseSideOffset = 80.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnFarSideOffset = 160.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnSideOffsetInterpSpeed = 8.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	bool bInvertLockOnSideOffset = false;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnSideOffsetSign = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnSideOffsetSwitchThreshold = 0.25f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnCloseCameraYawOffset = 6.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float LockOnFarCameraYawOffset = 2.f;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "TargetLock|Camera")
+	float CurrentLockOnCameraYawOffset = 0.f;
+
+	UPROPERTY()
+	TObjectPtr<USpringArmComponent> CachedTargetLockSpringArm = nullptr;
+	FVector OriginalSpringArmSocketOffset = FVector::ZeroVector;
+	bool bHasOriginalSpringArmSocketOffset = false;
 
 	FActiveGameplayEffectHandle LockOnMoveSpeedEffectHandle;
 };

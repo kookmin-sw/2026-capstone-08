@@ -114,10 +114,10 @@ bool UMortisPlayerGameplayAbility::CheckStaminaCost(float BaseCost, float& OutFi
 		return false;
 	}
 
-	OutFinalCost = CalculateStaminaCost(BaseCost);
+	OutFinalCost = CalculateStaminaCost(BaseCost, AdditionalReduceRate);
 
 	const float CurrentStamina =
-		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentStaminaAttribute()) + AdditionalReduceRate;
+		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentStaminaAttribute());
 
 	return CurrentStamina >= -OutFinalCost;
 }
@@ -141,10 +141,10 @@ bool UMortisPlayerGameplayAbility::CheckManaCost(float BaseCost, float& OutFinal
 		return false;
 	}
 
-	OutFinalCost = CalculateStaminaCost(BaseCost);
+	OutFinalCost = CalculateStaminaCost(BaseCost, AdditionalReduceRate);
 
 	const float CurrentMana =
-		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute()) + AdditionalReduceRate;
+		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute());
 
 	return CurrentMana >= -OutFinalCost;
 }

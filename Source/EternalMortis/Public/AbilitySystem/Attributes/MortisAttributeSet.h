@@ -29,6 +29,10 @@ public:
 	FGameplayAttributeData CurrentHealth;
 	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, CurrentHealth)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	FGameplayAttributeData RecoverableHealthCapRate;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, RecoverableHealthCapRate)
+
 	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	FGameplayAttributeData BaseDamage;
 	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, BaseDamage)
@@ -49,6 +53,9 @@ public:
 	FGameplayAttributeData IncomingPoiseDamage;
 	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, IncomingPoiseDamage)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Resist")
+	FGameplayAttributeData ResistAll;
+	ATTRIBUTE_ACCESSORS(UMortisAttributeSet, ResistAll)
 
 	UMortisAttributeSet();
 

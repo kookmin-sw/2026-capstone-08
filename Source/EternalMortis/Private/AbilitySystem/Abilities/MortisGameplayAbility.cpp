@@ -58,21 +58,29 @@ void UMortisGameplayAbility::ApplyGameplayEffectSpecHandleToHitResults(const FGa
 {
 	if (HitResults.IsEmpty()) return;
 
-	APawn* OwningPawn = CastChecked<APawn>(GetAvatarActorFromActorInfo());
+	APawn* OwningPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
+	if (!OwningPawn) return;
+
+	TSet<APawn*> AppliedPawns;
 
 	for (const FHitResult& Hit : HitResults)
 	{
-		if (APawn* HitPawn = Cast<APawn>(Hit.GetActor()))
-		{
-			if (UMortisFunctionLibrary::IsTargetPawnHostile(OwningPawn, HitPawn))
-			{
-				FActiveGameplayEffectHandle ActiveGameplayEffectHandle = NativeApplyEffectSpecHandleToTarget(HitPawn, SpecHandle);
+		APawn* HitPawn = Cast<APawn>(Hit.GetActor());
+		if (!HitPawn) continue;
 
-				if (ActiveGameplayEffectHandle.WasSuccessfullyApplied())
-				{
-					// 타격 이벤트 보내기
-				}
-			}
+		// 이미 이 Pawn에게 적용했으면 스킵
+		if (AppliedPawns.Contains(HitPawn)) continue;
+
+		if (!UMortisFunctionLibrary::IsTargetPawnHostile(OwningPawn, HitPawn)) continue;
+
+		FActiveGameplayEffectHandle ActiveGameplayEffectHandle =
+			NativeApplyEffectSpecHandleToTarget(HitPawn, SpecHandle);
+
+		if (ActiveGameplayEffectHandle.WasSuccessfullyApplied())
+		{
+			AppliedPawns.Add(HitPawn);
+
+			// 타격 이벤트 보내기
 		}
 	}
 }
@@ -142,5 +150,56 @@ FGameplayEffectSpecHandle UMortisGameplayAbility::MakeDamageEffectSpecHandle(TSu
 		MortisGameplayTags::Data_Stat_PoiseDamage,
 		PoiseDamage
 	);
+	return EffectSpecHandle;
+}
+
+FGameplayEffectSpecHandle UMortisGameplayAbility::MakeNonWeaponDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float Damage, float PoiseDamage, const FGameplayTag DamageTag)
+{
+	if (!EffectClass)
+	{
+		return FGameplayEffectSpecHandle();
+	}
+
+	UMortisAbilitySystemComponent* SourceASC = GetMortisAbilitySystemComponentFromActorInfo();
+	if (!SourceASC)
+	{
+		return FGameplayEffectSpecHandle();
+	}
+
+	AActor* AvatarActor = GetAvatarActorFromActorInfo();
+
+	FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
+	ContextHandle.SetAbility(this);
+	ContextHandle.AddSourceObject(AvatarActor);
+	ContextHandle.AddInstigator(AvatarActor, AvatarActor);
+
+	FGameplayEffectSpecHandle EffectSpecHandle = SourceASC->MakeOutgoingSpec(
+		EffectClass,
+		GetAbilityLevel(),
+		ContextHandle
+	);
+
+	if (!EffectSpecHandle.IsValid() || !EffectSpecHandle.Data.IsValid())
+	{
+		return FGameplayEffectSpecHandle();
+	}
+
+	// 고정 데미지 값
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		MortisGameplayTags::Data_Stat_FixedDamage,
+		Damage
+	);
+
+	// 경직 / Poise 데미지 값
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		MortisGameplayTags::Data_Stat_PoiseDamage,
+		PoiseDamage
+	);
+
+	// 공격 타입 태그: Pierce / Blunt / Slash / Magic
+	if (DamageTag.IsValid())
+		EffectSpecHandle.Data->AddDynamicAssetTag(DamageTag);
+
+
 	return EffectSpecHandle;
 }

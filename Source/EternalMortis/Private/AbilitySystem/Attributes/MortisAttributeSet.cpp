@@ -37,7 +37,9 @@ UMortisAttributeSet::UMortisAttributeSet()
 {
 	InitMaxHealth(1.0f);
 	InitCurrentHealth(1.0f);
+	InitRecoverableHealthCapRate(1.0f);
 	InitBaseDamage(1.0f);
+	InitResistAll(0.0f);
 }
 
 void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -45,7 +47,11 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	// 체력 변경
 	if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
 	{
-		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, GetMaxHealth());
+		const float MaxHealthValue = GetMaxHealth();
+		const float CapRate = FMath::Clamp(GetRecoverableHealthCapRate(), 0.0f, 1.0f);
+		const float RecoverableHealthCap = MaxHealthValue * CapRate;
+
+		const float NewCurrentHealth = FMath::Clamp(GetCurrentHealth(), 0, RecoverableHealthCap);
 		SetCurrentHealth(NewCurrentHealth);
 
 		if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeData(Data))
@@ -73,7 +79,7 @@ void UMortisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 		const float NewHealth = FMath::Clamp(OldHealth - DamageTaken, 0, GetMaxHealth());
 		SetCurrentHealth(NewHealth);
-		SetIncomingDamage(0.f);
+		//SetIncomingDamage(0.f);
 		
 		// TODO: UI 컴포넌트의 Delegate에 Broadcast
 
@@ -121,12 +127,39 @@ void UMortisAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribut
 	{
 		if (NewValue > OldValue)
 		{
+			const float MaxHealthValue = GetMaxHealth();
+			const float CapRate = FMath::Clamp(GetRecoverableHealthCapRate(), 0.0f, 1.0f);
+			const float RecoverableHealthCap = MaxHealthValue * CapRate;
+
 			float CurrHealth = GetCurrentHealth();
 			CurrHealth += (NewValue - OldValue);
+			CurrHealth = FMath::Clamp(CurrHealth, 0, RecoverableHealthCap);
+
 			SetCurrentHealth(CurrHealth);
 		}
 		else if (GetCurrentHealth() > NewValue)
 			SetCurrentHealth(NewValue);
+	}
+
+	else if (Attribute == GetRecoverableHealthCapRateAttribute())
+	{
+		const float OldHealth = GetCurrentHealth();
+		const float MaxHealthValue = GetMaxHealth();
+		const float CapRate = FMath::Clamp(GetRecoverableHealthCapRate(), 0.0f, 1.0f);
+		const float RecoverableHealthCap = MaxHealthValue * CapRate;
+
+		float NewHealth = FMath::Clamp(OldHealth, 0.0f, RecoverableHealthCap);
+		SetCurrentHealth(NewHealth);
+
+
+		if (UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent())
+		{
+			if (AActor* AvatarActor = ASC->GetAvatarActor())
+			{
+				if (UMortisUIComponent* UIComponent = AvatarActor->FindComponentByClass<UMortisUIComponent>())
+					UIComponent->OnHealthChanged.Broadcast(NewHealth, GetMaxHealth());
+			}
+		}
 	}
 	
 	if (UMortisUIComponent* UIComponent = GetUIComponentFromAttributeSet(this))

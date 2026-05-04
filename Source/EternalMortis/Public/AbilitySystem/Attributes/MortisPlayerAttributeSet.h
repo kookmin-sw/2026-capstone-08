@@ -15,6 +15,13 @@ class ETERNALMORTIS_API UMortisPlayerAttributeSet : public UMortisAttributeSet
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	FGameplayAttributeData IncomingHeal;
+	ATTRIBUTE_ACCESSORS(UMortisPlayerAttributeSet, IncomingHeal)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	FGameplayAttributeData HealingReceivedBonusRate;
+	ATTRIBUTE_ACCESSORS(UMortisPlayerAttributeSet, HealingReceivedBonusRate)
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stamina")
 	FGameplayAttributeData MaxStamina;

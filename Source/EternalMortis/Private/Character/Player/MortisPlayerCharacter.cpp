@@ -149,6 +149,40 @@ void AMortisPlayerCharacter::SetLockOnHeightOffsetEnabled(bool bEnabled)
 	bLockOnHeightOffsetEnabled = bEnabled;
 }
 
+void AMortisPlayerCharacter::SetCurrentLockedTarget(AActor* NewTarget)
+{
+	CurrentLockedTarget = IsValid(NewTarget) ? NewTarget : nullptr;
+}
+
+void AMortisPlayerCharacter::ClearCurrentLockedTarget()
+{
+	CurrentLockedTarget = nullptr;
+}
+
+AActor* AMortisPlayerCharacter::GetCurrentLockedTarget() const
+{
+	return CurrentLockedTarget.IsValid() ? CurrentLockedTarget.Get() : nullptr;
+}
+
+bool AMortisPlayerCharacter::HasCurrentLockedTarget() const
+{
+	return CurrentLockedTarget.IsValid();
+}
+
+bool AMortisPlayerCharacter::GetCurrentLockedTargetLocation(FVector& OutLocation) const
+{
+	AActor* LockedTarget = GetCurrentLockedTarget();
+
+	if (!IsValid(LockedTarget))
+	{
+		OutLocation = FVector::ZeroVector;
+		return false;
+	}
+
+	OutLocation = LockedTarget->GetActorLocation();
+	return true;
+}
+
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -217,6 +251,16 @@ void AMortisPlayerCharacter::Tick(float DeltaTime)
 		ZoomHeightInterpSpeed
 	);
 
+	if (!bLockOnHeightOffsetEnabled)
+	{
+		SocketOffset.Y = FMath::FInterpTo(
+			SocketOffset.Y,
+			0.0f,
+			DeltaTime,
+			ZoomHeightInterpSpeed
+		);
+	}
+
 	CameraArm->SocketOffset = SocketOffset;
 }
 
@@ -227,7 +271,7 @@ void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValu
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
-	if (MovementVector.SizeSquared() > 0.01f) { 
+	if (MovementVector.SizeSquared() > MoveStickDeadZone) { 
 		StopRecoveryMontage(RecoveryBlendOutTime);
 
 		const FVector WorldMoveDirection = (MovementRotation.RotateVector(FVector(MovementVector.Y, MovementVector.X, 0.0f))).GetSafeNormal();
@@ -238,19 +282,19 @@ void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValu
 
 			MotionWarpingComponent->AddOrUpdateWarpTargetFromTransform(TEXT("AttackDirection"),WarpTargetTransform);
 		}
-	}
 
-	if (MovementVector.Y != 0.0f)
-	{
-		const FVector ForwardDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+		if (MovementVector.Y != 0.0f)
+		{
+			const FVector ForwardDirection = MovementRotation.RotateVector(FVector::ForwardVector);
 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-	}
-	if (MovementVector.X != 0.0f)
-	{
-		const FVector RightDirection = MovementRotation.RotateVector(FVector::RightVector);
+			AddMovementInput(ForwardDirection, MovementVector.Y);
+		}
+		if (MovementVector.X != 0.0f)
+		{
+			const FVector RightDirection = MovementRotation.RotateVector(FVector::RightVector);
 
-		AddMovementInput(RightDirection, MovementVector.X);
+			AddMovementInput(RightDirection, MovementVector.X);
+		}
 	}
 }
 
@@ -260,12 +304,16 @@ void AMortisPlayerCharacter::Input_Look(const FInputActionValue& InputActionValu
 
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
+	if (LookAxisVector.SizeSquared() > LookStickDeadZone)
 	{
-		AddControllerYawInput(LookAxisVector.X);
-	}
-	if (LookAxisVector.Y != 0.0f)
-	{
-		AddControllerPitchInput(LookAxisVector.Y);
+		if (LookAxisVector.X != 0.0f)
+		{
+			AddControllerYawInput(LookAxisVector.X);
+		}
+		if (LookAxisVector.Y != 0.0f)
+		{
+			AddControllerPitchInput(LookAxisVector.Y);
+		}
 	}
 }
 

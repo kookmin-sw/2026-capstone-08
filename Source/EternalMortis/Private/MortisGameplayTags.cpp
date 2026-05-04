@@ -16,7 +16,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Toggle_LockOn, "InputTag.Toggle.LockOn");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold, "InputTag.Hold");
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Run, "InputTag.Hold.Ability.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Sprint, "InputTag.Hold.Ability.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_SuperSprint, "InputTag.Hold.Ability.SuperSprint");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Roll, "InputTag.Ability.Roll");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Interact, "InputTag.Ability.Interact");
@@ -93,6 +94,7 @@ namespace MortisGameplayTags
 	// ====================		Data Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DarkIronSword, "Data.Weapon.DarkIronSword");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_CastleKnightSword, "Data.Weapon.CastleKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_IcySword, "Data.Weapon.IcySword");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FrostSlayer, "Data.Weapon.FrostSlayer");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Finger, "Data.Weapon.Finger");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Shield, "Data.Shield");
@@ -111,6 +113,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackScale, "Data.AttackScale");
 	
 	UE_DEFINE_GAMEPLAY_TAG(Data_Stat_PoiseDamage, "Data.Stat.PoiseDamage");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Stat_FixedDamage, "Data.Stat.FixedDamage");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_RuneValue, "Data.RuneValue");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Health, "Data.Cost.Health");

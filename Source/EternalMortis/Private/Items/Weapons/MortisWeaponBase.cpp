@@ -7,6 +7,7 @@
 #include "MortisFunctionLibrary.h"
 #include "Components/ShapeComponent.h"
 #include "Interfaces/MortisCollisionInterface.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AMortisWeaponBase::AMortisWeaponBase()
@@ -15,6 +16,13 @@ AMortisWeaponBase::AMortisWeaponBase()
 
 	WeaponRoot = CreateDefaultSubobject<USceneComponent>(TEXT("WeaponRoot"));
 	SetRootComponent(WeaponRoot);
+
+	TrailOrigin = CreateDefaultSubobject<USceneComponent>(TEXT("TrailOrigin"));
+	TrailOrigin->SetupAttachment(WeaponRoot);
+
+	WeaponTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("WeaponTrailComponent"));
+	WeaponTrailComponent->SetupAttachment(TrailOrigin);
+	WeaponTrailComponent->SetAutoActivate(false);
 }
 
 const TArray<TObjectPtr<UShapeComponent>>* AMortisWeaponBase::GetCollisionComponentsByTag(FGameplayTag TagToToggle)
@@ -66,6 +74,22 @@ void AMortisWeaponBase::InitializeCollisions()
 			ShapeComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
 	}
+}
+
+void AMortisWeaponBase::StartWeaponTrail()
+{
+	if (!WeaponTrailComponent)
+		return;
+
+	WeaponTrailComponent->Activate(true);
+}
+
+void AMortisWeaponBase::StopWeaponTrail()
+{
+	if (!WeaponTrailComponent)
+		return;
+
+	WeaponTrailComponent->Deactivate();
 }
 
 void AMortisWeaponBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

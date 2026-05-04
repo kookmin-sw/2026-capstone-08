@@ -9,6 +9,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Character/Player/MortisPlayerCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -29,6 +30,8 @@ bool UMortisGA_TargetLock::TryLockOnTarget()
 	}
 
 	CurrentLockedActor = GetBestTargetFromAvailableActors(FoundActors);
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+		PlayerCharacter->SetCurrentLockedTarget(CurrentLockedActor);
 
 	return IsValid(CurrentLockedActor);
 }
@@ -69,16 +72,17 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 
 	if (DistanceToTarget > BreakLockDistance)
 	{
-		if (!TrySwitchToBestAvailableTarget())
-		{
-			CancelTargetLockAbility();
+		if (TrySwitchToBestAvailableTarget(true))
 			return;
-		}
+
+		CancelTargetLockAbility();
+		return;
 	}
 
 	const float DistanceAlpha = FMath::Clamp(DistanceToTarget / BreakLockDistance, 0.f, 1.f);
 	PlayerCharacter->SetLockOnZoomAlpha(DistanceAlpha);
 
+	UpdateLockOnSpringArmSideOffset(DeltaTime, DistanceAlpha);
 	SetTargetLockWidgetPosition();
 
 	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
@@ -86,7 +90,11 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 		CurrentLockedActor->GetActorLocation()
 	);
 
+	const FRotator ActorLookAtRot = FRotator(0.f, LookAtRot.Yaw, 0.f);
+
+	// 카메라 회전 보정
 	LookAtRot.Pitch -= TargetLockCameraPitchOffset;
+	LookAtRot.Yaw += CurrentLockOnCameraYawOffset;
 
 	const FRotator CurrentControlRot = PlayerController->GetControlRotation();
 	const FRotator TargetRot = FMath::RInterpTo(
@@ -110,7 +118,7 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 	{
 		const FRotator NewActorRot = FMath::RInterpTo(
 			PlayerCharacter->GetActorRotation(),
-			FRotator(0.f, TargetRot.Yaw, 0.f),
+			ActorLookAtRot,
 			DeltaTime,
 			CharacterRotationInterpSpeed
 		);
@@ -119,7 +127,7 @@ void UMortisGA_TargetLock::OnTargetLockTick(float DeltaTime)
 	}
 
 	if (bForceRotateToTarget)
-		PlayerCharacter->UpdateAttackDirectionWarpTarget(TargetRot);
+		PlayerCharacter->UpdateAttackDirectionWarpTarget(ActorLookAtRot);
 }
 
 void UMortisGA_TargetLock::SwitchTarget(const FGameplayTag& InSwitchDirectionTag)
@@ -153,6 +161,8 @@ void UMortisGA_TargetLock::SwitchTarget(const FGameplayTag& InSwitchDirectionTag
 	if (NewTarget)
 	{
 		CurrentLockedActor = NewTarget;
+		if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+			PlayerCharacter->SetCurrentLockedTarget(CurrentLockedActor);
 		SetTargetLockWidgetPosition();
 	}
 }
@@ -164,6 +174,8 @@ void UMortisGA_TargetLock::InitializeTargetLockState()
 	DrawTargetLockWidget();
 	SetTargetLockWidgetPosition();
 
+	CacheOriginalSpringArmSocketOffset();
+
 	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
 		PlayerCharacter->SetLockOnHeightOffsetEnabled(true);
 }
@@ -172,6 +184,10 @@ void UMortisGA_TargetLock::CleanupTargetLockState()
 {
 	ResetLockOnMovement();
 	RemoveLockOnMoveSpeedEffect();
+	ResetLockOnSpringArmSideOffset();
+
+	if (AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo())
+		PlayerCharacter->ClearCurrentLockedTarget();
 
 	AvailableActorsToLock.Empty();
 	CurrentLockedActor = nullptr;
@@ -315,12 +331,33 @@ bool UMortisGA_TargetLock::CanMaintainLockOnTarget(AActor* InActor) const
 	return HasLineOfSightToTarget(InActor);
 }
 
-bool UMortisGA_TargetLock::TrySwitchToBestAvailableTarget()
+bool UMortisGA_TargetLock::TrySwitchToBestAvailableTarget(bool bRequireInsideReacquireDistance)
 {
 	TArray<AActor*> FoundActors;
 	GetAvailableActorsToLock(FoundActors);
 
 	FoundActors.Remove(CurrentLockedActor);
+
+	AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
+
+	if (bRequireInsideReacquireDistance && PlayerCharacter)
+	{
+		const FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+
+		FoundActors.RemoveAll([&](const AActor* Candidate)
+			{
+				if (!IsValid(Candidate))
+					return true;
+
+				const float CandidateDistance = FVector::Distance(
+					PlayerLocation,
+					Candidate->GetActorLocation()
+				);
+
+				return CandidateDistance > ReacquireTargetMaxDistance;
+			}
+		);
+	}
 
 	AvailableActorsToLock = FoundActors;
 
@@ -328,6 +365,8 @@ bool UMortisGA_TargetLock::TrySwitchToBestAvailableTarget()
 
 	if (!IsValid(CurrentLockedActor))
 		return false;
+
+	PlayerCharacter->SetCurrentLockedTarget(CurrentLockedActor);
 
 	SetTargetLockWidgetPosition();
 	return true;
@@ -547,6 +586,119 @@ void UMortisGA_TargetLock::RemoveLockOnMoveSpeedEffect()
 
 	ASC->RemoveActiveGameplayEffect(LockOnMoveSpeedEffectHandle);
 	LockOnMoveSpeedEffectHandle.Invalidate();
+}
+
+USpringArmComponent* UMortisGA_TargetLock::GetTargetLockSpringArm() const
+{
+	const AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
+	if (!PlayerCharacter)
+		return nullptr;
+
+	return PlayerCharacter->FindComponentByClass<USpringArmComponent>();
+}
+
+void UMortisGA_TargetLock::CacheOriginalSpringArmSocketOffset()
+{
+	if (bHasOriginalSpringArmSocketOffset)
+		return;
+
+	CachedTargetLockSpringArm = GetTargetLockSpringArm();
+	if (!CachedTargetLockSpringArm)
+		return;
+
+	OriginalSpringArmSocketOffset = CachedTargetLockSpringArm->SocketOffset;
+	bHasOriginalSpringArmSocketOffset = true;
+}
+
+void UMortisGA_TargetLock::UpdateLockOnSpringArmSideOffset(float DeltaTime, float DistanceAlpha)
+{
+	CacheOriginalSpringArmSocketOffset();
+
+	if (!CachedTargetLockSpringArm || !bHasOriginalSpringArmSocketOffset)
+	{
+		return;
+	}
+
+	const AMortisPlayerCharacter* PlayerCharacter = GetMortisPlayerCharacterFromActorInfo();
+	const APlayerController* PlayerController = GetPlayerControllerFromActorInfo();
+
+	if (!PlayerCharacter || !PlayerController || !CurrentLockedActor)
+	{
+		return;
+	}
+
+	const FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+	const FVector TargetLocation = CurrentLockedActor->GetActorLocation();
+
+	FVector ToTarget = TargetLocation - PlayerLocation;
+	ToTarget.Z = 0.f;
+
+	if (!ToTarget.Normalize())
+	{
+		return;
+	}
+
+	FVector FlatViewRight = FRotationMatrix(PlayerController->GetControlRotation()).GetUnitAxis(EAxis::Y);
+	FlatViewRight.Z = 0.f;
+
+	if (!FlatViewRight.Normalize())
+	{
+		return;
+	}
+
+	const float SideDot = FVector::DotProduct(FlatViewRight, ToTarget);
+
+	if (LockOnSideOffsetSign > 0.f)
+	{
+		if (SideDot < -LockOnSideOffsetSwitchThreshold)
+			LockOnSideOffsetSign = -1.f;
+	}
+	else
+	{
+		if (SideDot > LockOnSideOffsetSwitchThreshold)
+			LockOnSideOffsetSign = 1.f;
+	}
+
+	float FinalSideOffsetSign = LockOnSideOffsetSign;
+
+	if (bInvertLockOnSideOffset)
+	{
+		FinalSideOffsetSign *= -1.f;
+	}
+
+	const float MaxSideOffset = FMath::Lerp(
+		LockOnCloseSideOffset,
+		LockOnFarSideOffset,
+		DistanceAlpha
+	);
+
+	const float MaxCameraYawOffset = FMath::Lerp(LockOnCloseCameraYawOffset, LockOnFarCameraYawOffset, DistanceAlpha);
+	const float DesiredCameraYawOffset = -FinalSideOffsetSign * MaxCameraYawOffset;
+	CurrentLockOnCameraYawOffset = FMath::FInterpTo(CurrentLockOnCameraYawOffset, DesiredCameraYawOffset, DeltaTime, LockOnSideOffsetInterpSpeed);
+
+	FVector DesiredSocketOffset = OriginalSpringArmSocketOffset;
+	DesiredSocketOffset.Y += MaxSideOffset * FinalSideOffsetSign;
+
+	CachedTargetLockSpringArm->SocketOffset = FMath::VInterpTo(
+		CachedTargetLockSpringArm->SocketOffset,
+		DesiredSocketOffset,
+		DeltaTime,
+		LockOnSideOffsetInterpSpeed
+	);
+}
+
+void UMortisGA_TargetLock::ResetLockOnSpringArmSideOffset()
+{
+	if (!CachedTargetLockSpringArm || !bHasOriginalSpringArmSocketOffset)
+		return;
+
+	CachedTargetLockSpringArm = nullptr;
+	OriginalSpringArmSocketOffset = FVector::ZeroVector;
+	bHasOriginalSpringArmSocketOffset = false;
+
+	LockOnSideOffsetSign = 1.f;
+
+	CurrentLockOnCameraYawOffset = 0.f;
 }
 
 AMortisPlayerCharacter* UMortisGA_TargetLock::GetMortisPlayerCharacterFromActorInfo() const

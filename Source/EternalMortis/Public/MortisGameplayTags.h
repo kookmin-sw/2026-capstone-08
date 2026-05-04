@@ -1,4 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,6 +19,7 @@ namespace MortisGameplayTags
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Hold);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Hold_Ability_Sprint);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Hold_Ability_SuperSprint);
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_Roll);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_Interact);
@@ -99,6 +101,7 @@ namespace MortisGameplayTags
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Weapon_DarkIronSword);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Weapon_CastleKnightSword);
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Weapon_IcySword);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Weapon_FrostSlayer);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Weapon_Finger);
 	
@@ -120,7 +123,7 @@ namespace MortisGameplayTags
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_AttackScale);
 	
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Stat_PoiseDamage);
-	
+	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Stat_FixedDamage);
 
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_RuneValue);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Cost_Health);
