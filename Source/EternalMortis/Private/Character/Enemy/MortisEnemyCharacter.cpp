@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/Enemy/MortisEnemyCharacter.h"
@@ -18,7 +18,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "System/MortisMetaProgressionSubsystem.h"
 #include "System/MortisRunStateSubsystem.h"
-#include "UI/MortisEnemyHealthBarWidget.h"
 #include "UI/MortisWidgetBase.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -124,7 +123,13 @@ void AMortisEnemyCharacter::InitializeEnemyHUD()
 	}
 
 	EnemyHealthBarWidgetComponent->InitWidget();
-	EnemyHealthBarWidgetComponent->SetVisibility(true);
+	const bool bUseBossHealthBar = EnemyData && EnemyData->bIsBoss;
+	EnemyHealthBarWidgetComponent->SetVisibility(!bUseBossHealthBar);
+
+	if (bUseBossHealthBar)
+	{
+		return;
+	}
 
 	UUserWidget* UserWidget = EnemyHealthBarWidgetComponent->GetUserWidgetObject();
 	if (!UserWidget || !EnemyUIComponent)
@@ -135,12 +140,6 @@ void AMortisEnemyCharacter::InitializeEnemyHUD()
 	if (UMortisWidgetBase* MortisWidget = Cast<UMortisWidgetBase>(UserWidget))
 	{
 		MortisWidget->BP_BindUIComponent(EnemyUIComponent);
-	}
-
-	// Keep the legacy binding path alive until the enemy HP bar blueprints are reparented.
-	if (UMortisEnemyHealthBarWidget* LegacyHealthBarWidget = Cast<UMortisEnemyHealthBarWidget>(UserWidget))
-	{
-		LegacyHealthBarWidget->InitializeFromUIComponent(EnemyUIComponent);
 	}
 }
 
