@@ -1,6 +1,5 @@
-
-# Eternal Mortis
 ![EternalMortis](./assets/images/EternalMortis.png)
+# Eternal Mortis
 Eternal Mortis는 Unreal Engine 5로 제작 중인 3D 소울라이크 + 로그라이트 프로젝트입니다.
 
 ## 프로젝트 개요
