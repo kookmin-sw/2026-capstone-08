@@ -1,77 +1,98 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Lvs6kcL8)
-# Welcome to GitHub
+# Eternal Mortis
 
-캡스톤 팀 생성을 축하합니다.
+Eternal Mortis는 Unreal Engine 5로 제작 중인 3D 소울라이크 + 로그라이트 프로젝트입니다.
 
-## 팀소개 및 페이지를 꾸며주세요.
+## 프로젝트 개요
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+전투는 소울라이크, 진행은 로그라이트의 형식을 하고 있는 게임입니다.
+- 장르: 3D 소울라이크 + 로그라이트
+- 엔진: Unreal Engine 5
+- 개발 방식: C++ / Blueprint 혼합
+- 사용된 플러그인:
+    - Gameplay Ability System
+    - Niagara
+    - Motion Warping
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+## 팀 소개
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="./assets/images/team/siyun.JPG" width="90" height="90"><br>
+      <b>박시윤</b><br>
+      <sub>Product Manager</sub><br>
+      <a href="https://github.com/tldbs0420">GitHub</a>
+    </td>
+    <td align="center" width="25%">
+      <img src="./assets/images/team/chanha.JPG" width="90" height="90"><br>
+      <b>정찬하</b><br>
+      <sub>Client Programmer</sub><br>
+      <a href="https://github.com/jch618">GitHub</a>
+    </td>
+    <td align="center" width="25%">
+      <img src="./assets/images/team/Hyojun.JPG" width="90" height="90"><br>
+      <b>김효준</b><br>
+      <sub>Level Designer</sub><br>
+      <a href="https://github.com/myojun08">GitHub</a>
+    </td>
+    <td align="center" width="25%">
+      <img src="./assets/images/team/GangMin.JPG" width="90" height="90"><br>
+      <b>손강민</b><br>
+      <sub>UI / Art</sub><br>
+      <a href="https://github.com/Rkda8071">GitHub</a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">플레이어 개발</td>
+    <td align="center">적과 보스 AI 개발</td>
+    <td align="center">맵 생성 시스템 개발</td>
+    <td align="center">UI, HUD 개발</td>
+  </tr>
+</table>
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+## 개발 환경
 
-**팀페이지 주소** -> https://kookmin-sw.github.io/ '{{자신의 리파지토리 아이디}}'
+- Unreal Engine 5.6.1
+- Visual Studio 2022
+- Windows 10 이상
 
-**예시)** 2023년 0조  https://kookmin-sw.github.io/capstone-2023-00/
+## 기술스택
 
+![Unreal Engine 5](https://img.shields.io/badge/Unreal%20Engine%205-0E1128?style=for-the-badge&logo=unrealengine&logoColor=white) ![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=cplusplus&logoColor=white) ![Visual Studio 2022](https://img.shields.io/badge/Visual%20Studio%202022-5C2D91?style=for-the-badge&logo=visualstudio&logoColor=white)
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+![Rider](https://img.shields.io/badge/Rider-E61845?style=for-the-badge&logo=rider&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) ![Fork](https://img.shields.io/badge/Fork-00609C?style=for-the-badge&logo=git&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)
 
-### 1. 프로잭트 소개
+## 게임 흐름
 
-프로젝트
+![게임 흐름1](./assets/images/GameFlow1.JPG)
+![게임 흐름2](./assets/images/GameFlow2.JPG)
 
-### 2. 소개 영상
+플레이어는 스테이지를 탐색하면서 성장하고 보스에게 도전합니다.
 
-프로젝트 소개하는 영상을 추가하세요
+기본적인 흐름은 다음과 같습니다.
 
-### 3. 팀 소개
+1. 스테이지 탐색
+2. 적과 전투
+3. 상자, 상점 등을 통해 무기와 룬 획득
+4. 획득한 장비와 룬을 장착하여 캐릭터 강화
+5. 스테이지를 돌파해 보스 전투 진입
+6. 진행 중 획득한 기억 파편으로 런 외 추가 성장
 
-팀을 소개하세요.
+## 조작법
 
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
+| 행동 | 키보드 & 마우스 | 컨트롤러 | 비고 |
+| :--- | :--- | :--- | :--- |
+| **일반 공격** | 마우스 좌클릭 | RB | |
+| **무기 기술 공격** | 마우스 우클릭 | RT | |
+| **락온 (Lock-on)** | 마우스 휠 클릭 | R 스틱 클릭 | |
+| **대상 전환** | Q / E | D-Pad 좌, 우 / R 스틱 | 락온 상태에서 사용 |
+| **회복** | R | D-Pad 좌 | |
+| **구르기** | Space bar | D-Pad 우 | |
+| **상호작용** | F | D-Pad 상 | 상자, 석상, 상점 등 |
+| **달리기** | LShift | View 버튼 | |
+| **빠른 달리기** | LAlt | D-Pad 하 | |
+| **인벤토리 열기** | TAB | Menu 버튼 | 저주나 룬 등 확인 가능 |
+| **메뉴 열기** | ESC | View 버튼 | |
 
-### 4. 사용법
+## 설치 방법
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
-
-### 5. 기타
-
-추가적인 내용은 자유롭게 작성하세요.
-
-
-## Markdown을 사용하여 내용꾸미기
-
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Support or Contact
-
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
+추후 itch.io 링크 추가 예정
