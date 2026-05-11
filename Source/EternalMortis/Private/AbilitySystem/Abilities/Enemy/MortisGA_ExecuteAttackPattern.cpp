@@ -193,6 +193,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 
 	if (CachedWaitHitTask.IsValid())
 	{
+		MORTIS_LOG("Add HitEvent");
 		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
 		CachedWaitHitTask->ReadyForActivation();
 	}
@@ -281,7 +282,7 @@ void UMortisGA_ExecuteAttackPattern::OnStopWarpUpdateEventReceived(FGameplayEven
 
 void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Payload)
 {
-	// MORTIS_LOG("OnHitEventReceived");
+	MORTIS_LOG("OnHitEventReceived");
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex))
 	{
 		MORTIS_LOG("Attack Pattern or Step is invalid");

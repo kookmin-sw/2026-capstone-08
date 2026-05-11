@@ -10,6 +10,7 @@
 #include "Spawn/MortisRoomEnemySpawner.h"
 #include "Spawn/MortisSpawnSettings.h"
 #include "System/MortisGameState.h"
+#include "System/MortisRunStateSubsystem.h"
 
 void UMortisSpawnSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -25,14 +26,14 @@ void UMortisSpawnSubsystem::InitializeSpawnPoints()
 
 void UMortisSpawnSubsystem::AssignEnemies()
 {
-	MORTIS_LOG("AssignEnemies");
-	AMortisGameState* GS = GetWorld()->GetGameState<AMortisGameState>();;
-	if (!GS)
+	UMortisRunStateSubsystem* RunStateSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMortisRunStateSubsystem>();
+	if (!RunStateSubsystem)
 	{
-		MORTIS_LOG("GameState is null");
+		MORTIS_LOG("RunStateSubsystem is null");
 		return;
 	}
-	int32 CurrentFloor = GS->GetCurrentFloor();
+	int32 CurrentFloor = RunStateSubsystem->GetCurrentFloor();
+	MORTIS_LOG("CurrentFloor = %d", CurrentFloor);
 	
 	const UMortisSpawnSettings* SpawnSettings = GetDefault<UMortisSpawnSettings>();
 	if (!SpawnSettings)

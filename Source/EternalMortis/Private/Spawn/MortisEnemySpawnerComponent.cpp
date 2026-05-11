@@ -1,4 +1,6 @@
 #include "Spawn/MortisEnemySpawnerComponent.h"
+
+#include "MortisDebugHelper.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Spawn/MortisEnemySpawnPointComponent.h"
 
@@ -18,8 +20,14 @@ void UMortisEnemySpawnerComponent::SetEnemiesToSpawn(const TArray<TSubclassOf<AM
 	EnemiesToSpawn = NewEnemiesToSpawn;
 }
 
-TArray<AMortisEnemyCharacter*> UMortisEnemySpawnerComponent::SpawnEnemies() const
+TArray<AMortisEnemyCharacter*> UMortisEnemySpawnerComponent::SpawnEnemies()
 {
+	MORTIS_LOG("Spawn Enemies");
+	if (!bIsBossSpawner && bHasSpawned)
+	{
+		MORTIS_LOG("already Spawned");
+		return TArray<AMortisEnemyCharacter*>();
+	}
 	TArray<UMortisEnemySpawnPointComponent*> SpawnPoints;
 	if (GetOwner())
 	{
@@ -44,6 +52,7 @@ TArray<AMortisEnemyCharacter*> UMortisEnemySpawnerComponent::SpawnEnemies() cons
 			SpawnedEnemies.Add(NewEnemy);
 		}
 	}
+	bHasSpawned = true;
 	return SpawnedEnemies;
 }
 
