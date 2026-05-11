@@ -85,6 +85,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_Turn, "Event.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_HitReact, "Event.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_ImpactReact, "Event.Action.ImpactReact");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Action_Spawn, "Event.Action.Spawn");
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_AttackHit, "Event.Combat.AttackHit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Combo_Next, "Event.Combat.Combo.Next");

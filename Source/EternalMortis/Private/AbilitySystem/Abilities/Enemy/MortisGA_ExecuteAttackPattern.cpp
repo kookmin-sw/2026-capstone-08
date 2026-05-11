@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/Enemy/MortisGA_ExecuteAttackPattern.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "Components/Combat/MortisEnemyCombatComponent.h"
 #include "Items/Weapons/MortisEnemyWeapon.h"
 #include "Items/Weapons/MortisWeaponBase.h"
@@ -16,7 +17,17 @@
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/AbilityTasks/MortisAT_UpdateWarpTarget.h"
+#include "Character/Enemy/MortisEnemyCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Spawn/MortisSpawnConfig.h"
+
+namespace MortisAttackPatternConsts
+{
+	FGameplayTag HitEventTag = MortisGameplayTags::Event_Combat_AttackHit;
+	FGameplayTag ComboTransitionEventTag = MortisGameplayTags::Event_Combat_Combo_Next;
+	FGameplayTag DamageTag = MortisGameplayTags::Data_Enemy_Stat_WeaponDamage;
+	FGameplayTag SpawnTag = MortisGameplayTags::Event_Action_Spawn;
+}
 
 UMortisGA_ExecuteAttackPattern::UMortisGA_ExecuteAttackPattern()
 {
@@ -157,7 +168,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		this, 
 		NAME_None, 
 		Step.Montage, 
-		Step.PlayRate
+		1.f
 	);
 	
 	if (CachedMontageTask.IsValid())
@@ -175,7 +186,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 
 	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this,
-		HitEventTag,
+		MortisAttackPatternConsts::HitEventTag,
 		nullptr,
 		true
 	);
@@ -186,11 +197,27 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		CachedWaitHitTask->ReadyForActivation();
 	}
 
+	if (Step.SpawnConfigClass)
+	{
+		CachedWaitSpawnTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+			this,
+			MortisAttackPatternConsts::SpawnTag,
+			nullptr,
+			false,
+			true
+		);
+		if (CachedWaitSpawnTask.IsValid())
+		{
+			CachedWaitSpawnTask->EventReceived.AddDynamic(this, &ThisClass::OnSpawnEventReceived);
+			CachedWaitSpawnTask->ReadyForActivation();
+		}
+	}
+	
 	if (Step.bUseComboTransitionNotify)
 	{
 		CachedComboTransitionTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 			this,
-			ComboTransitionEventTag,
+			MortisAttackPatternConsts::ComboTransitionEventTag,
 			nullptr,
 			false,
 			true
@@ -231,21 +258,10 @@ void UMortisGA_ExecuteAttackPattern::OnStepFinished(bool bInterrupted)
 	{
 		CachedMotionWarpingComp->RemoveWarpTarget(LastWarpTargetName);
 	}
-	const FMortisAttackPatternStep& Step = AttackPattern->Steps[CurrentStepIndex];
 	CurrentStepIndex++;
 
 	ResetCachedTasks();
-	
-	if (Step.DelayAfterStep > 0.0f)
-	{
-		UAbilityTask_WaitDelay* DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Step.DelayAfterStep);
-		DelayTask->OnFinish.AddDynamic(this, &ThisClass::ExecuteNextStep);
-		DelayTask->ReadyForActivation();
-	}
-	else
-	{
-		ExecuteNextStep();
-	}
+	ExecuteNextStep();
 }
 
 void UMortisGA_ExecuteAttackPattern::OnStopWarpUpdateEventReceived(FGameplayEventData Payload)
@@ -280,22 +296,48 @@ void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Paylo
 
 	AMortisEnemyWeapon* Weapon = CombatComponent->GetCurrentEnemyWeapon();
 	const FMortisWeaponCommonData& WeaponData = Weapon ? Weapon->GetEnemyWeaponData().CommonData : CombatComponent->GetUnarmedData();
-	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, WeaponData, DamageTag);
 	
+	NativeApplyEffectSpecHandleToTarget(Payload.Target, MakeWeaponDamageEffectSpecHandle(WeaponData));
+}
+
+void UMortisGA_ExecuteAttackPattern::OnSpawnEventReceived(FGameplayEventData Payload)
+{
+	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex) || !AttackPattern->Steps[CurrentStepIndex].SpawnConfigClass || !CachedTargetActor.IsValid())
+	{
+		MORTIS_LOG("");
+		return;
+	}
+	UMortisSpawnConfig* SpawnConfig = AttackPattern->Steps[CurrentStepIndex].SpawnConfigClass->GetDefaultObject<UMortisSpawnConfig>();
+	
+	UMortisEnemyCombatComponent* CombatComponent = GetEnemyCombatComponent();
+	if (!CombatComponent)
+	{
+		MORTIS_LOG("Combat Component is invalid");
+		return;
+	}
+	
+	AMortisEnemyWeapon* Weapon = CombatComponent->GetCurrentEnemyWeapon(); 
+	const FMortisWeaponCommonData& WeaponData = Weapon ? Weapon->GetEnemyWeaponData().CommonData : CombatComponent->GetUnarmedData();
+	const FGameplayEffectSpecHandle& SpecHandle = MakeWeaponDamageEffectSpecHandle(WeaponData);
+	
+	SpawnConfig->Execute(GetEnemyCharacterFromActorInfo(), CachedTargetActor.Get(), SpecHandle);
+}
+
+void UMortisGA_ExecuteAttackPattern::OnComboTransitionReceived(FGameplayEventData Payload)
+{
+	OnStepFinished(false);
+}
+
+FGameplayEffectSpecHandle UMortisGA_ExecuteAttackPattern::MakeWeaponDamageEffectSpecHandle(const FMortisWeaponCommonData& WeaponData)
+{
+	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, WeaponData, MortisAttackPatternConsts::DamageTag);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
 		MortisGameplayTags::Data_AttackScale,
 		AttackPattern->Steps[CurrentStepIndex].DamageMultiplier
 	);
 	
-	NativeApplyEffectSpecHandleToTarget(Payload.Target, SpecHandle);
-
-	// UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(const_cast<AActor*>(Payload.Target.Get()), MortisGameplayTags::Event_Action_HitReact, Payload);
-}
-
-void UMortisGA_ExecuteAttackPattern::OnComboTransitionReceived(FGameplayEventData Payload)
-{
-	OnStepFinished(false);
+	return SpecHandle;
 }
 
 void UMortisGA_ExecuteAttackPattern::ResetCachedTasks()
@@ -325,9 +367,20 @@ void UMortisGA_ExecuteAttackPattern::ResetCachedTasks()
 		CachedWaitHitTask.Reset();
 	}
 
+	if (CachedWaitSpawnTask.IsValid())
+	{
+		CachedWaitSpawnTask->EndTask();
+		CachedWaitSpawnTask.Reset();
+	}
+	
 	if (CachedComboTransitionTask.IsValid())
 	{
 		CachedComboTransitionTask->EndTask();
 		CachedComboTransitionTask.Reset();
+	}
+	
+	if (UAnimInstance* AnimInstance = GetEnemyCharacterFromActorInfo()->GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->StopAllMontages(0.25f);
 	}
 }

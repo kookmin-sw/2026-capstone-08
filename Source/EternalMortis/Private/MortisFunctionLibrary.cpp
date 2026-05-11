@@ -11,6 +11,7 @@
 #include "AbilitySystemComponent.h"
 #include "AIController.h"
 #include "GenericTeamAgentInterface.h"
+#include "Components/Combat/MortisCombatComponent.h"
 
 bool UMortisFunctionLibrary::IsTargetPawnHostile(APawn* QueryPawn, APawn* TargetPawn)
 {
@@ -170,4 +171,24 @@ FVector UMortisFunctionLibrary::CalculateWarpTargetLocation(const AActor* SelfAc
 	default:
 		return TargetLocation;
 	}
+}
+
+AMortisWeaponBase* UMortisFunctionLibrary::GetWeaponFromCurrentSlot(const UMeshComponent* MeshComp)
+{
+	if (!MeshComp)
+	{
+		return nullptr;
+	}
+	IMortisCombatInterface* CombatInterface = Cast<IMortisCombatInterface>(MeshComp->GetOwner());
+	if (!CombatInterface)
+	{
+		return nullptr;
+	}
+
+	UMortisCombatComponent* CombatComponent = CombatInterface->GetCombatComponent();
+	if (!CombatComponent)
+	{
+		return nullptr;
+	}
+	return CombatComponent->GetCurrentWeapon();
 }

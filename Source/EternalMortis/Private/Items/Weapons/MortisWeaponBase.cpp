@@ -78,18 +78,46 @@ void AMortisWeaponBase::InitializeCollisions()
 
 void AMortisWeaponBase::StartWeaponTrail()
 {
-	if (!WeaponTrailComponent)
-		return;
-
-	WeaponTrailComponent->Activate(true);
+	if (WeaponTrailComponent && WeaponTrailComponent->GetAsset())
+	{
+		WeaponTrailComponent->Activate(true);
+	}
+	else if (WeaponCascadeTrailComponent && WeaponCascadeTrailComponent->Template)
+	{
+		WeaponCascadeTrailComponent->Activate(true);
+	}
 }
 
 void AMortisWeaponBase::StopWeaponTrail()
 {
-	if (!WeaponTrailComponent)
-		return;
+	if (WeaponTrailComponent)
+	{
+		WeaponTrailComponent->Deactivate();
+	}
+	else if (WeaponCascadeTrailComponent)
+	{
+		WeaponCascadeTrailComponent->Deactivate();
+	}
+}
 
-	WeaponTrailComponent->Deactivate();
+void AMortisWeaponBase::StartWeaponCascadeTrail(FName TrailStartSocketName, FName TrailEndSocketName, float Width)
+{
+	if (WeaponTrailComponent && WeaponTrailComponent->GetAsset())
+	{
+		WeaponTrailComponent->Activate(true);
+	}
+	else if (WeaponCascadeTrailComponent && WeaponCascadeTrailComponent->Template)
+	{
+		WeaponCascadeTrailComponent->BeginTrails(TrailStartSocketName, TrailEndSocketName, ETrailWidthMode_FromCentre, Width);
+	}
+}
+
+void AMortisWeaponBase::EndWeaponCascadeTrail()
+{
+	if (WeaponCascadeTrailComponent && WeaponCascadeTrailComponent->Template)
+	{
+		WeaponCascadeTrailComponent->EndTrails();
+	}
 }
 
 void AMortisWeaponBase::OnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

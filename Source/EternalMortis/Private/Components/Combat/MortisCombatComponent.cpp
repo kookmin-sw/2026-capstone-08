@@ -3,6 +3,7 @@
 
 #include "Components/Combat/MortisCombatComponent.h"
 #include "MortisDebugHelper.h"
+#include "Character/MortisCharacterBase.h"
 #include "Items/Weapons/MortisWeaponBase.h"
 #include "Items/Weapons/MortisShieldBase.h"
 
@@ -174,9 +175,26 @@ AMortisWeaponBase* UMortisCombatComponent::GetCurrentWeapon() const
 {
 	if (!CurrentAttackSlot.IsValid())
 	{
+		// MORTIS_LOG("Current AttackSlot is null");
 		return nullptr;
 	}
 	return WeaponBySlotTag.FindRef(CurrentAttackSlot);
+}
+
+void UMortisCombatComponent::StartCascadeTrails(FName TrailStartSocketName, FName TrailEndSocketName, float Width)
+{
+	if (AMortisCharacterBase* Character = Cast<AMortisCharacterBase>(GetOwner()))
+	{
+		Character->StartCascadeTrails(TrailStartSocketName, TrailEndSocketName, Width);
+	}
+}
+
+void UMortisCombatComponent::EndCascadeTrail()
+{
+	if (AMortisCharacterBase* Character = Cast<AMortisCharacterBase>(GetOwner()))
+	{
+		Character->EndCascadeTrail();
+	}
 }
 
 void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)

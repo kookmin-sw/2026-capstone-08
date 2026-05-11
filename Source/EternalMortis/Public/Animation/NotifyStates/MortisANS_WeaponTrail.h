@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Components/Combat/MortisCombatComponent.h"
 #include "Items/Weapons/MortisWeaponBase.h"
+#include "Types/MortisEnumTypes.h"
 #include "MortisANS_WeaponTrail.generated.h"
 
 /**

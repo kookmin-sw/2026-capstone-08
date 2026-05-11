@@ -22,6 +22,4 @@ public:
 	// 현재 컨셉 (0: 지하감옥, 1: 성 내부, 2: 식인마을)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dungeon")
 	int32 CurrentConcept = 0;
-
-
 };

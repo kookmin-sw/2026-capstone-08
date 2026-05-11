@@ -27,8 +27,8 @@ public:
 	void InitializeSpawnPoints();
 	
 	void AssignEnemies();
-	void AssignEnemiesByFloor(UMortisEnemySpawnerComponent* RoomSpawner, const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget);
-	void AssignEnemiesFromCustomRow(UMortisEnemySpawnerComponent* RoomSpawner, const FDataTableRowHandle& CustomSpawnRowHandle);
+	void AssignEnemiesByFloor(UMortisEnemySpawnerComponent* SpawnerComponent, const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget);
+	void AssignEnemiesFromCustomRow(UMortisEnemySpawnerComponent* SpawnerComponent, const FDataTableRowHandle& CustomSpawnRowHandle);
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterSpawner(UMortisEnemySpawnerComponent* NewSpawner);

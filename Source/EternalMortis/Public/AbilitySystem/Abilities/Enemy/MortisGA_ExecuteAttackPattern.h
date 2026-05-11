@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Enemy/MortisEnemyGameplayAbility.h"
+#include "Items/Weapons/MortisEnemyWeapon.h"
 #include "Types/MortisStructTypes.h"
 #include "MortisGA_ExecuteAttackPattern.generated.h"
 
@@ -30,15 +31,6 @@ protected:
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Damage")
-	FGameplayTag HitEventTag = MortisGameplayTags::Event_Combat_AttackHit;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Combat")
-	FGameplayTag ComboTransitionEventTag = MortisGameplayTags::Event_Combat_Combo_Next;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Damage")
-	FGameplayTag DamageTag = MortisGameplayTags::Data_Enemy_Stat_WeaponDamage;
 	
 	UFUNCTION()
 	void ExecuteNextStep();
@@ -62,6 +54,9 @@ protected:
 	void OnHitEventReceived(FGameplayEventData Payload);
 
 	UFUNCTION()
+	void OnSpawnEventReceived(FGameplayEventData Payload);
+	
+	UFUNCTION()
 	void OnComboTransitionReceived(FGameplayEventData Payload);
 	
 private:
@@ -77,8 +72,9 @@ private:
 	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedWarpStopTask;
 	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedWaitHitTask; 
 	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedComboTransitionTask; 
-
+	TWeakObjectPtr<UAbilityTask_WaitGameplayEvent> CachedWaitSpawnTask;
 	FName LastWarpTargetName = NAME_None;
 
+	FGameplayEffectSpecHandle MakeWeaponDamageEffectSpecHandle(const FMortisWeaponCommonData& WeaponData);
 	void ResetCachedTasks();
 };

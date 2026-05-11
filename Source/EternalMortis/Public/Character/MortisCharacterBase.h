@@ -10,6 +10,7 @@
 #include "Interfaces/MortisCombatInterface.h"
 #include "MortisCharacterBase.generated.h"
 
+class UNiagaraComponent;
 class UMotionWarpingComponent;
 class UMortisAbilitySystemComponent;
 class UMortisAttributeSet;
@@ -53,8 +54,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MotionWarping")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FX")
+	TObjectPtr<UNiagaraComponent> TrailNiagaraComponent;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FX")
+	TObjectPtr<UParticleSystemComponent> TrailCascadeComponent;
+
 public:
 	FORCEINLINE UMortisAbilitySystemComponent* GetMortisAbilitySystemComponent() const { return MortisAbilitySystemComponent; }
 	FORCEINLINE UMortisAttributeSet* GetMortisAttributeSet() const { return MortisAttributeSet; }
 	FORCEINLINE UMotionWarpingComponent* GetMotionWarpingComponent() const { return MotionWarpingComponent; }
+	FORCEINLINE UNiagaraComponent* GetTrailNiagaraComponent() const { return TrailNiagaraComponent; }
+	FORCEINLINE UParticleSystemComponent* GetTrailCascadeComponent() const { return TrailCascadeComponent; }
+	
+	void StartCascadeTrails(FName TrailStartSocketName, FName TrailEndSocketName, float Width);
+	void EndCascadeTrail();
 };

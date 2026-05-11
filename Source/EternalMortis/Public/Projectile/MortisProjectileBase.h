@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayEffectTypes.h"
+#include "MortisDebugHelper.h"
+#include "Types/MortisStructTypes.h"
 #include "MortisProjectileBase.generated.h"
 
+struct FGameplayEventData;
 class UBoxComponent;
 class UNiagaraComponent;
 class UProjectileMovementComponent;
@@ -28,26 +31,32 @@ public:
 	AMortisProjectileBase();
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Projectile")
+	void InitializeProjectile(const FGameplayEffectSpecHandle& DamageSpecHandle);
+	
+	UFUNCTION(BlueprintCallable, Category = "Mortis|Projectile")
 	void LaunchProjectile();
 
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Projectile")
 	void LaunchProjectileInDirection(const FVector& InDirection);
-
-	UFUNCTION(BlueprintCallable, Category = "Mortis|Projectile|Damage")
-	void SetProjectileDamageEffectSpecHandle(FGameplayEffectSpecHandle InSpecHandle);
+	//
+	// UFUNCTION(BlueprintCallable, Category = "Mortis|Projectile|Damage")
+	// void SetProjectileDamageEffectSpecHandle(FGameplayEffectSpecHandle InSpecHandle);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Projectile")
 	float DestroyDelayAfterImpact = 0.f;
-
+	
 protected:
 	virtual void BeginPlay() override;
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Projectile")
 	TObjectPtr<UBoxComponent> ProjectileCollisionBox;
-
+	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Projectile")
 	TObjectPtr<UNiagaraComponent> ProjectileNiagaraComponent;
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Projectile")
+	TObjectPtr<UParticleSystemComponent> ProjectileCascadeComponent;	
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Projectile")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComp;
@@ -106,7 +115,8 @@ private:
 private:
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> OverlappedActors;
-
+	
+	bool bHasInitialized = false;
 	bool bHasLaunched = false;
 	bool bHasImpacted = false;
 };

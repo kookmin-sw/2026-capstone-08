@@ -30,7 +30,7 @@ AMortisWeaponBase* UMortisANS_WeaponTrail::GetEquippedWeapon(USkeletalMeshCompon
 	if (!Owner)
 		return nullptr;
 
-	UMortisCombatComponent* CombatComponent = Owner->FindComponentByClass<UMortisCombatComponent>();
+	UMortisCombatComponent* CombatComponent = Owner->GetCombatComponent();
 
 	if (!CombatComponent)
 		return nullptr;

@@ -6,6 +6,8 @@
 #include "NiagaraComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "MortisDebugHelper.h"
 
 AMortisProjectileBase::AMortisProjectileBase()
 {
@@ -19,12 +21,12 @@ AMortisProjectileBase::AMortisProjectileBase()
 	ProjectileCollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	ProjectileCollisionBox->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
 	ProjectileCollisionBox->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-
-	ProjectileCollisionBox->OnComponentHit.AddUniqueDynamic(this, &ThisClass::OnProjectileHit);
-	ProjectileCollisionBox->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnProjectileBeginOverlap);
-
+	
 	ProjectileNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ProjectileNiagaraComponent"));
 	ProjectileNiagaraComponent->SetupAttachment(GetRootComponent());
+
+	ProjectileCascadeComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ProjectileCascadeComponent"));
+	ProjectileCascadeComponent->SetupAttachment(GetRootComponent());
 
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
 	ProjectileMovementComp->InitialSpeed = InitialProjectileSpeed;
@@ -32,14 +34,42 @@ AMortisProjectileBase::AMortisProjectileBase()
 	ProjectileMovementComp->ProjectileGravityScale = 0.f;
 	ProjectileMovementComp->bRotationFollowsVelocity = true;
 	ProjectileMovementComp->bAutoActivate = false;
+}
 
-	InitialLifeSpan = LifeTime;
+void AMortisProjectileBase::InitializeProjectile(const FGameplayEffectSpecHandle& DamageSpecHandle)
+{
+	if (bHasInitialized)
+	{
+		return;
+	}
+	
+	ProjectileDamageEffectSpecHandle = DamageSpecHandle;
+
+	ProjectileCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	
+	if (bLaunchOnBeginPlay)
+	{
+		LaunchProjectile();
+	}
+	
+	if (bIgnoreInstigator && GetInstigator())
+	{
+		ProjectileCollisionBox->IgnoreActorWhenMoving(GetInstigator(), true);
+	}
+	
+	bHasInitialized = true;
 }
 
 void AMortisProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	InitialLifeSpan = LifeTime;
+	
+	ProjectileCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ProjectileCollisionBox->OnComponentHit.AddUniqueDynamic(this, &ThisClass::OnProjectileHit);
+	ProjectileCollisionBox->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnProjectileBeginOverlap);
+	
 	ProjectileMovementComp->InitialSpeed = InitialProjectileSpeed;
 	ProjectileMovementComp->MaxSpeed = MaxProjectileSpeed;
 
@@ -53,15 +83,21 @@ void AMortisProjectileBase::BeginPlay()
 	{
 		ProjectileCollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
-
-	if (bLaunchOnBeginPlay)
+	
+	if (ProjectileDamageEffectSpecHandle.IsValid())
 	{
-		LaunchProjectile();
+		InitializeProjectile(ProjectileDamageEffectSpecHandle);
 	}
 }
 
 void AMortisProjectileBase::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (!Cast<APawn>(OtherActor))
+	{
+		HandleProjectileImpact(OtherActor, Hit);
+		return;
+	}
+	
 	if (ProjectileDamagePolicy != EMortisProjectileDamagePolicy::OnHit)
 		return;
 
@@ -91,9 +127,6 @@ void AMortisProjectileBase::HandleProjectileImpact(AActor* OtherActor, const FHi
 	if (!OtherActor || OtherActor == this)
 		return;
 
-	if (bIgnoreInstigator && OtherActor == GetInstigator())
-		return;
-
 	if (bHasImpacted)
 		return;
 
@@ -115,7 +148,13 @@ void AMortisProjectileBase::HandleProjectileImpact(AActor* OtherActor, const FHi
 	Payload.Target = HitPawn;
 	Payload.OptionalObject = this;
 
+	if (!ProjectileDamageEffectSpecHandle.IsValid())
+	{
+		MORTIS_LOG("SpecHandle is invalid");
+	}
 	const bool bShouldDestroy = BP_HandleProjectileImpact(HitPawn, HitResult, Payload);
+	
+	// MORTIS_LOG("collide with %s", *OtherActor->GetActorNameOrLabel());
 
 	if (bShouldDestroy && bDestroyOnImpact)
 		PrepareDestroyAfterImpact();
@@ -174,7 +213,7 @@ void AMortisProjectileBase::LaunchProjectileInDirection(const FVector& InDirecti
 	bHasLaunched = true;
 }
 
-void AMortisProjectileBase::SetProjectileDamageEffectSpecHandle(FGameplayEffectSpecHandle InSpecHandle)
-{
-	ProjectileDamageEffectSpecHandle = InSpecHandle;
-}
+// void AMortisProjectileBase::SetProjectileDamageEffectSpecHandle(FGameplayEffectSpecHandle InSpecHandle)
+// {
+// 	ProjectileDamageEffectSpecHandle = InSpecHandle;
+// }

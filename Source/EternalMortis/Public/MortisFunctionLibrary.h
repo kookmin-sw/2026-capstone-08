@@ -10,6 +10,7 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "MortisFunctionLibrary.generated.h"
 
+class AMortisWeaponBase;
 class UMortisAbilitySystemComponent;
 class AMortisAIController;
 class AMortisEnemyCharacter;
@@ -58,4 +59,6 @@ public:
 
 	/* Motion Warping */
 	static FVector CalculateWarpTargetLocation(const AActor* SelfActor, const AActor* TargetActor, EMortisWarpTargetMode WarpTargetMode, float DesiredDistance);
+	
+	static AMortisWeaponBase* GetWeaponFromCurrentSlot(const UMeshComponent* MeshComp);
 };
