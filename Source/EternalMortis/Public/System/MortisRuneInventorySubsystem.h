@@ -49,6 +49,8 @@ public:
     FMortisOnCoolTimeUpdated OnCoolTimeUpdated;
     UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
     FMortisOnStackUpdated OnStackUpdated;
+	UPROPERTY(BlueprintAssignable, Category = "Mortis|Rune")
+	FMortisOnStackUpdated OnIsActiveUpdated;
 
     // 룬 추가 | 장착 | 제거
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
@@ -70,7 +72,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
     void SetSlotCount(const int32 NewCount);
 
-    // 쿨타임, 지속시간, 스택 갱신
+    // 쿨타임, 지속시간, 스택, 활성화 갱신
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
     void UpdateCooldown(const FGameplayTag& SetTag, float CooldownStartTime, float CooldownEndTime, int32 Level);
 
@@ -79,6 +81,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
     void UpdateStack(const FGameplayTag& SetTag, int32 Delta, int32 Level);
+	
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
+    void UpdateIsActive(const FGameplayTag& SetTag, bool isActive, int32 Level);
+    
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
     void SetStack(const FGameplayTag& SetTag, int32 StackCount, int32 Level);
 

@@ -50,6 +50,9 @@ public:
 	const FMortisExperienceRow* FindExperienceRow(FGameplayTag ExperienceTag) const;
 	const FMortisExperienceRow* FindSelectedExperienceRow() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Mortis|MetaProgression|Debug")
+	void DebugClearUnlockedExperiences();
+
 	// 룬 슬롯 확장
 	UFUNCTION(BlueprintCallable, Category = "Mortis|MetaProgression")
 	bool UpgradeRuneSlot();
@@ -59,6 +62,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|MetaProgression")
 	int32 GetMaxRuneSlotCount() const { return MaxRuneSlotCount; }
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|MetaProgression")
+	bool GetNextRuneSlotUpgradeCost(int32& OutCost) const;
 
 	// 튜토리얼
 	UFUNCTION(BlueprintCallable, Category = "Mortis|MetaProgression")

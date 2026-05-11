@@ -62,7 +62,7 @@ void UMortisRuneSetEntryWidget::RefreshVisual()
         Border_ItemBg->SetBrushColor(BaseColor);
     }
 
-    SetRenderOpacity(OwnedCount > 0 ? 1.0f : 0.45f);
+    SetRenderOpacity((OwnedCount > 0 || bSelected) ? 1.0f : 0.45f);
 }
 
 void UMortisRuneSetEntryWidget::HandleRootButtonClicked()

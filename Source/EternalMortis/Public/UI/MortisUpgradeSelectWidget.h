@@ -12,6 +12,7 @@ class UHorizontalBox;
 class UImage;
 class UTextBlock;
 class UTexture2D;
+class UUniformGridPanel;
 class UMortisMetaProgressionSubsystem;
 class UMortisUpgradeIconEntryWidget;
 
@@ -67,7 +68,10 @@ protected:
 	void HandleEntryClicked(FGameplayTag ClickedExperienceTag, bool bNoUpgradeEntry);
 
 	UFUNCTION()
-	void HandleActionClicked();
+	void HandleUnlockUpgradeClicked();
+
+	UFUNCTION()
+	void HandleStartGameClicked();
 
 	UFUNCTION()
 	void HandleMemoryFragmentsChanged(int32 NewValue);
@@ -98,16 +102,25 @@ protected:
 	TObjectPtr<UTextBlock> TXT_CostValue = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
-	TObjectPtr<UButton> BTN_Action = nullptr;
+	TObjectPtr<UButton> BTN_UnlockUpgrade = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
-	TObjectPtr<UTextBlock> TXT_Action = nullptr;
+	TObjectPtr<UTextBlock> TXT_UnlockUpgrade = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
-	TObjectPtr<UHorizontalBox> HB_UpgradeEntries = nullptr;
+	TObjectPtr<UButton> BTN_StartGame = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> TXT_StartGame = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UUniformGridPanel> UGP_UpgradeEntries = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|MetaProgression", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UMortisUpgradeIconEntryWidget> EntryWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|MetaProgression", meta = (AllowPrivateAccess = "true", ClampMin = "1"))
+	int32 UpgradeGridColumns = 3;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|MetaProgression|No Upgrade", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UTexture2D> NoUpgradeIcon = nullptr;
@@ -166,7 +179,7 @@ private:
 	void RebuildEntryList();
 	void AddNoUpgradeEntryData();
 	void AddExperienceEntryData();
-	UMortisUpgradeIconEntryWidget* CreateEntryWidget(const FMortisUpgradeSelectEntryData& EntryData);
+	UMortisUpgradeIconEntryWidget* CreateEntryWidget(const FMortisUpgradeSelectEntryData& EntryData, int32 EntryIndex);
 	void SelectDefaultEntry();
 	bool SetActiveEntry(FGameplayTag ExperienceTag, bool bNoUpgradeEntry);
 	bool FindEntryData(FGameplayTag ExperienceTag, bool bNoUpgradeEntry, FMortisUpgradeSelectEntryData& OutEntryData) const;
@@ -176,8 +189,9 @@ private:
 	int32 GetMemoryFragments() const;
 	void RefreshEntryStates();
 	void RefreshDetailPanel();
-	void RefreshActionButton();
+	void RefreshActionButtons();
 	bool TryUnlockActiveEntry();
 	void StartRunWithActiveEntry();
+	void PrintStartRequestPlaceholder(FGameplayTag SelectedExperienceTag, bool bNoUpgrade) const;
 	void ClearDetailPanel();
 };

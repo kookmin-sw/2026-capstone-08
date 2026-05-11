@@ -175,6 +175,9 @@ public:
 	bool FindRuneBonusValueBySymbol(EMortisRuneSymbol SymbolType, float& OutBonusValue) const;
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Inventory|Status")
+	bool BuildAttributeTextByName(FName AttributeName, const FText LeftText, FText& OutLeftText, FText& OutRightText) const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Inventory|Status")
 	bool BuildAttributeTextByRuneSymbol(EMortisRuneSymbol SymbolType, const FText LeftText, FText& OutLeftText, FText& OutRightText) const;
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Inventory|Status")

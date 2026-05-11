@@ -1,7 +1,9 @@
 #include "UI/MortisRuneCardWidget.h"
 
+#include "Components/Border.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
+#include "Components/SizeBox.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 
@@ -29,6 +31,7 @@ void UMortisRuneCardWidget::NativeConstruct()
         Button_Root->OnClicked.AddDynamic(this, &ThisClass::HandleRootButtonClicked);
     }
 
+    ApplyCardSizeOverride();
     RefreshVisualState();
 }
 
@@ -39,6 +42,7 @@ void UMortisRuneCardWidget::ClearRuneData()
     DisplayIconTint = FLinearColor::White;
     bSelected = false;
     bEquipped = false;
+    SlotState = EMortisRuneCardSlotState::Rune;
 }
 
 void UMortisRuneCardWidget::SetRuneInstance(const FMortisRuneInstance& InRuneInstance)
@@ -77,12 +81,27 @@ void UMortisRuneCardWidget::SetEquipped(bool bInEquipped)
     bEquipped = bInEquipped;
 }
 
+void UMortisRuneCardWidget::SetSlotState(EMortisRuneCardSlotState InSlotState)
+{
+    SlotState = InSlotState;
+}
+
+void UMortisRuneCardWidget::SetCardSize(const FVector2D& InCardSize)
+{
+    CardSizeOverride.X = FMath::Max(0.0f, InCardSize.X);
+    CardSizeOverride.Y = FMath::Max(0.0f, InCardSize.Y);
+    bHasCardSizeOverride = CardSizeOverride.X > 0.0f && CardSizeOverride.Y > 0.0f;
+
+    ApplyCardSizeOverride();
+}
+
 void UMortisRuneCardWidget::RefreshVisualState()
 {
     CurrentVisualData = FMortisRuneCardVisualData();
     CurrentVisualData.GlyphScale = GlyphScale;
     CurrentVisualData.bSelected = bSelected;
     CurrentVisualData.bEquipped = bEquipped;
+    CurrentVisualData.SlotState = SlotState;
 
     if (!HasValidRuneData())
     {
@@ -93,11 +112,45 @@ void UMortisRuneCardWidget::RefreshVisualState()
         CurrentPresentationStyle.GlyphGlowTint = FLinearColor::Transparent;
         CurrentPresentationStyle.GlyphGlowOpacity = 0.0f;
 
-        CurrentVisualData.CardBackgroundTint = FLinearColor::Transparent;
-        CurrentVisualData.FrameTint = FLinearColor::Transparent;
+        switch (SlotState)
+        {
+        case EMortisRuneCardSlotState::EmptyUnlocked:
+            CurrentVisualData.CardBackgroundTint = FLinearColor(0.08f, 0.08f, 0.10f, 0.68f);
+            CurrentVisualData.FrameTint = FLinearColor(0.34f, 0.34f, 0.40f, EmptySlotFrameAlpha);
+            break;
+
+        case EMortisRuneCardSlotState::Locked:
+            CurrentVisualData.CardBackgroundTint = FLinearColor(0.035f, 0.035f, 0.045f, 0.82f);
+            CurrentVisualData.FrameTint = FLinearColor(0.16f, 0.16f, 0.18f, LockedSlotFrameAlpha);
+            break;
+
+        case EMortisRuneCardSlotState::Rune:
+        default:
+            CurrentVisualData.CardBackgroundTint = FLinearColor::Transparent;
+            CurrentVisualData.FrameTint = FLinearColor::Transparent;
+            break;
+        }
+
         CurrentVisualData.CoreTint = FLinearColor::Transparent;
         CurrentVisualData.GlyphGlowTint = FLinearColor::Transparent;
         CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
+
+        if (Border_CardBg)
+        {
+            Border_CardBg->SetBrushColor(CurrentVisualData.CardBackgroundTint);
+        }
+
+        if (Border_RuneFrame)
+        {
+            Border_RuneFrame->SetBrushColor(CurrentVisualData.FrameTint);
+        }
+
+        if (Image_RuneCore)
+        {
+            Image_RuneCore->SetRenderOpacity(0.0f);
+        }
+
+        SetRenderOpacity(SlotState == EMortisRuneCardSlotState::Locked ? 0.55f : 1.0f);
 
         UpdateRuneCoreMaterial();
         ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
@@ -120,6 +173,23 @@ void UMortisRuneCardWidget::RefreshVisualState()
     CurrentVisualData.GlyphGlowOpacity = DisplayIcon ? (CurrentPresentationStyle.GlyphGlowOpacity * ResolveGlowOpacityMultiplier()) : 0.0f;
     CurrentVisualData.GradeImageOpacity = CurrentVisualData.RuneGradeImage ? ResolveGradeImageOpacity() : 0.0f;
     CurrentVisualData.RunePresentationStyle = CurrentPresentationStyle;
+
+    if (Border_CardBg)
+    {
+        Border_CardBg->SetBrushColor(CurrentVisualData.CardBackgroundTint);
+    }
+
+    if (Border_RuneFrame)
+    {
+        Border_RuneFrame->SetBrushColor(CurrentVisualData.FrameTint);
+    }
+
+    if (Image_RuneCore)
+    {
+        Image_RuneCore->SetRenderOpacity(1.0f);
+    }
+
+    SetRenderOpacity(1.0f);
 
     UpdateRuneCoreMaterial();
     ReceiveRunePresentationStyleChanged(CurrentPresentationStyle);
@@ -225,7 +295,10 @@ float UMortisRuneCardWidget::ResolveGradeImageOpacity() const
 
 void UMortisRuneCardWidget::HandleRootButtonClicked()
 {
-    OnRuneCardClicked.Broadcast(RuneInstance);
+    if (HasValidRuneData())
+    {
+        OnRuneCardClicked.Broadcast(RuneInstance);
+    }
 }
 
 UTexture2D* UMortisRuneCardWidget::ResolveRuneGradeImage(EMortisRuneGrade InGrade) const
@@ -250,6 +323,28 @@ UTexture2D* UMortisRuneCardWidget::ResolveRuneGradeImage(EMortisRuneGrade InGrad
 bool UMortisRuneCardWidget::HasValidRuneData() const
 {
     return RuneInstance.InstanceId.IsValid();
+}
+
+void UMortisRuneCardWidget::ApplyCardSizeOverride()
+{
+    if (!bHasCardSizeOverride)
+    {
+        return;
+    }
+
+    USizeBox* TargetSizeBox = SizeBox_Root;
+    if (!TargetSizeBox)
+    {
+        TargetSizeBox = Cast<USizeBox>(GetRootWidget());
+    }
+
+    if (!TargetSizeBox)
+    {
+        return;
+    }
+
+    TargetSizeBox->SetWidthOverride(CardSizeOverride.X);
+    TargetSizeBox->SetHeightOverride(CardSizeOverride.Y);
 }
 
 UMaterialInstanceDynamic* UMortisRuneCardWidget::ResolveRuneCoreMaterial()

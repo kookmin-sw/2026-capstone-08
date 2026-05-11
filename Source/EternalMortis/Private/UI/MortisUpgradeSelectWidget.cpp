@@ -4,8 +4,10 @@
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/UniformGridPanel.h"
 #include "Engine/DataTable.h"
 #include "Engine/GameInstance.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Styling/SlateBrush.h"
 #include "System/MortisGameDataSettings.h"
 #include "System/MortisMetaProgressionSubsystem.h"
@@ -22,6 +24,16 @@ void UMortisUpgradeSelectWidget::NativeConstruct()
 	if (TXT_CostLabel)
 	{
 		TXT_CostLabel->SetText(CostLabelText);
+	}
+
+	if (TXT_UnlockUpgrade)
+	{
+		TXT_UnlockUpgrade->SetText(UnlockActionText);
+	}
+
+	if (TXT_StartGame)
+	{
+		TXT_StartGame->SetText(StartActionText);
 	}
 
 	RefreshData();
@@ -42,14 +54,20 @@ void UMortisUpgradeSelectWidget::RefreshData()
 	SelectDefaultEntry();
 	RefreshEntryStates();
 	RefreshDetailPanel();
-	RefreshActionButton();
+	RefreshActionButtons();
 }
 
 void UMortisUpgradeSelectWidget::RefreshFocus()
 {
-	if (BTN_Action && BTN_Action->GetIsEnabled())
+	if (BTN_StartGame && BTN_StartGame->GetIsEnabled())
 	{
-		BTN_Action->SetKeyboardFocus();
+		BTN_StartGame->SetKeyboardFocus();
+		return;
+	}
+
+	if (BTN_UnlockUpgrade && BTN_UnlockUpgrade->GetIsEnabled())
+	{
+		BTN_UnlockUpgrade->SetKeyboardFocus();
 	}
 }
 
@@ -69,26 +87,20 @@ void UMortisUpgradeSelectWidget::HandleEntryClicked(FGameplayTag ClickedExperien
 	SetActiveEntry(ClickedExperienceTag, bNoUpgradeEntry);
 }
 
-void UMortisUpgradeSelectWidget::HandleActionClicked()
+void UMortisUpgradeSelectWidget::HandleUnlockUpgradeClicked()
 {
-	if (!bHasActiveEntry)
-	{
-		return;
-	}
-
-	if (IsEntryUnlocked(ActiveEntryData))
-	{
-		StartRunWithActiveEntry();
-		return;
-	}
-
 	TryUnlockActiveEntry();
+}
+
+void UMortisUpgradeSelectWidget::HandleStartGameClicked()
+{
+	StartRunWithActiveEntry();
 }
 
 void UMortisUpgradeSelectWidget::HandleMemoryFragmentsChanged(int32 NewValue)
 {
 	RefreshDetailPanel();
-	RefreshActionButton();
+	RefreshActionButtons();
 }
 
 void UMortisUpgradeSelectWidget::InitializeReferences()
@@ -107,18 +119,29 @@ void UMortisUpgradeSelectWidget::InitializeReferences()
 
 void UMortisUpgradeSelectWidget::BindWidgetEvents()
 {
-	if (BTN_Action)
+	if (BTN_UnlockUpgrade)
 	{
-		BTN_Action->OnClicked.RemoveDynamic(this, &ThisClass::HandleActionClicked);
-		BTN_Action->OnClicked.AddDynamic(this, &ThisClass::HandleActionClicked);
+		BTN_UnlockUpgrade->OnClicked.RemoveDynamic(this, &ThisClass::HandleUnlockUpgradeClicked);
+		BTN_UnlockUpgrade->OnClicked.AddDynamic(this, &ThisClass::HandleUnlockUpgradeClicked);
+	}
+
+	if (BTN_StartGame)
+	{
+		BTN_StartGame->OnClicked.RemoveDynamic(this, &ThisClass::HandleStartGameClicked);
+		BTN_StartGame->OnClicked.AddDynamic(this, &ThisClass::HandleStartGameClicked);
 	}
 }
 
 void UMortisUpgradeSelectWidget::UnbindWidgetEvents()
 {
-	if (BTN_Action)
+	if (BTN_UnlockUpgrade)
 	{
-		BTN_Action->OnClicked.RemoveDynamic(this, &ThisClass::HandleActionClicked);
+		BTN_UnlockUpgrade->OnClicked.RemoveDynamic(this, &ThisClass::HandleUnlockUpgradeClicked);
+	}
+
+	if (BTN_StartGame)
+	{
+		BTN_StartGame->OnClicked.RemoveDynamic(this, &ThisClass::HandleStartGameClicked);
 	}
 }
 
@@ -143,9 +166,9 @@ void UMortisUpgradeSelectWidget::UnbindMetaDelegates()
 
 void UMortisUpgradeSelectWidget::RebuildEntryList()
 {
-	if (HB_UpgradeEntries)
+	if (UGP_UpgradeEntries)
 	{
-		HB_UpgradeEntries->ClearChildren();
+		UGP_UpgradeEntries->ClearChildren();
 	}
 
 	CachedEntries.Reset();
@@ -154,14 +177,14 @@ void UMortisUpgradeSelectWidget::RebuildEntryList()
 	AddNoUpgradeEntryData();
 	AddExperienceEntryData();
 
-	if (!HB_UpgradeEntries || !EntryWidgetClass)
+	if (!UGP_UpgradeEntries || !EntryWidgetClass)
 	{
 		return;
 	}
 
-	for (const FMortisUpgradeSelectEntryData& EntryData : CachedEntries)
+	for (int32 EntryIndex = 0; EntryIndex < CachedEntries.Num(); ++EntryIndex)
 	{
-		CreateEntryWidget(EntryData);
+		CreateEntryWidget(CachedEntries[EntryIndex], EntryIndex);
 	}
 }
 
@@ -206,9 +229,9 @@ void UMortisUpgradeSelectWidget::AddExperienceEntryData()
 	}
 }
 
-UMortisUpgradeIconEntryWidget* UMortisUpgradeSelectWidget::CreateEntryWidget(const FMortisUpgradeSelectEntryData& EntryData)
+UMortisUpgradeIconEntryWidget* UMortisUpgradeSelectWidget::CreateEntryWidget(const FMortisUpgradeSelectEntryData& EntryData, int32 EntryIndex)
 {
-	if (!EntryWidgetClass || !HB_UpgradeEntries)
+	if (!EntryWidgetClass || !UGP_UpgradeEntries)
 	{
 		return nullptr;
 	}
@@ -231,7 +254,11 @@ UMortisUpgradeIconEntryWidget* UMortisUpgradeSelectWidget::CreateEntryWidget(con
 	EntryWidget->OnUpgradeEntryClicked.RemoveDynamic(this, &ThisClass::HandleEntryClicked);
 	EntryWidget->OnUpgradeEntryClicked.AddDynamic(this, &ThisClass::HandleEntryClicked);
 
-	HB_UpgradeEntries->AddChild(EntryWidget);
+	const int32 SafeColumnCount = FMath::Max(1, UpgradeGridColumns);
+	const int32 Row = EntryIndex / SafeColumnCount;
+	const int32 Column = EntryIndex % SafeColumnCount;
+
+	UGP_UpgradeEntries->AddChildToUniformGrid(EntryWidget, Row, Column);
 	CreatedEntryWidgets.Add(EntryWidget);
 
 	return EntryWidget;
@@ -280,7 +307,7 @@ bool UMortisUpgradeSelectWidget::SetActiveEntry(FGameplayTag ExperienceTag, bool
 
 	RefreshEntryStates();
 	RefreshDetailPanel();
-	RefreshActionButton();
+	RefreshActionButtons();
 
 	return true;
 }
@@ -438,31 +465,56 @@ void UMortisUpgradeSelectWidget::RefreshDetailPanel()
 	}
 }
 
-void UMortisUpgradeSelectWidget::RefreshActionButton()
+void UMortisUpgradeSelectWidget::RefreshActionButtons()
 {
-	if (!BTN_Action)
-	{
-		return;
-	}
-
 	if (!bHasActiveEntry)
 	{
-		BTN_Action->SetIsEnabled(false);
-		if (TXT_Action)
+		if (BTN_UnlockUpgrade)
 		{
-			TXT_Action->SetText(StartActionText);
+			BTN_UnlockUpgrade->SetVisibility(ESlateVisibility::Collapsed);
+			BTN_UnlockUpgrade->SetIsEnabled(false);
+		}
+
+		if (BTN_StartGame)
+		{
+			BTN_StartGame->SetIsEnabled(false);
+		}
+
+		if (TXT_UnlockUpgrade)
+		{
+			TXT_UnlockUpgrade->SetText(UnlockActionText);
+		}
+
+		if (TXT_StartGame)
+		{
+			TXT_StartGame->SetText(StartActionText);
 		}
 		return;
 	}
 
 	const bool bUnlocked = IsEntryUnlocked(ActiveEntryData);
-	const bool bCanUseAction = bUnlocked || CanUnlockEntry(ActiveEntryData);
+	const bool bCanUnlock = CanUnlockEntry(ActiveEntryData);
+	const bool bShowUnlock = !ActiveEntryData.bNoUpgradeEntry && !bUnlocked;
 
-	BTN_Action->SetIsEnabled(bCanUseAction);
-
-	if (TXT_Action)
+	if (BTN_UnlockUpgrade)
 	{
-		TXT_Action->SetText(bUnlocked ? StartActionText : UnlockActionText);
+		BTN_UnlockUpgrade->SetVisibility(bShowUnlock ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+		BTN_UnlockUpgrade->SetIsEnabled(bShowUnlock && bCanUnlock);
+	}
+
+	if (BTN_StartGame)
+	{
+		BTN_StartGame->SetIsEnabled(bUnlocked);
+	}
+
+	if (TXT_UnlockUpgrade)
+	{
+		TXT_UnlockUpgrade->SetText(UnlockActionText);
+	}
+
+	if (TXT_StartGame)
+	{
+		TXT_StartGame->SetText(StartActionText);
 	}
 }
 
@@ -476,13 +528,13 @@ bool UMortisUpgradeSelectWidget::TryUnlockActiveEntry()
 	if (!MetaSubsystemRef->UnlockExperience(ActiveEntryData.ExperienceTag))
 	{
 		RefreshDetailPanel();
-		RefreshActionButton();
+		RefreshActionButtons();
 		return false;
 	}
 
 	RefreshEntryStates();
 	RefreshDetailPanel();
-	RefreshActionButton();
+	RefreshActionButtons();
 
 	return true;
 }
@@ -496,6 +548,7 @@ void UMortisUpgradeSelectWidget::StartRunWithActiveEntry()
 
 	if (ActiveEntryData.bNoUpgradeEntry)
 	{
+		PrintStartRequestPlaceholder(FGameplayTag(), true);
 		OnRunStartRequested.Broadcast(FGameplayTag(), true);
 		return;
 	}
@@ -507,8 +560,25 @@ void UMortisUpgradeSelectWidget::StartRunWithActiveEntry()
 
 	if (MetaSubsystemRef->SelectExperience(ActiveEntryData.ExperienceTag))
 	{
+		PrintStartRequestPlaceholder(ActiveEntryData.ExperienceTag, false);
 		OnRunStartRequested.Broadcast(ActiveEntryData.ExperienceTag, false);
 	}
+}
+
+void UMortisUpgradeSelectWidget::PrintStartRequestPlaceholder(FGameplayTag SelectedExperienceTag, bool bNoUpgrade) const
+{
+	const FString PrintMessage = bNoUpgrade
+		? TEXT("Start Requested: No Upgrade")
+		: FString::Printf(TEXT("Start Requested: %s"), *SelectedExperienceTag.ToString());
+
+	UKismetSystemLibrary::PrintString(
+		this,
+		PrintMessage,
+		true,
+		true,
+		FLinearColor(0.0f, 1.0f, 1.0f, 1.0f),
+		2.0f
+	);
 }
 
 void UMortisUpgradeSelectWidget::ClearDetailPanel()
@@ -539,8 +609,14 @@ void UMortisUpgradeSelectWidget::ClearDetailPanel()
 		HB_Cost->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	if (BTN_Action)
+	if (BTN_UnlockUpgrade)
 	{
-		BTN_Action->SetIsEnabled(false);
+		BTN_UnlockUpgrade->SetVisibility(ESlateVisibility::Collapsed);
+		BTN_UnlockUpgrade->SetIsEnabled(false);
+	}
+
+	if (BTN_StartGame)
+	{
+		BTN_StartGame->SetIsEnabled(false);
 	}
 }

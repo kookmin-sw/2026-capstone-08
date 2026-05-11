@@ -1,6 +1,5 @@
 #include "UI/MortisInventoryRunePageWidget.h"
 
-#include "Components/Button.h"
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
@@ -11,6 +10,7 @@
 #include "System/MortisRuneDatabaseSubsystem.h"
 #include "System/MortisGameDataSettings.h"
 #include "System/MortisRuneInventorySubsystem.h"
+#include "UI/MortisEquippedRunePanelWidget.h"
 #include "UI/MortisRuneCardWidget.h"
 #include "UI/MortisRunePresentationStyle.h"
 #include "UI/MortisRightRuneDetailWidget.h"
@@ -22,23 +22,17 @@ void UMortisInventoryRunePageWidget::NativeConstruct()
 
     InitializeReferences();
     BindInventoryDelegates();
-
-    if (Widget_RightRuneDetail)
-    {
-        Widget_RightRuneDetail->OnEquipRequested.RemoveDynamic(this, &ThisClass::HandleEquipButtonClicked);
-        Widget_RightRuneDetail->OnEquipRequested.AddDynamic(this, &ThisClass::HandleEquipButtonClicked);
-    }
+    BindRightRuneDetailEvents();
+    InitializeEquippedRunePanel();
+    BindEquippedRunePanelEvents();
 
     RefreshAll();
 }
 
 void UMortisInventoryRunePageWidget::NativeDestruct()
 {
-    if (Widget_RightRuneDetail)
-    {
-        Widget_RightRuneDetail->OnEquipRequested.RemoveDynamic(this, &ThisClass::HandleEquipButtonClicked);
-    }
-
+    UnbindEquippedRunePanelEvents();
+    UnbindRightRuneDetailEvents();
     UnbindInventoryDelegates();
 
     Super::NativeDestruct();
@@ -48,15 +42,17 @@ void UMortisInventoryRunePageWidget::RefreshAll()
 {
     RefreshSetList();
     UpdateCenterState();
-    RefreshEquippedRuneGrid();
+    RefreshEquippedRunePanel();
     RefreshRuneGrid();
     RefreshRightPanel();
 }
 
 void UMortisInventoryRunePageWidget::HandleSetEntryClicked(FGameplayTag ClickedSetTag)
 {
-    SelectedSetTag = (SelectedSetTag == ClickedSetTag) ? FGameplayTag() : ClickedSetTag;
+    bIsAllRunesFilterSelected = !ClickedSetTag.IsValid();
+    SelectedSetTag = ClickedSetTag;
     SelectedRune = FMortisRuneInstance();
+    SelectedRuneSource = EMortisRuneSelectionSource::None;
 
     RefreshAll();
 }
@@ -64,14 +60,31 @@ void UMortisInventoryRunePageWidget::HandleSetEntryClicked(FGameplayTag ClickedS
 void UMortisInventoryRunePageWidget::HandleRuneCardClicked(FMortisRuneInstance ClickedRune)
 {
     SelectedRune = ClickedRune;
+    SelectedRuneSource = EMortisRuneSelectionSource::Inventory;
 
     RefreshRuneGrid();
+    RefreshEquippedRunePanel();
+    RefreshRightPanel();
+}
+
+void UMortisInventoryRunePageWidget::HandleEquippedRuneCardClicked(FMortisRuneInstance ClickedRune)
+{
+    if (!ClickedRune.InstanceId.IsValid())
+    {
+        return;
+    }
+
+    SelectedRune = ClickedRune;
+    SelectedRuneSource = EMortisRuneSelectionSource::Equipped;
+
+    RefreshRuneGrid();
+    RefreshEquippedRunePanel();
     RefreshRightPanel();
 }
 
 void UMortisInventoryRunePageWidget::HandleEquipButtonClicked()
 {
-    if (!RuneInventorySubsystemRef || !HasSelectedRune())
+    if (!RuneInventorySubsystemRef || !HasSelectedRune() || SelectedRuneSource != EMortisRuneSelectionSource::Inventory)
     {
         return;
     }
@@ -88,7 +101,12 @@ void UMortisInventoryRunePageWidget::HandleEquipButtonClicked()
         return;
     }
 
-    RuneInventorySubsystemRef->EquipRune(TargetSlotIndex, SelectedRune);
+    SelectedRuneSource = EMortisRuneSelectionSource::Equipped;
+
+    if (!RuneInventorySubsystemRef->EquipRune(TargetSlotIndex, SelectedRune))
+    {
+        SelectedRuneSource = EMortisRuneSelectionSource::Inventory;
+    }
 }
 
 void UMortisInventoryRunePageWidget::HandleOwningRuneAdded(const FMortisRuneInstance& AddedRune)
@@ -97,16 +115,6 @@ void UMortisInventoryRunePageWidget::HandleOwningRuneAdded(const FMortisRuneInst
 }
 
 void UMortisInventoryRunePageWidget::HandleOwningRuneRemoved(const FMortisRuneInstance& RemovedRune)
-{
-    RefreshAll();
-}
-
-void UMortisInventoryRunePageWidget::HandleEquippedRuneAdded(int32 SlotIndex, const FMortisRuneInstance& AddedRune)
-{
-    RefreshAll();
-}
-
-void UMortisInventoryRunePageWidget::HandleEquippedRuneRemoved(int32 SlotIndex, const FMortisRuneInstance& RemovedRune)
 {
     RefreshAll();
 }
@@ -135,13 +143,9 @@ void UMortisInventoryRunePageWidget::BindInventoryDelegates()
 
     RuneInventorySubsystemRef->OnOwningRuneAdded.RemoveDynamic(this, &ThisClass::HandleOwningRuneAdded);
     RuneInventorySubsystemRef->OnOwningRuneRemoved.RemoveDynamic(this, &ThisClass::HandleOwningRuneRemoved);
-    RuneInventorySubsystemRef->OnEquippedRuneAdded.RemoveDynamic(this, &ThisClass::HandleEquippedRuneAdded);
-    RuneInventorySubsystemRef->OnEquippedRuneRemoved.RemoveDynamic(this, &ThisClass::HandleEquippedRuneRemoved);
 
     RuneInventorySubsystemRef->OnOwningRuneAdded.AddDynamic(this, &ThisClass::HandleOwningRuneAdded);
     RuneInventorySubsystemRef->OnOwningRuneRemoved.AddDynamic(this, &ThisClass::HandleOwningRuneRemoved);
-    RuneInventorySubsystemRef->OnEquippedRuneAdded.AddDynamic(this, &ThisClass::HandleEquippedRuneAdded);
-    RuneInventorySubsystemRef->OnEquippedRuneRemoved.AddDynamic(this, &ThisClass::HandleEquippedRuneRemoved);
 }
 
 void UMortisInventoryRunePageWidget::UnbindInventoryDelegates()
@@ -153,8 +157,48 @@ void UMortisInventoryRunePageWidget::UnbindInventoryDelegates()
 
     RuneInventorySubsystemRef->OnOwningRuneAdded.RemoveDynamic(this, &ThisClass::HandleOwningRuneAdded);
     RuneInventorySubsystemRef->OnOwningRuneRemoved.RemoveDynamic(this, &ThisClass::HandleOwningRuneRemoved);
-    RuneInventorySubsystemRef->OnEquippedRuneAdded.RemoveDynamic(this, &ThisClass::HandleEquippedRuneAdded);
-    RuneInventorySubsystemRef->OnEquippedRuneRemoved.RemoveDynamic(this, &ThisClass::HandleEquippedRuneRemoved);
+}
+
+void UMortisInventoryRunePageWidget::BindRightRuneDetailEvents()
+{
+    if (UMortisRightRuneDetailWidget* RightRuneDetail = ResolveRightRuneDetailWidget())
+    {
+        RightRuneDetail->OnEquipRequested.RemoveDynamic(this, &ThisClass::HandleEquipButtonClicked);
+        RightRuneDetail->OnEquipRequested.AddDynamic(this, &ThisClass::HandleEquipButtonClicked);
+    }
+}
+
+void UMortisInventoryRunePageWidget::UnbindRightRuneDetailEvents()
+{
+    if (UMortisRightRuneDetailWidget* RightRuneDetail = ResolveRightRuneDetailWidget())
+    {
+        RightRuneDetail->OnEquipRequested.RemoveDynamic(this, &ThisClass::HandleEquipButtonClicked);
+    }
+}
+
+void UMortisInventoryRunePageWidget::InitializeEquippedRunePanel()
+{
+    if (Widget_EquippedRunePanel)
+    {
+        Widget_EquippedRunePanel->InitializeEquippedRunePanel(RuneInventorySubsystemRef, RuneDatabaseSubsystemRef, RuneCardClass);
+    }
+}
+
+void UMortisInventoryRunePageWidget::BindEquippedRunePanelEvents()
+{
+    if (Widget_EquippedRunePanel)
+    {
+        Widget_EquippedRunePanel->OnEquippedRuneSelected.RemoveDynamic(this, &ThisClass::HandleEquippedRuneCardClicked);
+        Widget_EquippedRunePanel->OnEquippedRuneSelected.AddDynamic(this, &ThisClass::HandleEquippedRuneCardClicked);
+    }
+}
+
+void UMortisInventoryRunePageWidget::UnbindEquippedRunePanelEvents()
+{
+    if (Widget_EquippedRunePanel)
+    {
+        Widget_EquippedRunePanel->OnEquippedRuneSelected.RemoveDynamic(this, &ThisClass::HandleEquippedRuneCardClicked);
+    }
 }
 
 void UMortisInventoryRunePageWidget::RefreshSetList()
@@ -167,7 +211,28 @@ void UMortisInventoryRunePageWidget::RefreshSetList()
     ScrollBox_SetList->ClearChildren();
     CreatedSetEntries.Reset();
 
-    if (!RuneSetTableRef || !RuneSetEntryClass)
+    if (!RuneSetEntryClass)
+    {
+        return;
+    }
+
+    UMortisRuneSetEntryWidget* AllEntry = CreateWidget<UMortisRuneSetEntryWidget>(this, RuneSetEntryClass);
+    if (AllEntry)
+    {
+        AllEntry->ApplyData(
+            FGameplayTag(),
+            nullptr,
+            NSLOCTEXT("MortisInventory", "AllRunesFilterName", "전체"),
+            GetInventoryRuneCount(),
+            bIsAllRunesFilterSelected);
+        AllEntry->OnSetEntryClicked.RemoveDynamic(this, &ThisClass::HandleSetEntryClicked);
+        AllEntry->OnSetEntryClicked.AddDynamic(this, &ThisClass::HandleSetEntryClicked);
+
+        ScrollBox_SetList->AddChild(AllEntry);
+        CreatedSetEntries.Add(AllEntry);
+    }
+
+    if (!RuneSetTableRef)
     {
         return;
     }
@@ -190,7 +255,7 @@ void UMortisInventoryRunePageWidget::RefreshSetList()
 
         UTexture2D* DisplayIcon = SetRow->ListIcon;
         const int32 OwnedCount = GetTotalOwnedCountBySetTag(SetRow->SetTag);
-        const bool bIsSelected = SelectedSetTag.IsValid() && SelectedSetTag == SetRow->SetTag;
+        const bool bIsSelected = !bIsAllRunesFilterSelected && SelectedSetTag.IsValid() && SelectedSetTag == SetRow->SetTag;
 
         SetEntry->ApplyData(SetRow->SetTag, DisplayIcon, SetRow->SetName, OwnedCount, bIsSelected);
         SetEntry->OnSetEntryClicked.RemoveDynamic(this, &ThisClass::HandleSetEntryClicked);
@@ -205,12 +270,15 @@ void UMortisInventoryRunePageWidget::UpdateCenterState()
 {
     if (WidgetSwitcher_CenterState)
     {
-        WidgetSwitcher_CenterState->SetActiveWidgetIndex(SelectedSetTag.IsValid() ? 1 : 0);
+        const int32 TargetIndex = WidgetSwitcher_CenterState->GetChildrenCount() > CenterInventoryStateIndex
+            ? CenterInventoryStateIndex
+            : 0;
+        WidgetSwitcher_CenterState->SetActiveWidgetIndex(TargetIndex);
     }
 
-    if (Text_EmptyMessage && !SelectedSetTag.IsValid())
+    if (Text_EmptyMessage)
     {
-        Text_EmptyMessage->SetText(NSLOCTEXT("MortisInventory", "SelectRuneSetMessage", "Select a rune set."));
+        Text_EmptyMessage->SetText(NSLOCTEXT("MortisInventory", "NoOwnedRunesMessage", "No owned runes."));
     }
 
     UpdateCenterHeader();
@@ -220,9 +288,9 @@ void UMortisInventoryRunePageWidget::UpdateCenterHeader()
 {
     if (Text_SelectedSetName)
     {
-        if (!SelectedSetTag.IsValid())
+        if (bIsAllRunesFilterSelected)
         {
-            Text_SelectedSetName->SetText(NSLOCTEXT("MortisInventory", "EquippedRunesHeader", "Equipped Runes"));
+            Text_SelectedSetName->SetText(NSLOCTEXT("MortisInventory", "AllRunesHeader", "전체 룬"));
         }
         else if (RuneDatabaseSubsystemRef)
         {
@@ -233,13 +301,11 @@ void UMortisInventoryRunePageWidget::UpdateCenterHeader()
 
     if (Text_RuneCount)
     {
-        if (!SelectedSetTag.IsValid())
+        if (bIsAllRunesFilterSelected)
         {
-            const int32 SlotCount = RuneInventorySubsystemRef ? RuneInventorySubsystemRef->GetSlotCount() : 0;
             Text_RuneCount->SetText(FText::Format(
-                NSLOCTEXT("MortisInventory", "EquippedRuneCountFormat", "{0} / {1} Equipped"),
-                FText::AsNumber(GetEquippedRuneCount()),
-                FText::AsNumber(SlotCount)));
+                NSLOCTEXT("MortisInventory", "AllRuneCountFormat", "{0} Runes"),
+                FText::AsNumber(GetInventoryRuneCount())));
         }
         else
         {
@@ -252,96 +318,33 @@ void UMortisInventoryRunePageWidget::UpdateCenterHeader()
     }
 }
 
-void UMortisInventoryRunePageWidget::RefreshEquippedRuneGrid()
+void UMortisInventoryRunePageWidget::RefreshEquippedRunePanel()
 {
-    ClearEquippedRuneGrid();
+    ValidateSelectedEquippedRune();
 
-    if (SelectedSetTag.IsValid())
+    if (!Widget_EquippedRunePanel)
     {
         return;
     }
 
-    UpdateCenterHeader();
-
-    if (Text_EmptyMessage)
-    {
-        Text_EmptyMessage->SetText(NSLOCTEXT("MortisInventory", "OverviewHintMessage", "Select a rune set to browse owned runes."));
-    }
-
-    if (!UniformGrid_EquippedRuneGrid || !RuneCardClass || !RuneInventorySubsystemRef)
-    {
-        return;
-    }
-
-    const TArray<FMortisRuneInstance>& EquippedRunes = RuneInventorySubsystemRef->GetEquippedRunes();
-    const int32 SafeColumns = FMath::Max(1, EquippedRuneColumns);
-
-    if (HasSelectedRune())
-    {
-        const bool bSelectedRuneStillExists = EquippedRunes.ContainsByPredicate(
-            [this](const FMortisRuneInstance& Rune)
-            {
-                return Rune.InstanceId.IsValid() && Rune.InstanceId == SelectedRune.InstanceId;
-            });
-
-        if (!bSelectedRuneStillExists)
-        {
-            SelectedRune = FMortisRuneInstance();
-        }
-    }
-
-    int32 VisibleIndex = 0;
-
-    for (const FMortisRuneInstance& RuneInstance : EquippedRunes)
-    {
-        if (!RuneInstance.InstanceId.IsValid())
-        {
-            continue;
-        }
-
-        UMortisRuneCardWidget* RuneCard = CreateWidget<UMortisRuneCardWidget>(this, RuneCardClass);
-        if (!RuneCard)
-        {
-            continue;
-        }
-
-        const bool bIsSelected = HasSelectedRune() && SelectedRune.InstanceId == RuneInstance.InstanceId;
-        ConfigureRuneCard(RuneCard, RuneInstance, bIsSelected, true);
-
-        const int32 Row = VisibleIndex / SafeColumns;
-        const int32 Column = VisibleIndex % SafeColumns;
-
-        if (UUniformGridSlot* GridSlot = UniformGrid_EquippedRuneGrid->AddChildToUniformGrid(RuneCard, Row, Column))
-        {
-            //GridSlot->SetHorizontalAlignment(HAlign_Fill);
-            //GridSlot->SetVerticalAlignment(VAlign_Fill);
-        }
-
-        CreatedEquippedRuneCards.Add(RuneCard);
-        ++VisibleIndex;
-    }
+    Widget_EquippedRunePanel->SetSelectedRuneState(SelectedRune, SelectedRuneSource == EMortisRuneSelectionSource::Equipped);
 }
 
 void UMortisInventoryRunePageWidget::RefreshRuneGrid()
 {
     ClearRuneGrid();
 
-    if (!SelectedSetTag.IsValid())
-    {
-        return;
-    }
-
     UpdateCenterHeader();
 
-    if (!UniformGrid_RuneGrid || !RuneCardClass || !RuneDatabaseSubsystemRef)
+    if (!UniformGrid_RuneGrid || !RuneCardClass || !RuneInventorySubsystemRef)
     {
         return;
     }
 
     TArray<FMortisRuneInstance> MatchingRunes;
-    GetOwningRunesBySetTag(SelectedSetTag, MatchingRunes);
+    GetOwningRunesForCurrentFilter(MatchingRunes);
 
-    if (HasSelectedRune())
+    if (HasSelectedRune() && SelectedRuneSource == EMortisRuneSelectionSource::Inventory)
     {
         const bool bStillExists = MatchingRunes.ContainsByPredicate(
             [this](const FMortisRuneInstance& Rune)
@@ -352,6 +355,7 @@ void UMortisInventoryRunePageWidget::RefreshRuneGrid()
         if (!bStillExists)
         {
             SelectedRune = FMortisRuneInstance();
+            SelectedRuneSource = EMortisRuneSelectionSource::None;
         }
     }
 
@@ -367,7 +371,9 @@ void UMortisInventoryRunePageWidget::RefreshRuneGrid()
             continue;
         }
 
-        const bool bIsSelected = HasSelectedRune() && SelectedRune.InstanceId == Rune.InstanceId;
+        RuneCard->SetCardSize(InventoryRuneCardSize);
+
+        const bool bIsSelected = HasSelectedRune() && SelectedRuneSource == EMortisRuneSelectionSource::Inventory && SelectedRune.InstanceId == Rune.InstanceId;
         const bool bIsEquipped = IsRuneEquipped(Rune.InstanceId);
 
         ConfigureRuneCard(RuneCard, Rune, bIsSelected, bIsEquipped);
@@ -377,8 +383,8 @@ void UMortisInventoryRunePageWidget::RefreshRuneGrid()
 
         if (UUniformGridSlot* GridSlot = UniformGrid_RuneGrid->AddChildToUniformGrid(RuneCard, Row, Column))
         {
-            // GridSlot->SetHorizontalAlignment(HAlign_Fill);
-            // GridSlot->SetVerticalAlignment(VAlign_Fill);
+            GridSlot->SetHorizontalAlignment(HAlign_Center);
+            GridSlot->SetVerticalAlignment(VAlign_Center);
         }
 
         CreatedRuneCards.Add(RuneCard);
@@ -394,37 +400,20 @@ void UMortisInventoryRunePageWidget::RefreshRightPanel()
 
     if (HasSelectedRune())
     {
-        WidgetSwitcher_RightState->SetActiveWidgetIndex(2);
+        const int32 FallbackRuneDetailIndex = WidgetSwitcher_RightState->GetChildrenCount() > 1 ? 1 : 0;
+        const int32 TargetIndex = WidgetSwitcher_RightState->GetChildrenCount() > RightRuneDetailStateIndex
+            ? RightRuneDetailStateIndex
+            : FallbackRuneDetailIndex;
+        WidgetSwitcher_RightState->SetActiveWidgetIndex(TargetIndex);
         UpdateRightRuneDetail();
         return;
     }
 
-    if (!SelectedSetTag.IsValid())
-    {
-        WidgetSwitcher_RightState->SetActiveWidgetIndex(0);
-        UpdateRightOverview();
-        return;
-    }
-
-    if (!HasSelectedRune())
-    {
-        WidgetSwitcher_RightState->SetActiveWidgetIndex(1);
-        UpdateRightSetDetail();
-        return;
-    }
-
-    WidgetSwitcher_RightState->SetActiveWidgetIndex(2);
-    UpdateRightRuneDetail();
-}
-
-void UMortisInventoryRunePageWidget::ClearEquippedRuneGrid()
-{
-    CreatedEquippedRuneCards.Reset();
-
-    if (UniformGrid_EquippedRuneGrid)
-    {
-        UniformGrid_EquippedRuneGrid->ClearChildren();
-    }
+    const int32 TargetIndex = WidgetSwitcher_RightState->GetChildrenCount() > RightSetDetailStateIndex
+        ? RightSetDetailStateIndex
+        : 0;
+    WidgetSwitcher_RightState->SetActiveWidgetIndex(TargetIndex);
+    UpdateRightSetDetail();
 }
 
 void UMortisInventoryRunePageWidget::ClearRuneGrid()
@@ -464,6 +453,81 @@ void UMortisInventoryRunePageWidget::ConfigureRuneCard(UMortisRuneCardWidget* Ru
     RuneCard->OnRuneCardClicked.RemoveDynamic(this, &ThisClass::HandleRuneCardClicked);
     RuneCard->OnRuneCardClicked.AddDynamic(this, &ThisClass::HandleRuneCardClicked);
     RuneCard->SetIsEnabled(true);
+}
+
+UMortisRightRuneDetailWidget* UMortisInventoryRunePageWidget::ResolveRightRuneDetailWidget()
+{
+    if (Widget_RightRuneDetail)
+    {
+        return Widget_RightRuneDetail;
+    }
+
+    if (!WidgetSwitcher_RightState)
+    {
+        return nullptr;
+    }
+
+    const int32 ChildCount = WidgetSwitcher_RightState->GetChildrenCount();
+    for (int32 ChildIndex = 0; ChildIndex < ChildCount; ++ChildIndex)
+    {
+        if (UMortisRightRuneDetailWidget* RightRuneDetail = Cast<UMortisRightRuneDetailWidget>(WidgetSwitcher_RightState->GetChildAt(ChildIndex)))
+        {
+            Widget_RightRuneDetail = RightRuneDetail;
+            return Widget_RightRuneDetail;
+        }
+    }
+
+    return nullptr;
+}
+
+void UMortisInventoryRunePageWidget::ValidateSelectedEquippedRune()
+{
+    if (SelectedRuneSource != EMortisRuneSelectionSource::Equipped || !SelectedRune.InstanceId.IsValid())
+    {
+        return;
+    }
+
+    if (!RuneInventorySubsystemRef)
+    {
+        SelectedRune = FMortisRuneInstance();
+        SelectedRuneSource = EMortisRuneSelectionSource::None;
+        return;
+    }
+
+    const bool bSelectedRuneStillExists = RuneInventorySubsystemRef->GetEquippedRunes().ContainsByPredicate(
+        [this](const FMortisRuneInstance& Rune)
+        {
+            return Rune.InstanceId.IsValid() && Rune.InstanceId == SelectedRune.InstanceId;
+        });
+
+    if (!bSelectedRuneStillExists)
+    {
+        SelectedRune = FMortisRuneInstance();
+        SelectedRuneSource = EMortisRuneSelectionSource::None;
+    }
+}
+
+void UMortisInventoryRunePageWidget::GetOwningRunesForCurrentFilter(TArray<FMortisRuneInstance>& OutRunes) const
+{
+    OutRunes.Reset();
+
+    if (!RuneInventorySubsystemRef)
+    {
+        return;
+    }
+
+    if (bIsAllRunesFilterSelected || !SelectedSetTag.IsValid())
+    {
+        OutRunes = RuneInventorySubsystemRef->GetOwningRunes();
+        return;
+    }
+
+    GetOwningRunesBySetTag(SelectedSetTag, OutRunes);
+}
+
+int32 UMortisInventoryRunePageWidget::GetInventoryRuneCount() const
+{
+    return RuneInventorySubsystemRef ? RuneInventorySubsystemRef->GetOwningRunes().Num() : 0;
 }
 
 int32 UMortisInventoryRunePageWidget::GetTotalOwnedCountBySetTag(const FGameplayTag& SetTag) const
@@ -535,26 +599,6 @@ bool UMortisInventoryRunePageWidget::HasSelectedRune() const
     return SelectedRune.InstanceId.IsValid();
 }
 
-int32 UMortisInventoryRunePageWidget::GetEquippedRuneCount() const
-{
-    if (!RuneInventorySubsystemRef)
-    {
-        return 0;
-    }
-
-    int32 EquippedCount = 0;
-
-    for (const FMortisRuneInstance& Rune : RuneInventorySubsystemRef->GetEquippedRunes())
-    {
-        if (Rune.InstanceId.IsValid())
-        {
-            ++EquippedCount;
-        }
-    }
-
-    return EquippedCount;
-}
-
 int32 UMortisInventoryRunePageWidget::GetEquippedCountBySetTag(const FGameplayTag& SetTag) const
 {
     if (!RuneInventorySubsystemRef || !SetTag.IsValid())
@@ -586,40 +630,13 @@ FLinearColor UMortisInventoryRunePageWidget::GetGlyphTintBySetTag(const FGamepla
     return SetRow ? SetRow->GlyphTint : FLinearColor::White;
 }
 
-void UMortisInventoryRunePageWidget::UpdateRightOverview()
-{
-    if (Text_RightOverviewTitle)
-    {
-        Text_RightOverviewTitle->SetText(NSLOCTEXT("MortisInventory", "RightOverviewTitle", "Rune Overview"));
-    }
-
-    if (Text_EquippedSummaryTitle)
-    {
-        Text_EquippedSummaryTitle->SetText(NSLOCTEXT("MortisInventory", "EquippedSummaryTitle", "Equipped Summary"));
-    }
-
-    if (Text_EquippedSummaryBody)
-    {
-        Text_EquippedSummaryBody->SetText(BuildEquippedSummaryText());
-    }
-
-    if (Text_ActiveSetSummaryTitle)
-    {
-        Text_ActiveSetSummaryTitle->SetText(NSLOCTEXT("MortisInventory", "ActiveSetSummaryTitle", "Active Set Effects"));
-    }
-
-    if (Text_ActiveSetSummaryBody)
-    {
-        Text_ActiveSetSummaryBody->SetText(BuildActiveSetSummaryText());
-    }
-
-}
-
 void UMortisInventoryRunePageWidget::UpdateRightSetDetail()
 {
     if (Text_RightSetTitle)
     {
-        Text_RightSetTitle->SetText(NSLOCTEXT("MortisInventory", "RightSetTitle", "Set Details"));
+        Text_RightSetTitle->SetText(bIsAllRunesFilterSelected
+            ? NSLOCTEXT("MortisInventory", "RightAllRunesTitle", "전체 룬")
+            : NSLOCTEXT("MortisInventory", "RightSetTitle", "Set Details"));
     }
 
     const FMortisRuneSetRow* SetRow = RuneDatabaseSubsystemRef
@@ -628,7 +645,9 @@ void UMortisInventoryRunePageWidget::UpdateRightSetDetail()
 
     if (Text_SelectedSetName_Right)
     {
-        Text_SelectedSetName_Right->SetText(SetRow ? SetRow->SetName : FText::GetEmpty());
+        Text_SelectedSetName_Right->SetText(bIsAllRunesFilterSelected
+            ? NSLOCTEXT("MortisInventory", "AllRunesFilterName", "전체")
+            : (SetRow ? SetRow->SetName : FText::GetEmpty()));
     }
 
     if (Text_SelectedSetCount)
@@ -651,7 +670,7 @@ void UMortisInventoryRunePageWidget::UpdateRightSetDetail()
         Text_SetEffectTier03->SetText(FText::GetEmpty());
     }
 
-    if (SetRow)
+    if (!bIsAllRunesFilterSelected && SetRow)
     {
         if (SetRow->TierDefs.Num() > 0 && Text_SetEffectTier01)
         {
@@ -679,7 +698,8 @@ void UMortisInventoryRunePageWidget::UpdateRightSetDetail()
 
 void UMortisInventoryRunePageWidget::UpdateRightRuneDetail()
 {
-    if (!Widget_RightRuneDetail || !HasSelectedRune())
+    UMortisRightRuneDetailWidget* RightRuneDetail = ResolveRightRuneDetailWidget();
+    if (!RightRuneDetail || !HasSelectedRune())
     {
         return;
     }
@@ -700,66 +720,23 @@ void UMortisInventoryRunePageWidget::UpdateRightRuneDetail()
     ViewData.RuneStatValue = BuildRuneStatValueText();
     ViewData.SetName = SetRow ? SetRow->SetName : FText::GetEmpty();
     ViewData.SetProgress = BuildSetProgressTextBySetTag(DetailSetTag);
-    ViewData.bShowEquipAction = !IsRuneEquipped(SelectedRune.InstanceId);
+    ViewData.bShowEquipAction = SelectedRuneSource == EMortisRuneSelectionSource::Inventory && !IsRuneEquipped(SelectedRune.InstanceId);
     ViewData.bCanEquip = CanEquipSelectedRune();
     ViewData.EquipLabel = GetEquipButtonLabelText();
     BuildSelectedRuneSynergyEntries(DetailSetTag, ViewData.SynergyEntries);
 
-    Widget_RightRuneDetail->ApplyData(ViewData);
-}
-
-FText UMortisInventoryRunePageWidget::BuildEquippedSummaryText() const
-{
-    if (!RuneInventorySubsystemRef)
-    {
-        return FText::GetEmpty();
-    }
-
-    const int32 SlotCount = RuneInventorySubsystemRef->GetSlotCount();
-
-    return FText::Format(
-        NSLOCTEXT("MortisInventory", "EquippedSummaryFormat", "{0} / {1} equipped"),
-        FText::AsNumber(GetEquippedRuneCount()),
-        FText::AsNumber(SlotCount));
-}
-
-FText UMortisInventoryRunePageWidget::BuildActiveSetSummaryText() const
-{
-    if (!RuneInventorySubsystemRef || !RuneDatabaseSubsystemRef)
-    {
-        return FText::GetEmpty();
-    }
-
-    const TArray<FGameplayTag>& ActiveSetTags = RuneInventorySubsystemRef->GetActiveRuneSets();
-    if (ActiveSetTags.IsEmpty())
-    {
-        return NSLOCTEXT("MortisInventory", "NoActiveSetEffects", "No active set effects");
-    }
-
-    FString Summary;
-
-    for (const FGameplayTag& ActiveSetTag : ActiveSetTags)
-    {
-        const FMortisRuneSetRow* SetRow = RuneDatabaseSubsystemRef->GetRuneSetRow(ActiveSetTag);
-        FMortisActiveRuneSetState SetState;
-        const bool bHasState = RuneInventorySubsystemRef->GetRuneSetStateByTag(ActiveSetTag, SetState);
-
-        const FString SetName = SetRow ? SetRow->SetName.ToString() : ActiveSetTag.ToString();
-        const int32 ActiveLevel = bHasState ? SetState.CurrentLevel : 0;
-
-        if (!Summary.IsEmpty())
-        {
-            Summary.Append(TEXT("\n"));
-        }
-
-        Summary.Append(FString::Printf(TEXT("%s Lv.%d"), *SetName, ActiveLevel));
-    }
-
-    return FText::FromString(Summary);
+    RightRuneDetail->ApplyData(ViewData);
 }
 
 FText UMortisInventoryRunePageWidget::BuildSelectedSetCountText() const
 {
+    if (bIsAllRunesFilterSelected)
+    {
+        return FText::Format(
+            NSLOCTEXT("MortisInventory", "AllRunesInventoryCountFormat", "{0} inventory runes"),
+            FText::AsNumber(GetInventoryRuneCount()));
+    }
+
     if (!RuneInventorySubsystemRef || !SelectedSetTag.IsValid())
     {
         return FText::GetEmpty();
@@ -901,7 +878,8 @@ int32 UMortisInventoryRunePageWidget::FindFirstEmptyRuneSlot() const
     }
 
     const TArray<FMortisRuneInstance>& EquippedRunes = RuneInventorySubsystemRef->GetEquippedRunes();
-    for (int32 Index = 0; Index < EquippedRunes.Num(); ++Index)
+    const int32 MaxSearchCount = FMath::Min(EquippedRunes.Num(), FMath::Max(0, RuneInventorySubsystemRef->GetSlotCount()));
+    for (int32 Index = 0; Index < MaxSearchCount; ++Index)
     {
         if (!EquippedRunes[Index].InstanceId.IsValid())
         {
@@ -914,7 +892,7 @@ int32 UMortisInventoryRunePageWidget::FindFirstEmptyRuneSlot() const
 
 bool UMortisInventoryRunePageWidget::CanEquipSelectedRune() const
 {
-    if (!HasSelectedRune())
+    if (!HasSelectedRune() || SelectedRuneSource != EMortisRuneSelectionSource::Inventory)
     {
         return false;
     }

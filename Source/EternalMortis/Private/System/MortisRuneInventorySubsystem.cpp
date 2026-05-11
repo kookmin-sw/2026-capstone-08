@@ -114,15 +114,17 @@ void UMortisRuneInventorySubsystem::UpdateStack(const FGameplayTag& SetTag, int3
     OnStackUpdated.Broadcast(SetTag, Level);
 }
 
-void UMortisRuneInventorySubsystem::SetStack(const FGameplayTag& SetTag, int32 StackCount, int32 Level)
+void UMortisRuneInventorySubsystem::UpdateIsActive(const FGameplayTag& SetTag, bool isActive, int32 Level)
 {
     FMortisActiveRuneSetState* FoundState = RuneSetMap.Find(SetTag);
     if (!FoundState) return;
-
-    FoundState->Variables[Level - 1].CurrentStack = StackCount;
-    OnStackUpdated.Broadcast(SetTag, Level);
+    
+    if (FoundState->Variables[Level-1].bIsActive != isActive)
+    {
+        FoundState->Variables[Level-1].bIsActive = isActive;
+        OnIsActiveUpdated.Broadcast(SetTag, Level);
+    }
 }
-
 const TArray<FMortisRuneInstance>& UMortisRuneInventorySubsystem::GetOwningRunes() const
 {
     return OwningRunes;

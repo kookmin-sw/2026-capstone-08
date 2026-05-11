@@ -128,6 +128,14 @@ const FMortisExperienceRow* UMortisMetaProgressionSubsystem::FindSelectedExperie
 	return FindExperienceRow(SelectedExperienceTag);
 }
 
+void UMortisMetaProgressionSubsystem::DebugClearUnlockedExperiences()
+{
+	UnlockedExperienceTags.Reset();
+	SelectedExperienceTag = FGameplayTag();
+
+	SaveMetaProgression();
+}
+
 bool UMortisMetaProgressionSubsystem::UpgradeRuneSlot()
 {
 	if (GetUnlockedRuneSlotCount() >= MaxRuneSlotCount)
@@ -158,6 +166,20 @@ int32 UMortisMetaProgressionSubsystem::GetUnlockedRuneSlotCount() const
 		BaseRuneSlotCount,
 		MaxRuneSlotCount
 	);
+}
+
+bool UMortisMetaProgressionSubsystem::GetNextRuneSlotUpgradeCost(int32& OutCost) const
+{
+	OutCost = 0;
+
+	if (GetUnlockedRuneSlotCount() >= MaxRuneSlotCount)
+		return false;
+
+	if (!RuneSlotUpgradeCosts.IsValidIndex(RuneSlotUpgradeLevel))
+		return false;
+
+	OutCost = RuneSlotUpgradeCosts[RuneSlotUpgradeLevel];
+	return true;
 }
 
 void UMortisMetaProgressionSubsystem::MarkTutorialCompleted()

@@ -10,9 +10,18 @@ class UBorder;
 class UButton;
 class UImage;
 class UMaterialInstanceDynamic;
+class USizeBox;
 class UTexture2D;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMortisOnRuneCardClicked, FMortisRuneInstance, ClickedRune);
+
+UENUM(BlueprintType)
+enum class EMortisRuneCardSlotState : uint8
+{
+    Rune,
+    EmptyUnlocked,
+    Locked
+};
 
 USTRUCT(BlueprintType)
 struct FMortisRuneCardVisualData
@@ -63,6 +72,9 @@ struct FMortisRuneCardVisualData
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
     bool bEquipped = false;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mortis|Inventory|Rune")
+    EMortisRuneCardSlotState SlotState = EMortisRuneCardSlotState::Rune;
 };
 
 UCLASS(BlueprintType, Blueprintable)
@@ -91,6 +103,12 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void SetEquipped(bool bInEquipped);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetSlotState(EMortisRuneCardSlotState InSlotState);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
+    void SetCardSize(const FVector2D& InCardSize);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Inventory|Rune")
     void RefreshVisualState();
@@ -130,6 +148,7 @@ protected:
 
     void UpdateRuneCoreMaterial();
     UMaterialInstanceDynamic* ResolveRuneCoreMaterial();
+    void ApplyCardSizeOverride();
     FLinearColor BuildCardBackgroundTint() const;
     float ResolveFrameAlpha() const;
     float ResolveGlowOpacityMultiplier() const;
@@ -138,6 +157,9 @@ protected:
     bool HasValidRuneData() const;
 
 protected:
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+    TObjectPtr<USizeBox> SizeBox_Root = nullptr;
+
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
     TObjectPtr<UButton> Button_Root = nullptr;
 
@@ -179,6 +201,15 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     bool bEquipped = false;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
+    EMortisRuneCardSlotState SlotState = EMortisRuneCardSlotState::Rune;
+
+    UPROPERTY(Transient, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Layout", meta = (AllowPrivateAccess = "true"))
+    FVector2D CardSizeOverride = FVector2D::ZeroVector;
+
+    UPROPERTY(Transient, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Layout", meta = (AllowPrivateAccess = "true"))
+    bool bHasCardSizeOverride = false;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UTexture2D> CommonGradeImage = nullptr;
@@ -233,4 +264,10 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
     float SelectedGradeAlpha = 0.28f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+    float EmptySlotFrameAlpha = 0.26f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Style|Tuning", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "1.0"))
+    float LockedSlotFrameAlpha = 0.18f;
 };
