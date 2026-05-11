@@ -24,6 +24,9 @@ public:
     int32 GetCurrentFloor() const { return CurrentFloor; }
 
     UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
+    int32 GetCurrentConcept() const { return CurrentConcept; }
+
+    UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
     int32 GetCurrentRoomIndex() const { return CurrentRoomIndex; }
 
     UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
@@ -51,6 +54,12 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
     void AdvanceFloor();
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
+    void SetCurrentConcept(int32 NewConcept);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
+    void AdvanceConcept();
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
     void SetCurrentRoomIndex(int32 NewRoomIndex);
@@ -96,6 +105,9 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
     int32 CurrentFloor = 1;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
+    int32 CurrentConcept = 0;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|RunState|Revive")
     int32 BaseReviveCost = 100;

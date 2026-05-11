@@ -50,6 +50,16 @@ void UMortisRunStateSubsystem::AdvanceFloor()
     ResetReviveCost();
 }
 
+void UMortisRunStateSubsystem::SetCurrentConcept(int32 NewConcept)
+{
+    CurrentConcept = FMath::Max(0, NewConcept);
+}
+
+void UMortisRunStateSubsystem::AdvanceConcept()
+{
+    ++CurrentConcept;
+}
+
 void UMortisRunStateSubsystem::SetCurrentRoomIndex(int32 NewRoomIndex)
 {
     CurrentRoomIndex = FMath::Max(0, NewRoomIndex);
@@ -122,6 +132,7 @@ void UMortisRunStateSubsystem::ResetRunState()
 {
     CurrentGold = 0;
     CurrentFloor = 1;
+    CurrentConcept = 0;
     CurrentRoomIndex = 0;
     ClearedRoomCount = 0;
     bCanSeeTrueEnding = false;
