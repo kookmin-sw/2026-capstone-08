@@ -17,7 +17,7 @@ class ETERNALMORTIS_API UMortisGameInstance : public UGameInstance
 public:
 	// 현재 층 (3부터 시작 - 성 내부)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dungeon")
-	int32 CurrentFloor = 0;
+	int32 CurrentFloor = 1;
 
 	// 현재 컨셉 (0: 지하감옥, 1: 성 내부, 2: 식인마을)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dungeon")
