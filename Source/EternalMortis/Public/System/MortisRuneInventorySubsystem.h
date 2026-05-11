@@ -79,10 +79,15 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
     void UpdateStack(const FGameplayTag& SetTag, int32 Delta, int32 Level);
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
+    void SetStack(const FGameplayTag& SetTag, int32 StackCount, int32 Level);
 
     // Tag로 룬 세트 가져오기
     UFUNCTION(BlueprintPure, Category = "Mortis|Rune")
     bool GetRuneSetStateByTag(const FGameplayTag& TagToFind, FMortisActiveRuneSetState& OutState) const;
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|Rune")
+    void RebuildRuneSetStateFromEquippedRunes(bool bBroadcast = true);
 
     // Getter들
     UFUNCTION(BlueprintPure, Category = "Mortis|Rune")

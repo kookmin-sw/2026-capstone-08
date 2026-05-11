@@ -124,6 +124,7 @@ private:
     bool HasAppliedCurse(const FGuid& CurseInstanceId) const;
     void ApplySetTier(const FMortisSetTierDef& TierDef, FMortisAppliedRuneSetRuntime& SetRuntime);
     void RemoveSetTier(FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount);
+    void ApplyInitialEquippedRunes();
     void ClearSetRuntime(const FGameplayTag& SetTag);
     void ClearCurseEffects();
 };

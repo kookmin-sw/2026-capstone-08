@@ -40,6 +40,8 @@ UMortisPlayerAttributeSet::UMortisPlayerAttributeSet()
 	InitIntCoef(0.0f);
 
 	InitRollStaminaReduction(0.0f);
+	InitSkillStaminaReduction(0.0f);
+	InitSkillBonus(0.0f);
 }
 
 void UMortisPlayerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)

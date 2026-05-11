@@ -197,7 +197,7 @@ bool UMortisInteractionComponent::IsCandidateAllowed(AMortisInteractableActorBas
 	return Target->CanBeInteractionCandidate(OwnerPawn) && Target->CanInteract(OwnerPawn);
 }
 
-float UMortisInteractionComponent::GetCandidateViewAngle(AMortisInteractableActorBase* Target, const APawn* OwnerPawn) const
+float UMortisInteractionComponent::GetCandidateViewAngle(const AMortisInteractableActorBase* Target, const APawn* OwnerPawn) const
 {
 	if (!Target || !OwnerPawn)
 		return 0.f;
@@ -252,9 +252,9 @@ void UMortisInteractionComponent::SortCandidatesByViewAngle(APawn* OwnerPawn)
 		return;
 
 	InteractionCandidates.Sort(
-		[this, OwnerPawn](const TObjectPtr<AMortisInteractableActorBase>& A, const TObjectPtr<AMortisInteractableActorBase>& B)
+		[this, OwnerPawn](const AMortisInteractableActorBase& A, const AMortisInteractableActorBase& B)
 		{
-			return GetCandidateViewAngle(A.Get(), OwnerPawn) < GetCandidateViewAngle(B.Get(), OwnerPawn);
+			return GetCandidateViewAngle(&A, OwnerPawn) < GetCandidateViewAngle(&B, OwnerPawn);
 		}
 	);
 }

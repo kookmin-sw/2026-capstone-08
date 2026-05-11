@@ -66,7 +66,7 @@ protected:
 
 	bool IsCandidateAllowed(AMortisInteractableActorBase* Target, APawn* OwnerPawn) const;
 
-	float GetCandidateViewAngle(AMortisInteractableActorBase* Target, const APawn* OwnerPawn) const;
+	float GetCandidateViewAngle(const AMortisInteractableActorBase* Target, const APawn* OwnerPawn) const;
 	float GetCandidateScore(AMortisInteractableActorBase* Target, const APawn* OwnerPawn) const;
 	void SortCandidatesByViewAngle(APawn* OwnerPawn);
 	AMortisInteractableActorBase* GetBestCandidate(APawn* OwnerPawn) const;

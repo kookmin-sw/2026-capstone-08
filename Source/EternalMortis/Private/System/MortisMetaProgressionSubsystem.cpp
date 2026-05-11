@@ -41,9 +41,6 @@ void UMortisMetaProgressionSubsystem::BuildCaches()
 
 void UMortisMetaProgressionSubsystem::AddMemoryFragments(int32 Amount)
 {
-	if (Amount <= 0)
-		return;
-
 	MemoryFragments += Amount;
 
 	SaveMetaProgression();

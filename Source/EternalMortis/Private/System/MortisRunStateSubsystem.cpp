@@ -2,6 +2,8 @@
 
 
 #include "System/MortisRunStateSubsystem.h"
+#include "System/MortisMetaProgressionSubsystem.h"
+#include "Kismet/GameplayStatics.h"
 
 bool UMortisRunStateSubsystem::HasEnoughGold(int32 Amount) const
 {
@@ -38,12 +40,14 @@ void UMortisRunStateSubsystem::SetGold(int32 NewGold)
 void UMortisRunStateSubsystem::SetCurrentFloor(int32 NewFloor)
 {
     CurrentFloor = FMath::Max(1, NewFloor);
+    ResetReviveCost();
 }
 
 void UMortisRunStateSubsystem::AdvanceFloor()
 {
     ++CurrentFloor;
     CurrentRoomIndex = 0;
+    ResetReviveCost();
 }
 
 void UMortisRunStateSubsystem::SetCurrentRoomIndex(int32 NewRoomIndex)
@@ -59,47 +63,73 @@ void UMortisRunStateSubsystem::AddClearedRoomCount(int32 Amount)
     ClearedRoomCount += Amount;
 }
 
-void UMortisRunStateSubsystem::SetMaxLife(int32 NewMaxLife, bool bClampCurrentLife)
+bool UMortisRunStateSubsystem::CanAffordRevive() const
 {
-    MaxLife = FMath::Max(1, NewMaxLife);
-
-    if (bClampCurrentLife)
-        CurrentLife = FMath::Clamp(CurrentLife, 0, MaxLife);
-}
-
-void UMortisRunStateSubsystem::SetCurrentLife(int32 NewCurrentLife)
-{
-    CurrentLife = FMath::Clamp(NewCurrentLife, 0, MaxLife);
-}
-
-bool UMortisRunStateSubsystem::LoseLife(int32 Amount)
-{
-    if (Amount <= 0)
+    const UGameInstance* GI = GetGameInstance();
+    if (!GI)
         return false;
 
-    const int32 PrevLife = CurrentLife;
-    CurrentLife = FMath::Clamp(CurrentLife - Amount, 0, MaxLife);
+    const UMortisMetaProgressionSubsystem* MetaProgression =
+        GI->GetSubsystem<UMortisMetaProgressionSubsystem>();
 
-    if (PrevLife != CurrentLife)
-        return true;
+    if (!MetaProgression)
+        return false;
 
-    return false;
+    return MetaProgression->GetMemoryFragments() >= CurrentReviveCost;
 }
 
-void UMortisRunStateSubsystem::GainLife(int32 Amount)
+bool UMortisRunStateSubsystem::TrySpendReviveCost()
 {
-    if (Amount <= 0)
-        return;
+    UGameInstance* GI = GetGameInstance();
+    if (!GI)
+        return false;
 
-    CurrentLife = FMath::Clamp(CurrentLife + Amount, 0, MaxLife);
+    UMortisMetaProgressionSubsystem* MetaProgression = GI->GetSubsystem<UMortisMetaProgressionSubsystem>();
+
+    if (!MetaProgression)
+        return false;
+
+    if (MetaProgression->GetMemoryFragments() < CurrentReviveCost)
+        return false;
+
+    MetaProgression->AddMemoryFragments(-CurrentReviveCost);
+    if (ReviveCostMultiplier > 1)
+    {
+        if (CurrentReviveCost > MAX_int32 / ReviveCostMultiplier)
+        {
+            CurrentReviveCost = MAX_int32;
+        }
+        else
+        {
+            CurrentReviveCost *= ReviveCostMultiplier;
+        }
+    }
+
+    return true;
+}
+
+void UMortisRunStateSubsystem::ResetReviveCost()
+{
+    CurrentReviveCost = FMath::Max(0, BaseReviveCost);
+}
+
+void UMortisRunStateSubsystem::SetCurrentWeaponTag(FGameplayTag InWeaponTag)
+{
+    CurrentWeapon = InWeaponTag;
 }
 
 void UMortisRunStateSubsystem::ResetRunState()
 {
     CurrentGold = 0;
     CurrentFloor = 1;
-    CurrentLife = MaxLife;
     CurrentRoomIndex = 0;
     ClearedRoomCount = 0;
+    bCanSeeTrueEnding = false;
+    ResetReviveCost();
+    CurrentWeapon = MortisGameplayTags::Data_Weapon_DarkIronSword;
+}
 
+void UMortisRunStateSubsystem::SetTrueEndingEnabled(bool bTrueEnding)
+{
+    bCanSeeTrueEnding = bTrueEnding;
 }

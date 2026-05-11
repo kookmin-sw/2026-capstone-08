@@ -43,7 +43,7 @@ UMortisPlayerUIComponent* UMortisPlayerGameplayAbility::GetMortisPlayerUICompone
 }
 
 
-FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType)
+FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType, bool IsSkill)
 {
 	check(EffectClass);
 
@@ -91,6 +91,7 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 	
 	if (!AttackType.IsValid()) AttackType = MortisGameplayTags::Data_AttackType_Slash;
 	EffectSpecHandle.Data->AddDynamicAssetTag(AttackType);
+	if (IsSkill) EffectSpecHandle.Data->AddDynamicAssetTag(MortisGameplayTags::Data_AttackType_Skill);
 
 	return EffectSpecHandle;
 }

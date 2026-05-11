@@ -114,6 +114,15 @@ void UMortisRuneInventorySubsystem::UpdateStack(const FGameplayTag& SetTag, int3
     OnStackUpdated.Broadcast(SetTag, Level);
 }
 
+void UMortisRuneInventorySubsystem::SetStack(const FGameplayTag& SetTag, int32 StackCount, int32 Level)
+{
+    FMortisActiveRuneSetState* FoundState = RuneSetMap.Find(SetTag);
+    if (!FoundState) return;
+
+    FoundState->Variables[Level - 1].CurrentStack = StackCount;
+    OnStackUpdated.Broadcast(SetTag, Level);
+}
+
 const TArray<FMortisRuneInstance>& UMortisRuneInventorySubsystem::GetOwningRunes() const
 {
     return OwningRunes;
@@ -137,6 +146,25 @@ bool UMortisRuneInventorySubsystem::GetRuneSetStateByTag(const FGameplayTag& Tag
 
     OutState = *FoundState;
     return true;
+}
+
+void UMortisRuneInventorySubsystem::RebuildRuneSetStateFromEquippedRunes(bool bBroadcast)
+{
+    RuneSetMap.Empty();
+    ActivatedRuneSets.Empty();
+
+    for (const FMortisRuneInstance& Rune : EquippedRunes)
+    {
+        if (!Rune.InstanceId.IsValid())
+            continue;
+
+        UpdateSetCount(Rune.SetTag, 1);
+    }
+
+    if (bBroadcast)
+    {
+        OnActivatedRuneSetsChanged.Broadcast(GetActiveRuneSets());
+    }
 }
 
 // 세트의 룬 장착 개수 변경 : Delta로 증감

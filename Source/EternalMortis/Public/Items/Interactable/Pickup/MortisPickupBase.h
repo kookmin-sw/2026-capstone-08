@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsArcMoving() const { return bArcMoving; }
 
+	UFUNCTION(BlueprintCallable)
+	UMortisPickupPreviewWidget* GetPickupPreviewWidget() const;
+
 	// AMortisInteractableActorBase Override
 	virtual void SetSelectionIndicatorVisible(bool bVisible) override;
 
@@ -54,9 +57,6 @@ protected:
 	
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
 
-
-	
-	UMortisPickupPreviewWidget* GetPickupPreviewWidget() const;
 	void FinishArcMove();
 
 protected:

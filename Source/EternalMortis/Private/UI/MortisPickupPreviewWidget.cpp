@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UI/MortisPickupPreviewWidget.h"
@@ -55,6 +55,17 @@ void UMortisPickupPreviewWidget::ApplyPreviewData(const FMortisPickupPreviewData
 {
 	CurrentPreviewData = InPreviewData;
 	bHasPreviewData = true;
+
+	RefreshPreviewState();
+	BP_OnPreviewDataChanged(CurrentPreviewData, bHasPreviewData);
+}
+
+void UMortisPickupPreviewWidget::SetItemName(FText Text)
+{
+	BuildWidgetTreeIfNeeded();
+
+	CurrentPreviewData.TitleText = Text;
+	bHasPreviewData = !Text.IsEmpty();
 
 	RefreshPreviewState();
 	BP_OnPreviewDataChanged(CurrentPreviewData, bHasPreviewData);

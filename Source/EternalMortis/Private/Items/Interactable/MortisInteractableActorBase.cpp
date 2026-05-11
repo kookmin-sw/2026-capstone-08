@@ -23,7 +23,7 @@ AMortisInteractableActorBase::AMortisInteractableActorBase()
 	InteractionCollision->SetBoxExtent(FVector(140.f, 140.f, 100.f));
 	InteractionCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	InteractionCollision->SetCollisionResponseToAllChannels(ECR_Ignore);			// 모두 무시시키고
-	InteractionCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);		// Pawn과 Overlap만 감지
+	InteractionCollision->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Overlap);		// Pawn과 Overlap만 감지
 	InteractionCollision->SetGenerateOverlapEvents(true);
 }
 

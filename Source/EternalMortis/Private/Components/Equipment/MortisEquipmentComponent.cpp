@@ -43,6 +43,10 @@ void UMortisEquipmentComponent::BeginPlay()
     EquippedRuneRuntimes.SetNum(10);
 
     // 자동 장착
+    RuneInv->RebuildRuneSetStateFromEquippedRunes(false);
+
+    ApplyInitialEquippedRunes();
+
     for (const FMortisCurseInstance& Curse : CurseInv->GetOwnedCurses())
         ApplyCurseEffect(Curse);
 }
@@ -332,6 +336,28 @@ void UMortisEquipmentComponent::RemoveSetTier(FMortisAppliedRuneSetRuntime& SetR
         SetRuntime.AppliedTiers.RemoveAt(i);
         return;
     }
+}
+
+void UMortisEquipmentComponent::ApplyInitialEquippedRunes()
+{
+    if (!RuneInv || !ASC || !RuneDB)
+        return;
+
+    const TArray<FMortisRuneInstance>& EquippedRunes = RuneInv->GetEquippedRunes();
+
+    EquippedRuneRuntimes.SetNum(FMath::Max(EquippedRunes.Num(), RuneInv->GetSlotCount()));
+
+    for (int32 SlotIndex = 0; SlotIndex < EquippedRunes.Num(); ++SlotIndex)
+    {
+        const FMortisRuneInstance& Rune = EquippedRunes[SlotIndex];
+
+        if (!Rune.InstanceId.IsValid())
+            continue;
+
+        ApplyRuneEffect(SlotIndex, Rune);
+    }
+
+    UpdateRuneSetBonus(RuneInv->GetActiveRuneSets());
 }
 
 void UMortisEquipmentComponent::ClearSetRuntime(const FGameplayTag& SetTag)

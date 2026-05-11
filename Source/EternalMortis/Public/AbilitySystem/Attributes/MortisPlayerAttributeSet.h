@@ -128,6 +128,14 @@ public:
 	FGameplayAttributeData RollStaminaReduction;
 	ATTRIBUTE_ACCESSORS(UMortisPlayerAttributeSet, RollStaminaReduction)
 
+	UPROPERTY(BlueprintReadOnly, Category = "ETC")
+	FGameplayAttributeData SkillStaminaReduction;
+	ATTRIBUTE_ACCESSORS(UMortisPlayerAttributeSet, SkillStaminaReduction)
+
+	UPROPERTY(BlueprintReadOnly, Category = "ETC")
+	FGameplayAttributeData SkillBonus;
+	ATTRIBUTE_ACCESSORS(UMortisPlayerAttributeSet, SkillBonus)
+
 	UMortisPlayerAttributeSet();
 
 	// UAttributeSet Override
