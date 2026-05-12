@@ -22,12 +22,7 @@ void UMortisEnemySpawnerComponent::SetEnemiesToSpawn(const TArray<TSubclassOf<AM
 
 TArray<AMortisEnemyCharacter*> UMortisEnemySpawnerComponent::SpawnEnemies()
 {
-	MORTIS_LOG("Spawn Enemies");
-	if (!bIsBossSpawner && bHasSpawned)
-	{
-		MORTIS_LOG("already Spawned");
-		return TArray<AMortisEnemyCharacter*>();
-	}
+	// MORTIS_LOG("Spawn Enemies");
 	TArray<UMortisEnemySpawnPointComponent*> SpawnPoints;
 	if (GetOwner())
 	{
@@ -52,7 +47,8 @@ TArray<AMortisEnemyCharacter*> UMortisEnemySpawnerComponent::SpawnEnemies()
 			SpawnedEnemies.Add(NewEnemy);
 		}
 	}
-	bHasSpawned = true;
+	// MORTIS_LOG("Spawn Enemies");
+	
 	return SpawnedEnemies;
 }
 

@@ -163,20 +163,6 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		}
 		LastWarpTargetName = Step.WarpTargetName;
 	}
-	
-	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this,
-		MortisAttackPatternConsts::HitEventTag,
-		nullptr,
-		true
-	);
-
-	if (CachedWaitHitTask.IsValid())
-	{
-		// MORTIS_LOG("Add HitEvent");
-		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
-		CachedWaitHitTask->ReadyForActivation();
-	}
 
 	CachedMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, 
@@ -198,6 +184,19 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		MORTIS_LOG("Invalid Montage Task!");
 	}
 
+	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		MortisAttackPatternConsts::HitEventTag,
+		nullptr,
+		true
+	);
+
+	if (CachedWaitHitTask.IsValid())
+	{
+		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
+		CachedWaitHitTask->ReadyForActivation();
+	}
+	
 	if (Step.SpawnConfigClass)
 	{
 		CachedWaitSpawnTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
