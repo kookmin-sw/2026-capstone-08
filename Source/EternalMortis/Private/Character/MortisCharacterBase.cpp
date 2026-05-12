@@ -5,11 +5,12 @@
 
 #include "MortisDebugHelper.h"
 #include "MotionWarpingComponent.h"
+#include "NiagaraComponent.h"
 #include "AbilitySystem/MortisAbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/MortisAttributeSet.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/Combat/MortisCombatComponent.h"
-#include "Items/Weapons/MortisWeaponBase.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 AMortisCharacterBase::AMortisCharacterBase(const FObjectInitializer& ObjectInitializer)
@@ -24,6 +25,11 @@ AMortisCharacterBase::AMortisCharacterBase(const FObjectInitializer& ObjectIniti
 	MortisAbilitySystemComponent = CreateDefaultSubobject<UMortisAbilitySystemComponent>(TEXT("MortisAbilitySystemComponent"));
 	MortisAttributeSet = CreateDefaultSubobject<UMortisAttributeSet>(TEXT("MortisAttributeSet"));
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>("MotionWarpingComponent");
+	
+	TrailNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("TrailNiagaraComponent");
+	TrailNiagaraComponent->SetupAttachment(GetMesh());
+	TrailCascadeComponent = CreateDefaultSubobject<UParticleSystemComponent>("TrailCascadeComponent");
+	TrailCascadeComponent->SetupAttachment(GetMesh());
 }
 
 UAbilitySystemComponent* AMortisCharacterBase::GetAbilitySystemComponent() const
@@ -62,6 +68,22 @@ void AMortisCharacterBase::PossessedBy(AController* NewController)
 		MortisAbilitySystemComponent->InitAbilityActorInfo(this, this);
 
 		ensureMsgf(!CharacterAbilitySet.IsNull(), TEXT("Forgot to assign start up data to %s"), *GetName());
+	}
+}
+
+void AMortisCharacterBase::StartCascadeTrails(FName TrailStartSocketName, FName TrailEndSocketName, float Width)
+{
+	if (TrailCascadeComponent && TrailCascadeComponent->Template)
+	{
+		TrailCascadeComponent->BeginTrails(TrailStartSocketName, TrailEndSocketName, ETrailWidthMode_FromCentre, Width);
+	}
+}
+
+void AMortisCharacterBase::EndCascadeTrail()
+{
+	if (TrailCascadeComponent)
+	{
+		TrailCascadeComponent->EndTrails();
 	}
 }
 

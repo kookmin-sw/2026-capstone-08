@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "MortisEnemyData.h"
 #include "Character/MortisCharacterBase.h"
 #include "Types/MortisStructTypes.h"
 #include "MortisEnemyCharacter.generated.h"
@@ -27,7 +28,7 @@ public:
 	//~ Begin AActor Interfaces 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-	//~ End AActor Interfaces 
+	//~ End AActor Interfaces
 	
 	//~ Begin AMortisCharacterBase Interfaces
 	virtual void StartDeath() override;
@@ -49,6 +50,10 @@ public:
 	float GetRandomStrafingDistance() const;
 	
 protected:
+	//~ Begin APawn Interfaces
+	virtual void PossessedBy(AController* NewController) override;
+	//~ End APawn Interfaces
+	
 	void InitializeEnemyByData();
 	void InitializeEnemyHUD();
 	void UpdateEnemyHealthBarWidgetLocation();
@@ -57,6 +62,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Data")
 	TObjectPtr<UMortisEnemyData> EnemyData;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Mortis|Data")
+	FMortisEnemyStats EnemyStats;	
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|Component")
 	TObjectPtr<UMortisEnemyCombatComponent> EnemyCombatComponent;
 
@@ -77,6 +85,7 @@ protected:
 #endif
 
 private:
+	void ApplyEnemyStats();
 	void RegisterStateTagEvent();
 	void OnStrafingStateChanged(FGameplayTag Tag, int32 NewCount);
 	void OnChasingStateChanged(FGameplayTag Tag, int32 NewCount) const;

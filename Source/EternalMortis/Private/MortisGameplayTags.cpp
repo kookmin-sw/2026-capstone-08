@@ -16,7 +16,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Toggle_LockOn, "InputTag.Toggle.LockOn");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold, "InputTag.Hold");
-	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Run, "InputTag.Hold.Ability.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_Sprint, "InputTag.Hold.Ability.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Hold_Ability_SuperSprint, "InputTag.Hold.Ability.SuperSprint");
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Roll, "InputTag.Ability.Roll");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_Interact, "InputTag.Ability.Interact");
@@ -25,6 +26,8 @@ namespace MortisGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_LightAttack, "InputTag.Ability.LightAttack");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_WeaponSkill, "InputTag.Ability.WeaponSkill");
+
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_UI_Click, "InputTag.UI.Click");
 
 	// ====================		Ability Tags	====================
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Death, "Ability.Death");
@@ -52,6 +55,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
 	UE_DEFINE_GAMEPLAY_TAG(State_LockOn, "State.LockOn");
 	UE_DEFINE_GAMEPLAY_TAG(State_Invincible, "State.Invincible");
+	UE_DEFINE_GAMEPLAY_TAG(State_EnemyAround, "State.EnemyAround");
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attacking, "State.Action.Attacking");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Turning, "State.Action.Turning");
@@ -70,6 +74,7 @@ namespace MortisGameplayTags
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_SwitchWeapon, "Event.Player.SwitchWeapon");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Complete_Roll, "Event.Player.Complete.Roll");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Complete_SkillAttack, "Event.Player.Complete.SkillAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Success_LightAttack, "Event.Player.Success.LightAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_Success_SkillAttack, "Event.Player.Success.SkillAttack");
 
@@ -82,6 +87,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_Turn, "Event.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_HitReact, "Event.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Action_ImpactReact, "Event.Action.ImpactReact");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Action_Spawn, "Event.Action.Spawn");
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_AttackHit, "Event.Combat.AttackHit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Combo_Next, "Event.Combat.Combo.Next");
@@ -93,6 +99,7 @@ namespace MortisGameplayTags
 	// ====================		Data Tags		====================
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_DarkIronSword, "Data.Weapon.DarkIronSword");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_CastleKnightSword, "Data.Weapon.CastleKnightSword");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_IcySword, "Data.Weapon.IcySword");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_FrostSlayer, "Data.Weapon.FrostSlayer");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Weapon_Finger, "Data.Weapon.Finger");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Shield, "Data.Shield");
@@ -108,15 +115,25 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Blunt, "Data.AttackType.Blunt");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Slash, "Data.AttackType.Slash");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Magic, "Data.AttackType.Magic");
+	UE_DEFINE_GAMEPLAY_TAG(Data_AttackType_Skill, "Data.AttackType.Skill");
 	UE_DEFINE_GAMEPLAY_TAG(Data_AttackScale, "Data.AttackScale");
 	
 	UE_DEFINE_GAMEPLAY_TAG(Data_Stat_PoiseDamage, "Data.Stat.PoiseDamage");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Stat_FixedDamage, "Data.Stat.FixedDamage");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_RuneValue, "Data.RuneValue");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Health, "Data.Cost.Health");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Stamina, "Data.Cost.Stamina");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Cost_Mana, "Data.Cost.Mana");
 
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_MaxHealth, "Data.Enemy.Stat.MaxHealth");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_MaxPoise, "Data.Enemy.Stat.MaxPoise");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_BaseDamage, "Data.Enemy.Stat.BaseDamage");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistPierce, "Data.Enemy.Stat.ResistPierce");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistBlunt, "Data.Enemy.Stat.ResistBlunt");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistSlash, "Data.Enemy.Stat.ResistSlash");
+	UE_DEFINE_GAMEPLAY_TAG(Data_Enemy_Stat_ResistMagic, "Data.Enemy.Stat.ResistMagic");
+	
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxHP, "Data.Player.Stat.MaxHP");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_MaxStamina, "Data.Player.Stat.MaxStamina");
 	UE_DEFINE_GAMEPLAY_TAG(Data_Player_Stat_StaminaReductionRate, "Data.Player.Stat.StaminaReductionRate");
@@ -158,6 +175,10 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fortitude, "Rune.Set.Fortitude");
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Thorns, "Rune.Set.Thorns");
 	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Fury, "Rune.Set.Fury");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Endurance, "Rune.Set.Endurance");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Flow, "Rune.Set.Flow");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Circulation, "Rune.Set.Circulation");
+	UE_DEFINE_GAMEPLAY_TAG(Rune_Set_Body, "Rune.Set.Body");
 
 	// ====================		Character Tags	====================
 	UE_DEFINE_GAMEPLAY_TAG(Experience_Test, "Experience.Test");

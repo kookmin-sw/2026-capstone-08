@@ -8,6 +8,7 @@
 #include "MortisMetaProgressionDataTypes.generated.h"
 
 class UGameplayEffect;
+class UTexture2D;
 
 USTRUCT(BlueprintType)
 struct FMortisExperienceRow : public FTableRowBase
@@ -22,6 +23,9 @@ struct FMortisExperienceRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText Description;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UTexture2D> Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 UnlockCost = 1;

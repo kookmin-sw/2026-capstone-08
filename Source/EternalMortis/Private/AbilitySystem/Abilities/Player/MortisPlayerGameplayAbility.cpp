@@ -43,7 +43,7 @@ UMortisPlayerUIComponent* UMortisPlayerGameplayAbility::GetMortisPlayerUICompone
 }
 
 
-FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType)
+FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpdateEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, const FMortisPlayerWeaponData& WeaponData, const float AttackScale, FGameplayTag AttackType, bool IsSkill)
 {
 	check(EffectClass);
 
@@ -91,6 +91,7 @@ FGameplayEffectSpecHandle UMortisPlayerGameplayAbility::MakePlayerBaseDamageUpda
 	
 	if (!AttackType.IsValid()) AttackType = MortisGameplayTags::Data_AttackType_Slash;
 	EffectSpecHandle.Data->AddDynamicAssetTag(AttackType);
+	if (IsSkill) EffectSpecHandle.Data->AddDynamicAssetTag(MortisGameplayTags::Data_AttackType_Skill);
 
 	return EffectSpecHandle;
 }
@@ -114,10 +115,10 @@ bool UMortisPlayerGameplayAbility::CheckStaminaCost(float BaseCost, float& OutFi
 		return false;
 	}
 
-	OutFinalCost = CalculateStaminaCost(BaseCost);
+	OutFinalCost = CalculateStaminaCost(BaseCost, AdditionalReduceRate);
 
 	const float CurrentStamina =
-		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentStaminaAttribute()) + AdditionalReduceRate;
+		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentStaminaAttribute());
 
 	return CurrentStamina >= -OutFinalCost;
 }
@@ -141,10 +142,10 @@ bool UMortisPlayerGameplayAbility::CheckManaCost(float BaseCost, float& OutFinal
 		return false;
 	}
 
-	OutFinalCost = CalculateStaminaCost(BaseCost);
+	OutFinalCost = CalculateStaminaCost(BaseCost, AdditionalReduceRate);
 
 	const float CurrentMana =
-		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute()) + AdditionalReduceRate;
+		ASC->GetNumericAttribute(UMortisPlayerAttributeSet::GetCurrentManaAttribute());
 
 	return CurrentMana >= -OutFinalCost;
 }

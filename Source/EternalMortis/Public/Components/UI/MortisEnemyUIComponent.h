@@ -17,4 +17,10 @@ class ETERNALMORTIS_API UMortisEnemyUIComponent : public UMortisUIComponent
 public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|UI")
 	bool GetCurrentHealthSnapshot(float& OutCurrentHealth, float& OutMaxHealth) const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|UI|Boss")
+	bool IsBoss() const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|UI|Boss")
+	FText GetBossDisplayName() const;
 };

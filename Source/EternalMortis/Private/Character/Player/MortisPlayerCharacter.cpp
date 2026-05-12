@@ -19,6 +19,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MotionWarpingComponent.h"
 #include "MortisGameplayTags.h"
+#include "Controllers/MortisPlayerController.h"
 
 #include "MortisDebugHelper.h"
 
@@ -149,6 +150,40 @@ void AMortisPlayerCharacter::SetLockOnHeightOffsetEnabled(bool bEnabled)
 	bLockOnHeightOffsetEnabled = bEnabled;
 }
 
+void AMortisPlayerCharacter::SetCurrentLockedTarget(AActor* NewTarget)
+{
+	CurrentLockedTarget = IsValid(NewTarget) ? NewTarget : nullptr;
+}
+
+void AMortisPlayerCharacter::ClearCurrentLockedTarget()
+{
+	CurrentLockedTarget = nullptr;
+}
+
+AActor* AMortisPlayerCharacter::GetCurrentLockedTarget() const
+{
+	return CurrentLockedTarget.IsValid() ? CurrentLockedTarget.Get() : nullptr;
+}
+
+bool AMortisPlayerCharacter::HasCurrentLockedTarget() const
+{
+	return CurrentLockedTarget.IsValid();
+}
+
+bool AMortisPlayerCharacter::GetCurrentLockedTargetLocation(FVector& OutLocation) const
+{
+	AActor* LockedTarget = GetCurrentLockedTarget();
+
+	if (!IsValid(LockedTarget))
+	{
+		OutLocation = FVector::ZeroVector;
+		return false;
+	}
+
+	OutLocation = LockedTarget->GetActorLocation();
+	return true;
+}
+
 void AMortisPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -180,6 +215,11 @@ void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_TargetChange, ETriggerEvent::Started, this, &ThisClass::Input_TargetChange);
 
 	MortisInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
+
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Completed, this, &ThisClass::Input_CursorMoveCompleted);
+
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Canceled, this, &ThisClass::Input_CursorMoveCompleted);
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_UI_Click, ETriggerEvent::Started, this, &ThisClass::Input_UIClickPressed);
 }
 
 void AMortisPlayerCharacter::BeginPlay()
@@ -217,17 +257,37 @@ void AMortisPlayerCharacter::Tick(float DeltaTime)
 		ZoomHeightInterpSpeed
 	);
 
+	if (!bLockOnHeightOffsetEnabled)
+	{
+		SocketOffset.Y = FMath::FInterpTo(
+			SocketOffset.Y,
+			0.0f,
+			DeltaTime,
+			ZoomHeightInterpSpeed
+		);
+	}
+
 	CameraArm->SocketOffset = SocketOffset;
 }
 
 void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
+	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
+
+	if (AMortisPlayerController* MortisPC = Cast<AMortisPlayerController>(GetController()))
+	{
+		if (MortisPC->bShowMouseCursor)
+		{
+			MortisPC->SetGamepadCursorInput(MovementVector);
+			return;
+		}
+	}
+
 	if (!bCanMoveInput || !bCanMoveInputByAbility) return;
 
-	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
-	if (MovementVector.SizeSquared() > 0.01f) { 
+	if (MovementVector.SizeSquared() > MoveStickDeadZone) { 
 		StopRecoveryMontage(RecoveryBlendOutTime);
 
 		const FVector WorldMoveDirection = (MovementRotation.RotateVector(FVector(MovementVector.Y, MovementVector.X, 0.0f))).GetSafeNormal();
@@ -238,19 +298,19 @@ void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValu
 
 			MotionWarpingComponent->AddOrUpdateWarpTargetFromTransform(TEXT("AttackDirection"),WarpTargetTransform);
 		}
-	}
 
-	if (MovementVector.Y != 0.0f)
-	{
-		const FVector ForwardDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+		if (MovementVector.Y != 0.0f)
+		{
+			const FVector ForwardDirection = MovementRotation.RotateVector(FVector::ForwardVector);
 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-	}
-	if (MovementVector.X != 0.0f)
-	{
-		const FVector RightDirection = MovementRotation.RotateVector(FVector::RightVector);
+			AddMovementInput(ForwardDirection, MovementVector.Y);
+		}
+		if (MovementVector.X != 0.0f)
+		{
+			const FVector RightDirection = MovementRotation.RotateVector(FVector::RightVector);
 
-		AddMovementInput(RightDirection, MovementVector.X);
+			AddMovementInput(RightDirection, MovementVector.X);
+		}
 	}
 }
 
@@ -260,12 +320,16 @@ void AMortisPlayerCharacter::Input_Look(const FInputActionValue& InputActionValu
 
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
+	if (LookAxisVector.SizeSquared() > LookStickDeadZone)
 	{
-		AddControllerYawInput(LookAxisVector.X);
-	}
-	if (LookAxisVector.Y != 0.0f)
-	{
-		AddControllerPitchInput(LookAxisVector.Y);
+		if (LookAxisVector.X != 0.0f)
+		{
+			AddControllerYawInput(LookAxisVector.X);
+		}
+		if (LookAxisVector.Y != 0.0f)
+		{
+			AddControllerPitchInput(LookAxisVector.Y);
+		}
 	}
 }
 
@@ -311,6 +375,21 @@ void AMortisPlayerCharacter::Input_AbilityInputPressed(FGameplayTag InputTag)
 void AMortisPlayerCharacter::Input_AbilityInputReleased(FGameplayTag InputTag)
 {
 	MortisAbilitySystemComponent->OnAbilityInputReleased(InputTag);
+}
+
+void AMortisPlayerCharacter::Input_CursorMoveCompleted(const FInputActionValue& InputActionValue)
+{
+	if (AMortisPlayerController* MortisPC = Cast<AMortisPlayerController>(GetController()))
+		MortisPC->SetGamepadCursorInput(FVector2D::ZeroVector);
+}
+
+void AMortisPlayerCharacter::Input_UIClickPressed(const FInputActionValue& InputActionValue)
+{
+	AMortisPlayerController* MortisPC = Cast<AMortisPlayerController>(GetController());
+	if (!MortisPC || !MortisPC->bShowMouseCursor)
+		return;
+
+	MortisPC->ClickHoveredButton();
 }
 
 bool AMortisPlayerCharacter::IsBufferableAbility(FGameplayTag AbilityTag)

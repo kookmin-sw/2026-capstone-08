@@ -7,6 +7,7 @@
 #include "MortisFunctionLibrary.h"
 #include "Components/ShapeComponent.h"
 #include "Interfaces/MortisCollisionInterface.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AMortisWeaponBase::AMortisWeaponBase()
@@ -15,6 +16,13 @@ AMortisWeaponBase::AMortisWeaponBase()
 
 	WeaponRoot = CreateDefaultSubobject<USceneComponent>(TEXT("WeaponRoot"));
 	SetRootComponent(WeaponRoot);
+
+	TrailOrigin = CreateDefaultSubobject<USceneComponent>(TEXT("TrailOrigin"));
+	TrailOrigin->SetupAttachment(WeaponRoot);
+
+	WeaponTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("WeaponTrailComponent"));
+	WeaponTrailComponent->SetupAttachment(TrailOrigin);
+	WeaponTrailComponent->SetAutoActivate(false);
 }
 
 const TArray<TObjectPtr<UShapeComponent>>* AMortisWeaponBase::GetCollisionComponentsByTag(FGameplayTag TagToToggle)
@@ -65,6 +73,50 @@ void AMortisWeaponBase::InitializeCollisions()
 			ShapeComp->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::OnCollisionEndOverlap);
 			ShapeComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
+	}
+}
+
+void AMortisWeaponBase::StartWeaponTrail()
+{
+	if (WeaponTrailComponent && WeaponTrailComponent->GetAsset())
+	{
+		WeaponTrailComponent->Activate(true);
+	}
+	else if (WeaponCascadeTrailComponent && WeaponCascadeTrailComponent->Template)
+	{
+		WeaponCascadeTrailComponent->Activate(true);
+	}
+}
+
+void AMortisWeaponBase::StopWeaponTrail()
+{
+	if (WeaponTrailComponent)
+	{
+		WeaponTrailComponent->Deactivate();
+	}
+	else if (WeaponCascadeTrailComponent)
+	{
+		WeaponCascadeTrailComponent->Deactivate();
+	}
+}
+
+void AMortisWeaponBase::StartWeaponCascadeTrail(FName TrailStartSocketName, FName TrailEndSocketName, float Width)
+{
+	if (WeaponTrailComponent && WeaponTrailComponent->GetAsset())
+	{
+		WeaponTrailComponent->Activate(true);
+	}
+	else if (WeaponCascadeTrailComponent && WeaponCascadeTrailComponent->Template)
+	{
+		WeaponCascadeTrailComponent->BeginTrails(TrailStartSocketName, TrailEndSocketName, ETrailWidthMode_FromCentre, Width);
+	}
+}
+
+void AMortisWeaponBase::EndWeaponCascadeTrail()
+{
+	if (WeaponCascadeTrailComponent && WeaponCascadeTrailComponent->Template)
+	{
+		WeaponCascadeTrailComponent->EndTrails();
 	}
 }
 

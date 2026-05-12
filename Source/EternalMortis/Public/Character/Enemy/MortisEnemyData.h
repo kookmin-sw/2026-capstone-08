@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 	FRotator MeshRotation = FRotator(0.f, -90.f, 0.f);
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
+	FVector MeshOffset = FVector::ZeroVector;
+	
 	/* Variation */
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh|Variation")
 	bool bEnableVisualVariations = false;
@@ -75,25 +78,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	float DirectionInterpSpeed = 10.f;
 	
-	/* For Two Hand IK */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation|IK")
-	bool bUseTwoHandedIK = false;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Animation|IK", meta = (EditCondition = "bUseTwoHandedIK"))
-	FName LeftHandSocketName = TEXT("LeftHandGripSocket");
-	
-	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
-	FName LeftUpperArmSocketName = TEXT("upperarm_l");
-	
-	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
-	float ElbowOutOffset = 50.f;
-
-	UPROPERTY(EditAnywhere, Category = "AnimData|IK")
-	float ElbowBackOffset = 30.f;
-	
 	/* Combat */
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	FMortisWeaponCommonData UnarmedData;
+
+	/* UI */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Boss")
+	bool bIsBoss = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Boss", meta = (EditCondition = "bIsBoss"))
+	FText BossDisplayName;
 	
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
@@ -151,4 +145,40 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UMortisAttackPatternData> AttackPatternData;
 	
+	/* Stat */
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	FDataTableRowHandle StatRowHandle;
+};
+
+USTRUCT(BlueprintType)
+struct ETERNALMORTIS_API FMortisEnemyStats : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+	/* Default Stat */
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float MaxHealth;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float BaseDamage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float MaxPoise;
+	
+	/* Resist */
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float ResistPierce;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float ResistBlunt;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float ResistSlash;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stat")
+	float ResistMagic;
+
+	/* Drop */
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	FMortisEnemyDropData DropData;
 };

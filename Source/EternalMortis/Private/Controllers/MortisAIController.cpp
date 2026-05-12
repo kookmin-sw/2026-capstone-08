@@ -134,28 +134,32 @@ void AMortisAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(InPawn))
+	AMortisEnemyCharacter* EnemyCharacter = Cast<AMortisEnemyCharacter>(InPawn);
+	if (!EnemyCharacter)
 	{
-		EnemyCharacter->InitializeEnemyCharacter();
-		// MORTIS_LOG("AIController Possess: %s", *InPawn->GetActorNameOrLabel());
-		if (const UMortisEnemyData* Data = EnemyCharacter->GetEnemyData())
-		{
-			ConfigurePerceptionFromData(Data);
-
-			if (Data->BehaviorTree)
-			{
-				bool Result = RunBehaviorTree(Data->BehaviorTree);
-				UBlackboardComponent* BBComp = GetBlackboardComponent();
-				if (!BBComp)
-				{
-					return;
-				}
-				BBComp->SetValueAsFloat(MortisBlackboardKeys::StrafingDistance, EnemyCharacter->GetRandomStrafingDistance());
-				// MORTIS_LOG("Run behavior tree %s", Result ? *FString("Success") : *FString("Fail"));
-			}
-			
-		}
+		return;
 	}
+	
+	EnemyCharacter->InitializeEnemyCharacter();
+	const UMortisEnemyData* Data = EnemyCharacter->GetEnemyData();
+	if (!Data)
+	{
+		return;
+	}
+
+	ConfigurePerceptionFromData(Data);
+
+	if (!RunBehaviorTree(Data->BehaviorTree))
+	{
+		return;
+	}
+	
+	UBlackboardComponent* BBComp = GetBlackboardComponent();
+	if (!BBComp)
+	{
+		return;
+	}
+	BBComp->SetValueAsFloat(MortisBlackboardKeys::StrafingDistance, EnemyCharacter->GetRandomStrafingDistance());
 }
 
 void AMortisAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)

@@ -54,4 +54,7 @@ protected:
 	
 	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
 	FGameplayEffectSpecHandle MakeDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float Damage, float PoiseDamage, const FGameplayTag DamageTag);
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Ability")
+	FGameplayEffectSpecHandle MakeNonWeaponDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float Damage, float PoiseDamage, const FGameplayTag DamageTag);
 };

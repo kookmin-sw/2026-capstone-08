@@ -7,6 +7,7 @@
 #include "MortisUIComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, NewHealth, float, MaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamageTaken, float, DamageAmount, float, NewHealth, float, MaxHealth);
 
 /**
  * 
@@ -19,4 +20,7 @@ class ETERNALMORTIS_API UMortisUIComponent : public UPawnExtensionComponentBase
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnDamageTaken OnDamageTaken;
 };

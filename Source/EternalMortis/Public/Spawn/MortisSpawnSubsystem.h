@@ -7,6 +7,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "MortisSpawnSubsystem.generated.h"
 
+class UMortisEnemySpawnerComponent;
 class AMortisEnemyCharacter;
 class AMortisRoomEnemySpawner;
 /**
@@ -26,9 +27,15 @@ public:
 	void InitializeSpawnPoints();
 	
 	void AssignEnemies();
-	void AssignEnemiesByFloor(AMortisRoomEnemySpawner* RoomSpawner, const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget);
-	void AssignEnemiesFromCustomRow(AMortisRoomEnemySpawner* RoomSpawner, const FDataTableRowHandle& CustomSpawnRowHandle);
+	void AssignEnemiesByFloor(UMortisEnemySpawnerComponent* SpawnerComponent, const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget);
+	void AssignEnemiesFromCustomRow(UMortisEnemySpawnerComponent* SpawnerComponent, const FDataTableRowHandle& CustomSpawnRowHandle);
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterSpawner(UMortisEnemySpawnerComponent* NewSpawner);
 	
+	UFUNCTION(BlueprintCallable)
+	void UnregisterSpawner(UMortisEnemySpawnerComponent* Spawner);
 private:
+	TArray<TWeakObjectPtr<UMortisEnemySpawnerComponent>> SpawnerComponents;
 	TArray<TSubclassOf<AMortisEnemyCharacter>> SelectEnemiesToSpawn(const TArray<FDataTableRowHandle>& EnemyPool, float Budget);
 };

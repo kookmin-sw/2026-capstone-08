@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "GameplayTagContainer.h"
+#include "MortisGameplayTags.h"
 #include "MortisRunStateSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoldChanged, int32, DeltaGold);
@@ -22,10 +24,7 @@ public:
     int32 GetCurrentFloor() const { return CurrentFloor; }
 
     UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
-    int32 GetCurrentLife() const { return CurrentLife; }
-
-    UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
-    int32 GetMaxLife() const { return MaxLife; }
+    int32 GetCurrentConcept() const { return CurrentConcept; }
 
     UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
     int32 GetCurrentRoomIndex() const { return CurrentRoomIndex; }
@@ -34,7 +33,7 @@ public:
     int32 GetClearedRoomCount() const { return ClearedRoomCount; }
 
     UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
-    bool IsRunFailed() const { return CurrentLife <= 0; }
+    bool CanSeeTrueEnding() const { return bCanSeeTrueEnding; }
 
     // ----- Gold -----
     UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
@@ -57,27 +56,43 @@ public:
     void AdvanceFloor();
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
+    void SetCurrentConcept(int32 NewConcept);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
+    void AdvanceConcept();
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
     void SetCurrentRoomIndex(int32 NewRoomIndex);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
     void AddClearedRoomCount(int32 Amount = 1);
 
-    // ----- Life -----
-    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
-    void SetMaxLife(int32 NewMaxLife, bool bClampCurrentLife = true);
+    // ----- Revive -----
+    UFUNCTION(BlueprintPure, Category = "Mortis|RunState|Revive")
+    int32 GetCurrentReviveCost() const { return CurrentReviveCost; }
 
-    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
-    void SetCurrentLife(int32 NewCurrentLife);
+    UFUNCTION(BlueprintPure, Category = "Mortis|RunState|Revive")
+    bool CanAffordRevive() const;
 
-    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
-    bool LoseLife(int32 Amount = 1);
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState|Revive")
+    bool TrySpendReviveCost();
 
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState|Revive")
+    void ResetReviveCost();
+
+    // ----- Run -----
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
-    void GainLife(int32 Amount = 1);
+    void SetCurrentWeaponTag(FGameplayTag InWeaponTag);
+
+    UFUNCTION(BlueprintPure, Category = "Mortis|RunState")
+    FGameplayTag GetCurrentWeaponTag() { return CurrentWeapon; }
 
     // ----- Run -----
     UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
     void ResetRunState();
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RunState")
+    void SetTrueEndingEnabled(bool bTrueEnding);
     
     // ----- Delegate -----
     UPROPERTY(BlueprintAssignable, BlueprintCallable)
@@ -92,14 +107,26 @@ protected:
     int32 CurrentFloor = 1;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
-    int32 CurrentLife = 3;
+    int32 CurrentConcept = 0;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|RunState")
-    int32 MaxLife = 3;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|RunState|Revive")
+    int32 BaseReviveCost = 100;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mortis|RunState|Revive")
+    int32 ReviveCostMultiplier = 2;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState|Revive")
+    int32 CurrentReviveCost = 100;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
     int32 CurrentRoomIndex = 0;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
     int32 ClearedRoomCount = 0;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
+    bool bCanSeeTrueEnding = false;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mortis|RunState")
+    FGameplayTag CurrentWeapon = MortisGameplayTags::Data_Weapon_DarkIronSword;
 };

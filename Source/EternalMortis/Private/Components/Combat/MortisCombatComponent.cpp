@@ -3,6 +3,7 @@
 
 #include "Components/Combat/MortisCombatComponent.h"
 #include "MortisDebugHelper.h"
+#include "Character/MortisCharacterBase.h"
 #include "Items/Weapons/MortisWeaponBase.h"
 #include "Items/Weapons/MortisShieldBase.h"
 
@@ -36,6 +37,7 @@ void UMortisCombatComponent::RegisterWeapon(FGameplayTag WeaponTag, AMortisWeapo
 
 void UMortisCombatComponent::RegisterWeaponToSlot(FGameplayTag SlotTag, AMortisWeaponBase* WeaponToRegister, bool bRegisterAsEquippedWeapon)
 {
+	// MORTIS_LOG("Register Weapon: %s", *WeaponToRegister->GetActorNameOrLabel());
 	if (WeaponBySlotTag.Contains(SlotTag))
 	{
 		UnRegisterWeapon(SlotTag);
@@ -173,9 +175,26 @@ AMortisWeaponBase* UMortisCombatComponent::GetCurrentWeapon() const
 {
 	if (!CurrentAttackSlot.IsValid())
 	{
+		// MORTIS_LOG("Current AttackSlot is null");
 		return nullptr;
 	}
 	return WeaponBySlotTag.FindRef(CurrentAttackSlot);
+}
+
+void UMortisCombatComponent::StartCascadeTrails(FName TrailStartSocketName, FName TrailEndSocketName, float Width)
+{
+	if (AMortisCharacterBase* Character = Cast<AMortisCharacterBase>(GetOwner()))
+	{
+		Character->StartCascadeTrails(TrailStartSocketName, TrailEndSocketName, Width);
+	}
+}
+
+void UMortisCombatComponent::EndCascadeTrail()
+{
+	if (AMortisCharacterBase* Character = Cast<AMortisCharacterBase>(GetOwner()))
+	{
+		Character->EndCascadeTrail();
+	}
 }
 
 void UMortisCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle)
@@ -256,7 +275,7 @@ void UMortisCombatComponent::UpdateAttackTrace()
 			AttackTraceObjectTypes,
 			false,
 			IgnoreActors,
-			EDrawDebugTrace::None,
+			EDrawDebugTrace::ForDuration,
 			HitResults,
 			true,
 			FLinearColor::Green

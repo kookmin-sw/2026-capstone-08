@@ -5,10 +5,12 @@
 
 #include "MortisDebugHelper.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
+#include "Spawn/MortisEnemySpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Spawn/MortisRoomEnemySpawner.h"
 #include "Spawn/MortisSpawnSettings.h"
 #include "System/MortisGameState.h"
+#include "System/MortisRunStateSubsystem.h"
 
 void UMortisSpawnSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -24,13 +26,14 @@ void UMortisSpawnSubsystem::InitializeSpawnPoints()
 
 void UMortisSpawnSubsystem::AssignEnemies()
 {
-	AMortisGameState* GS = GetWorld()->GetGameState<AMortisGameState>();;
-	if (!GS)
+	UMortisRunStateSubsystem* RunStateSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMortisRunStateSubsystem>();
+	if (!RunStateSubsystem)
 	{
-		MORTIS_LOG("GameState is null");
+		MORTIS_LOG("RunStateSubsystem is null");
 		return;
 	}
-	int32 CurrentFloor = GS->GetCurrentFloor();
+	int32 CurrentFloor = RunStateSubsystem->GetCurrentFloor();
+	MORTIS_LOG("CurrentFloor = %d", CurrentFloor);
 	
 	const UMortisSpawnSettings* SpawnSettings = GetDefault<UMortisSpawnSettings>();
 	if (!SpawnSettings)
@@ -47,24 +50,24 @@ void UMortisSpawnSubsystem::AssignEnemies()
 		return;
 	}
 	
-	TArray<AActor*> FoundRoomEnemySpawners;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMortisRoomEnemySpawner::StaticClass(), FoundRoomEnemySpawners);
+	// TArray<AActor*> FoundRoomEnemySpawners;
+	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMortisRoomEnemySpawner::StaticClass(), FoundRoomEnemySpawners);
 	// MORTIS_LOG("Spawner Counts: %d", FoundRoomEnemySpawners.Num());
 	
-	for (AActor* EnemySpawnerActor : FoundRoomEnemySpawners)
+	for (TWeakObjectPtr<UMortisEnemySpawnerComponent>& SpawnerPtr : SpawnerComponents)
 	{
-		AMortisRoomEnemySpawner* RoomEnemySpawner = Cast<AMortisRoomEnemySpawner>(EnemySpawnerActor);
-		if (!RoomEnemySpawner)
+		if (!SpawnerPtr.IsValid())
 		{
 			continue;
 		}
-		switch (RoomEnemySpawner->GetSpawnMode())
+		UMortisEnemySpawnerComponent* Spawner = SpawnerPtr.Get();
+		switch (Spawner->GetSpawnMode())
 		{
 		case EMortisSpawnMode::RandomByFloor:
-			AssignEnemiesByFloor(RoomEnemySpawner, FloorSpawnRow, FloorSpawnRow->SpawnBudget);
+			AssignEnemiesByFloor(Spawner, FloorSpawnRow, FloorSpawnRow->SpawnBudget);
 			break;
 		case EMortisSpawnMode::FixedCustom:
-			AssignEnemiesFromCustomRow(RoomEnemySpawner, RoomEnemySpawner->GetCustomSpawnRowHandle());
+			AssignEnemiesFromCustomRow(Spawner, Spawner->GetCustomSpawnRowHandle());
 			break;
 		default:
 			break;
@@ -72,7 +75,7 @@ void UMortisSpawnSubsystem::AssignEnemies()
 	}
 }
 
-void UMortisSpawnSubsystem::AssignEnemiesByFloor(AMortisRoomEnemySpawner* RoomSpawner,
+void UMortisSpawnSubsystem::AssignEnemiesByFloor(UMortisEnemySpawnerComponent* SpawnerComponent,
 	const FMortisFloorSpawnRow* FloorSpawnRow, float SpawnBudget)
 {
 	// MORTIS_LOG("Assign Enemy By Floor");
@@ -82,12 +85,13 @@ void UMortisSpawnSubsystem::AssignEnemiesByFloor(AMortisRoomEnemySpawner* RoomSp
 		return;
 	}
 	TArray<TSubclassOf<AMortisEnemyCharacter>> SelectedEnemies = SelectEnemiesToSpawn(FloorSpawnRow->EnemyRows, SpawnBudget);
-	RoomSpawner->SetEnemiesToSpawn(SelectedEnemies);
+	SpawnerComponent->SetEnemiesToSpawn(SelectedEnemies);
 }
 
-void UMortisSpawnSubsystem::AssignEnemiesFromCustomRow(AMortisRoomEnemySpawner* RoomSpawner,
+void UMortisSpawnSubsystem::AssignEnemiesFromCustomRow(UMortisEnemySpawnerComponent* SpawnerComponent,
 	const FDataTableRowHandle& CustomSpawnRowHandle)
 {
+	// MORTIS_LOG("Assign Enemy By Custom");
 	if (CustomSpawnRowHandle.IsNull())
 	{
 		return;
@@ -105,7 +109,17 @@ void UMortisSpawnSubsystem::AssignEnemiesFromCustomRow(AMortisRoomEnemySpawner* 
 		FMortisSpawnEnemyRow* EnemyRow = EnemyRowHandle.GetRow<FMortisSpawnEnemyRow>(TEXT("SpawnEnemyRow"));
 		EnemiesToSpawn.Add(EnemyRow->EnemyClass);
 	}
-	RoomSpawner->SetEnemiesToSpawn(EnemiesToSpawn);
+	SpawnerComponent->SetEnemiesToSpawn(EnemiesToSpawn);
+}
+
+void UMortisSpawnSubsystem::RegisterSpawner(UMortisEnemySpawnerComponent* NewSpawner)
+{
+	SpawnerComponents.Add(NewSpawner);
+}
+
+void UMortisSpawnSubsystem::UnregisterSpawner(UMortisEnemySpawnerComponent* Spawner)
+{
+	SpawnerComponents.Remove(Spawner);
 }
 
 TArray<TSubclassOf<AMortisEnemyCharacter>> UMortisSpawnSubsystem::SelectEnemiesToSpawn(

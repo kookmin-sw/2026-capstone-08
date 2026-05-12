@@ -91,6 +91,21 @@ bool UMortisInventoryStatusPageWidget::FindRuneBonusValueBySymbol(EMortisRuneSym
 	return false;
 }
 
+bool UMortisInventoryStatusPageWidget::BuildAttributeTextByName(FName AttributeName, const FText LeftText, FText& OutLeftText, FText& OutRightText) const
+{
+	OutLeftText = LeftText;
+	OutRightText = FText::GetEmpty();
+
+	FMortisInventoryStatusAttributeValue AttributeValue;
+	if (!FindAttributeValueByName(AttributeName, AttributeValue))
+	{
+		return false;
+	}
+
+	OutRightText = FormatStatusNumber(AttributeValue.Value);
+	return true;
+}
+
 bool UMortisInventoryStatusPageWidget::BuildAttributeTextByRuneSymbol(EMortisRuneSymbol SymbolType, const FText LeftText, FText& OutLeftText, FText& OutRightText) const
 {
 	OutLeftText = LeftText;

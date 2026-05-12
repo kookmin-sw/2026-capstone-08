@@ -8,6 +8,8 @@
 #include "MortisEnumTypes.h"
 #include "MortisStructTypes.generated.h"
 
+class UAbilitySystemComponent;
+class UMortisSpawnConfig;
 class UGameplayEffect;
 class UMortisPlayerLinkedAnimLayer;
 class UInputMappingContext;
@@ -88,13 +90,7 @@ struct FMortisAttackPatternStep
 	TObjectPtr<UAnimMontage> Montage;
 
 	UPROPERTY(EditDefaultsOnly)
-	float PlayRate = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly)
 	float DamageMultiplier = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly)
-	float DelayAfterStep = 0.0f;
 
 	/* Motion Warping */
 	UPROPERTY(EditDefaultsOnly)
@@ -112,12 +108,13 @@ struct FMortisAttackPatternStep
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseMotionWarping"))
 	bool bContinuousWarpUpdate = false;
 
+	/* Spawn */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMortisSpawnConfig> SpawnConfigClass;
+	
 	/* Combo */
 	UPROPERTY(EditDefaultsOnly)
 	bool bUseComboTransitionNotify = false;
-
-	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseComboTransitionNotify"))
-	FGameplayTag ComboTransitionEventTag = MortisGameplayTags::Event_Combat_Combo_Next;
 };
 
 USTRUCT(BlueprintType)
@@ -302,4 +299,22 @@ struct FMortisDropRuleRow : public FTableRowBase
 			&& WeaponGradeWeights.HasAnyPositiveWeight()
 			&& RuneGradeWeights.HasAnyPositiveWeight();
 	}
+};
+
+USTRUCT(BlueprintType)
+struct FMortisEnemyDropData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MinGold;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MaxGold;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MinMemoryFragmentCount;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+	int32 MaxMemoryFragmentCount;
 };

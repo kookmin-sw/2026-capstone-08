@@ -17,6 +17,8 @@ struct FMortisDamageCapture
 	DECLARE_ATTRIBUTE_CAPTUREDEF(BluntBonus)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(SlashBonus)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(MagicBonus)
+	DECLARE_ATTRIBUTE_CAPTUREDEF(SkillBonus)
+	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistAll)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistPierce)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistBlunt)
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ResistSlash)
@@ -28,11 +30,13 @@ struct FMortisDamageCapture
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, BaseDamage, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, IncomingDamage, Target, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, IncomingPoiseDamage, Target, false)
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisAttributeSet, ResistAll, Target, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, AllTypeBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, PierceBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, BluntBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, SlashBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, MagicBonus, Source, false)
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisPlayerAttributeSet, SkillBonus, Source, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisEnemyAttributeSet, ResistPierce, Target, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisEnemyAttributeSet, ResistBlunt, Target, false)
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UMortisEnemyAttributeSet, ResistSlash, Target, false)
@@ -51,11 +55,13 @@ UMortisIncomingDamageExecCalc::UMortisIncomingDamageExecCalc()
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().BaseDamageDef);
 	// RelevantAttributesToCapture.Add(GetMortisDamageCapture().IncomingDamageDef);
 	// RelevantAttributesToCapture.Add(GetMortisDamageCapture().IncomingPoiseDamageDef);
+	RelevantAttributesToCapture.Add(GetMortisDamageCapture().ResistAllDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().AllTypeBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().PierceBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().BluntBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().SlashBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().MagicBonusDef);
+	RelevantAttributesToCapture.Add(GetMortisDamageCapture().SkillBonusDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().ResistPierceDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().ResistBluntDef);
 	RelevantAttributesToCapture.Add(GetMortisDamageCapture().ResistSlashDef);
@@ -92,20 +98,23 @@ void UMortisIncomingDamageExecCalc::Execute_Implementation(const FGameplayEffect
 	const float BluntBonus = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().BluntBonusDef, EvaluateParameters);
 	const float SlashBonus = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().SlashBonusDef, EvaluateParameters);
 	const float MagicBonus = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().MagicBonusDef, EvaluateParameters);
+	const float SkillBonus = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().SkillBonusDef, EvaluateParameters);
 
 	// 저항과 보너스 공격력 선택
 	float Resist = 0.0f;
 	float Bonus = 1.0f;
+	const float AllResist = GetCapturedOrZero(ExecutionParams, GetMortisDamageCapture().ResistAllDef, EvaluateParameters);
 	Bonus += AllTypeBonusDamage;
 	if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Pierce)) { Resist = ResistPierce; Bonus += PierceBonus; }
 	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Blunt)) { Resist = ResistBlunt; Bonus += BluntBonus; }
 	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Slash)) { Resist = ResistSlash; Bonus += SlashBonus; }
 	else if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Magic)) { Resist = ResistMagic; Bonus += MagicBonus; }
+	if (EffectSpec.GetDynamicAssetTags().HasTagExact(MortisGameplayTags::Data_AttackType_Skill)) { Bonus += SkillBonus; }
 
 	// 모션 계수
 	const float MotionCoef = EffectSpec.GetSetByCallerMagnitude(MortisGameplayTags::Data_AttackScale, false, 1.f);
 
-	float IncomingDamage = BaseDamage * MotionCoef * Bonus * (1.0f - Resist);
+	float IncomingDamage = BaseDamage * MotionCoef * Bonus * (1.0f - Resist - AllResist);
 	IncomingDamage = FMath::Max(0.0f, IncomingDamage);
 
 	if (IncomingDamage > 0.0f)

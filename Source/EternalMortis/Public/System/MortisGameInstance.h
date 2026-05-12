@@ -13,5 +13,4 @@ UCLASS()
 class ETERNALMORTIS_API UMortisGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
 };

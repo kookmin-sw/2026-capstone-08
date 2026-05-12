@@ -76,6 +76,13 @@ public:
 	
 	FORCEINLINE void SetCurrentSlotTag(const FGameplayTag& NewSlotTag) { CurrentAttackSlot = NewSlotTag; }
 	AMortisWeaponBase* GetCurrentWeapon() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Mortls|Trail")
+	void StartCascadeTrails(FName TrailStartSocketName, FName TrailEndSocketName, float Width);
+	
+	UFUNCTION(BlueprintCallable, Category = "Mortls|Trail")
+	void EndCascadeTrail();
+	
 protected:
 	virtual void ToggleCurrentEquippedWeaponCollision(bool bShouldEnable, FGameplayTag TagToToggle);
 	virtual void ToggleBodyDamageCollision(bool bShouldEnable, FGameplayTag TagToToggle);

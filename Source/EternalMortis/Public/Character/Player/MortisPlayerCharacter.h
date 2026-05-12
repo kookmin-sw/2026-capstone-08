@@ -91,6 +91,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|Camera")
 	void SetLockOnHeightOffsetEnabled(bool bEnabled);
 
+	UFUNCTION(BlueprintCallable, Category = "Mortis|TargetLock")
+	void SetCurrentLockedTarget(AActor* NewTarget);
+
+	UFUNCTION(BlueprintCallable, Category = "Mortis|TargetLock")
+	void ClearCurrentLockedTarget();
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|TargetLock")
+	AActor* GetCurrentLockedTarget() const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|TargetLock")
+	bool HasCurrentLockedTarget() const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|TargetLock")
+	bool GetCurrentLockedTargetLocation(FVector& OutLocation) const;
+
 protected:
 	// APawn Override
 	virtual void PossessedBy(AController* NewController) override;
@@ -98,6 +113,12 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DeadZone")
+	float MoveStickDeadZone = 0.1f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DeadZone")
+	float LookStickDeadZone = 0.1f;
 
 private:
 	// Components
@@ -133,6 +154,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Mortis|AttackRecovery", meta = (AllowPrivateAccess = "true"))
 	float RecoveryBlendOutTime = 0.1f;
 
+	UPROPERTY()
+	TWeakObjectPtr<AActor> CurrentLockedTarget;
+
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Zoom(const FInputActionValue& InputActionValue);
@@ -140,6 +164,9 @@ private:
 
 	void Input_AbilityInputPressed(FGameplayTag InputTag);
 	void Input_AbilityInputReleased(FGameplayTag InputTag);
+
+	void Input_CursorMoveCompleted(const FInputActionValue& InputActionValue);
+	void Input_UIClickPressed(const FInputActionValue& InputActionValue);
 
 	bool IsBufferableAbility(FGameplayTag AbilityTag);
 

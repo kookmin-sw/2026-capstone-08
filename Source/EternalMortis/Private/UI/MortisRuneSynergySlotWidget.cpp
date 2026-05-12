@@ -2,6 +2,7 @@
 
 #include "UI/MortisRuneSynergySlotWidget.h"
 
+#include "Components/Border.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Engine/World.h"
@@ -121,6 +122,12 @@ void UMortisRuneSynergySlotWidget::SetStackCount(int32 InStackCount)
     }
 }
 
+void UMortisRuneSynergySlotWidget::SetIsActive(bool bInIsActive)
+{
+    bIsActive = bInIsActive;
+    RefreshActiveVisual();
+}
+
 void UMortisRuneSynergySlotWidget::SetCooldownWindow(float InStartTime, float InEndTime)
 {
     CooldownState.SetWindow(InStartTime, InEndTime);
@@ -177,6 +184,7 @@ void UMortisRuneSynergySlotWidget::RefreshVisualState()
 
     const float Now = World->GetTimeSeconds();
 
+    RefreshActiveVisual();
     RefreshCooldownVisual(Now);
     RefreshDurationVisual(Now);
     UpdateTimedVisualTimer();
@@ -198,6 +206,17 @@ void UMortisRuneSynergySlotWidget::InitializeDynamicMaterials()
     {
         DurationMID = Image_DurationFill->GetDynamicMaterial();
     }
+}
+
+void UMortisRuneSynergySlotWidget::RefreshActiveVisual()
+{
+    if (!Border_InactiveOverlay)
+    {
+        return;
+    }
+
+    Border_InactiveOverlay->SetVisibility(
+        bIsActive ? ESlateVisibility::Hidden : ESlateVisibility::HitTestInvisible);
 }
 
 void UMortisRuneSynergySlotWidget::RefreshCooldownVisual(float Now)

@@ -9,6 +9,7 @@
 
 class UImage;
 class UMaterialInstanceDynamic;
+class UBorder;
 class UTextBlock;
 class UTexture2D;
 
@@ -54,6 +55,9 @@ public:
     void SetStackCount(int32 InStackCount);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|RuneSynergy")
+    void SetIsActive(bool bInIsActive);
+
+    UFUNCTION(BlueprintCallable, Category = "Mortis|RuneSynergy")
     void SetCooldownWindow(float InStartTime, float InEndTime);
 
     UFUNCTION(BlueprintCallable, Category = "Mortis|RuneSynergy")
@@ -82,6 +86,9 @@ protected:
     TObjectPtr<UImage> Image_DurationFill = nullptr;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+    TObjectPtr<UBorder> Border_InactiveOverlay = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
     TObjectPtr<UTextBlock> Text_StackCount = nullptr;
 
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|RuneSynergy", meta = (AllowPrivateAccess = "true"))
@@ -92,6 +99,9 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|RuneSynergy", meta = (AllowPrivateAccess = "true"))
     int32 CurrentStackCount = 0;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Mortis|RuneSynergy", meta = (AllowPrivateAccess = "true"))
+    bool bIsActive = true;
 
     UPROPERTY(BlueprintReadOnly, Category = "Mortis|RuneSynergy", meta = (AllowPrivateAccess = "true"))
     FMortisTimedVisualState CooldownState;
@@ -107,6 +117,7 @@ protected:
 
 private:
     void InitializeDynamicMaterials();
+    void RefreshActiveVisual();
     void RefreshCooldownVisual(float Now);
     void RefreshDurationVisual(float Now);
     void UpdateTimedVisualTimer();
