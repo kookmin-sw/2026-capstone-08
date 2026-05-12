@@ -275,7 +275,7 @@ void UMortisCombatComponent::UpdateAttackTrace()
 			AttackTraceObjectTypes,
 			false,
 			IgnoreActors,
-			EDrawDebugTrace::None,
+			EDrawDebugTrace::ForDuration,
 			HitResults,
 			true,
 			FLinearColor::Green
