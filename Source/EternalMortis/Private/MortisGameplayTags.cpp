@@ -27,6 +27,8 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_LightAttack, "InputTag.Ability.LightAttack");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Ability_WeaponSkill, "InputTag.Ability.WeaponSkill");
 
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_UI_Click, "InputTag.UI.Click");
+
 	// ====================		Ability Tags	====================
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Death, "Ability.Death");
 

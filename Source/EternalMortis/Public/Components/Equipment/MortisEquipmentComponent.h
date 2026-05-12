@@ -19,6 +19,7 @@ class UMortisRuneInventorySubsystem;
 class UMortisCurseDatabaseSubsystem;
 class UMortisCurseInventorySubsystem;
 class UMortisAbilitySystemComponent;
+class UMortisMetaProgressionSubsystem;
 struct FGameplayAbilitySpecHandle;
 
 USTRUCT()
@@ -99,8 +100,15 @@ private:
     UMortisCurseDatabaseSubsystem* CurseDB = nullptr;
     UPROPERTY()
     UMortisCurseInventorySubsystem* CurseInv = nullptr;
+
+    UPROPERTY()
+    UMortisMetaProgressionSubsystem* MetaProgression = nullptr;
+
     UPROPERTY()
     UMortisAbilitySystemComponent* ASC = nullptr;
+
+    UPROPERTY()
+    TArray<FActiveGameplayEffectHandle> ExperienceEffectHandles;
 
     UPROPERTY()
     TArray<FMortisEquippedRuneRuntime> EquippedRuneRuntimes;
@@ -125,6 +133,8 @@ private:
     void ApplySetTier(const FMortisSetTierDef& TierDef, FMortisAppliedRuneSetRuntime& SetRuntime);
     void RemoveSetTier(FMortisAppliedRuneSetRuntime& SetRuntime, int32 ActivateCount);
     void ApplyInitialEquippedRunes();
+    void ApplySelectedExperienceEffects();
+    void ClearExperienceEffects();
     void ClearSetRuntime(const FGameplayTag& SetTag);
     void ClearCurseEffects();
 };

@@ -78,7 +78,10 @@ bool UMortisMetaProgressionSubsystem::UnlockExperience(FGameplayTag ExperienceTa
 bool UMortisMetaProgressionSubsystem::SelectExperience(FGameplayTag ExperienceTag)
 {
 	if (!IsExperienceUnlocked(ExperienceTag))
+	{
+		SelectedExperienceTag = FGameplayTag();
 		return false;
+	}
 
 	SelectedExperienceTag = ExperienceTag;
 

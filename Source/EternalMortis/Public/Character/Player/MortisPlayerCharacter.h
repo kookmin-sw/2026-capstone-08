@@ -165,6 +165,9 @@ private:
 	void Input_AbilityInputPressed(FGameplayTag InputTag);
 	void Input_AbilityInputReleased(FGameplayTag InputTag);
 
+	void Input_CursorMoveCompleted(const FInputActionValue& InputActionValue);
+	void Input_UIClickPressed(const FInputActionValue& InputActionValue);
+
 	bool IsBufferableAbility(FGameplayTag AbilityTag);
 
 	void ChangeMovementMaxSpeed(const FOnAttributeChangeData& Data);

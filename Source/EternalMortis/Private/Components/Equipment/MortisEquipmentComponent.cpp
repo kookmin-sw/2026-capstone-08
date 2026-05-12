@@ -10,6 +10,8 @@
 #include "System/MortisCurseInventorySubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameplayEffectTypes.h"
+#include "System/MortisMetaProgressionSubsystem.h"
+#include "Types/MortisMetaProgressionDataTypes.h"
 
 #include "MortisDebugHelper.h"
 
@@ -27,6 +29,8 @@ void UMortisEquipmentComponent::BeginPlay()
     check(CurseDB);
     CurseInv = GI->GetSubsystem<UMortisCurseInventorySubsystem>();
     check(CurseInv);
+    MetaProgression = GI->GetSubsystem<UMortisMetaProgressionSubsystem>();
+    check(MetaProgression);
 
     AMortisCharacterBase* MortisCharacter = GetOwningPawn<AMortisCharacterBase>();
     check(MortisCharacter);
@@ -43,8 +47,9 @@ void UMortisEquipmentComponent::BeginPlay()
     EquippedRuneRuntimes.SetNum(10);
 
     // 자동 장착
-    RuneInv->RebuildRuneSetStateFromEquippedRunes(false);
+    ApplySelectedExperienceEffects();
 
+    RuneInv->RebuildRuneSetStateFromEquippedRunes(false);
     ApplyInitialEquippedRunes();
 
     for (const FMortisCurseInstance& Curse : CurseInv->GetOwnedCurses())
@@ -358,6 +363,55 @@ void UMortisEquipmentComponent::ApplyInitialEquippedRunes()
     }
 
     UpdateRuneSetBonus(RuneInv->GetActiveRuneSets());
+}
+
+void UMortisEquipmentComponent::ApplySelectedExperienceEffects()
+{
+    if (!ASC || !MetaProgression)
+        return;
+
+    ClearExperienceEffects();
+
+    FMortisExperienceRow ExperienceRow;
+    if (!MetaProgression->GetSelectedExperienceRow(ExperienceRow))
+        return;
+
+    if (ExperienceRow.GrantedEffects.Num() <= 0)
+        return;
+
+    const FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+
+    for (const TSubclassOf<UGameplayEffect>& EffectClass : ExperienceRow.GrantedEffects)
+    {
+        if (!EffectClass)
+            continue;
+
+        FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(EffectClass, 1.f, Context);
+        if (!SpecHandle.IsValid())
+            continue;
+
+        const FActiveGameplayEffectHandle Handle = ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+        if (Handle.WasSuccessfullyApplied())
+            ExperienceEffectHandles.Add(Handle);
+    }
+}
+
+void UMortisEquipmentComponent::ClearExperienceEffects()
+{
+    if (!ASC)
+    {
+        ExperienceEffectHandles.Empty();
+        return;
+    }
+
+    for (const FActiveGameplayEffectHandle& Handle : ExperienceEffectHandles)
+    {
+        if (Handle.IsValid())
+            ASC->RemoveActiveGameplayEffect(Handle);
+    }
+
+    ExperienceEffectHandles.Empty();
 }
 
 void UMortisEquipmentComponent::ClearSetRuntime(const FGameplayTag& SetTag)

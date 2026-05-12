@@ -19,6 +19,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "MotionWarpingComponent.h"
 #include "MortisGameplayTags.h"
+#include "Controllers/MortisPlayerController.h"
 
 #include "MortisDebugHelper.h"
 
@@ -214,6 +215,11 @@ void AMortisPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_TargetChange, ETriggerEvent::Started, this, &ThisClass::Input_TargetChange);
 
 	MortisInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
+
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Completed, this, &ThisClass::Input_CursorMoveCompleted);
+
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_Move, ETriggerEvent::Canceled, this, &ThisClass::Input_CursorMoveCompleted);
+	MortisInputComponent->BindNativeInputAction(InputConfigDataAsset, MortisGameplayTags::InputTag_UI_Click, ETriggerEvent::Started, this, &ThisClass::Input_UIClickPressed);
 }
 
 void AMortisPlayerCharacter::BeginPlay()
@@ -266,9 +272,19 @@ void AMortisPlayerCharacter::Tick(float DeltaTime)
 
 void AMortisPlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
+	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
+
+	if (AMortisPlayerController* MortisPC = Cast<AMortisPlayerController>(GetController()))
+	{
+		if (MortisPC->bShowMouseCursor)
+		{
+			MortisPC->SetGamepadCursorInput(MovementVector);
+			return;
+		}
+	}
+
 	if (!bCanMoveInput || !bCanMoveInputByAbility) return;
 
-	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
 	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
 	if (MovementVector.SizeSquared() > MoveStickDeadZone) { 
@@ -359,6 +375,21 @@ void AMortisPlayerCharacter::Input_AbilityInputPressed(FGameplayTag InputTag)
 void AMortisPlayerCharacter::Input_AbilityInputReleased(FGameplayTag InputTag)
 {
 	MortisAbilitySystemComponent->OnAbilityInputReleased(InputTag);
+}
+
+void AMortisPlayerCharacter::Input_CursorMoveCompleted(const FInputActionValue& InputActionValue)
+{
+	if (AMortisPlayerController* MortisPC = Cast<AMortisPlayerController>(GetController()))
+		MortisPC->SetGamepadCursorInput(FVector2D::ZeroVector);
+}
+
+void AMortisPlayerCharacter::Input_UIClickPressed(const FInputActionValue& InputActionValue)
+{
+	AMortisPlayerController* MortisPC = Cast<AMortisPlayerController>(GetController());
+	if (!MortisPC || !MortisPC->bShowMouseCursor)
+		return;
+
+	MortisPC->ClickHoveredButton();
 }
 
 bool AMortisPlayerCharacter::IsBufferableAbility(FGameplayTag AbilityTag)

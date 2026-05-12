@@ -29,6 +29,8 @@ namespace MortisGameplayTags
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_LightAttack);
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Ability_WeaponSkill);
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_UI_Click);
+
 	// ====================		Ability Tags	====================	
 	ETERNALMORTIS_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Death);
 	
