@@ -68,6 +68,11 @@ void UMortisEquippedRunePanelWidget::RefreshEquippedRunes()
     const int32 SafeColumns = FMath::Max(1, EquippedRuneColumns);
     const int32 DisplayedSlotCount = FMath::Max(0, MaxDisplayedEquippedRuneSlots);
     const int32 UnlockedSlotCount = FMath::Clamp(RuneInventorySubsystemRef->GetSlotCount(), 0, DisplayedSlotCount);
+    const float SquareCardSize = FMath::Clamp(
+        FMath::Min(EquippedRuneCardSize.X, EquippedRuneCardSize.Y),
+        1.0f,
+        48.0f);
+    const FVector2D ResolvedCardSize(SquareCardSize, SquareCardSize);
 
     for (int32 SlotIndex = 0; SlotIndex < DisplayedSlotCount; ++SlotIndex)
     {
@@ -77,7 +82,7 @@ void UMortisEquippedRunePanelWidget::RefreshEquippedRunes()
             continue;
         }
 
-        RuneCard->SetCardSize(EquippedRuneCardSize);
+        RuneCard->SetCardSize(ResolvedCardSize);
 
         const bool bUnlocked = SlotIndex < UnlockedSlotCount;
         const FMortisRuneInstance RuneInstance = EquippedRunes.IsValidIndex(SlotIndex)

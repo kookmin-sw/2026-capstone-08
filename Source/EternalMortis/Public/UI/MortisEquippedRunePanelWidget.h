@@ -66,7 +66,7 @@ protected:
     int32 MaxDisplayedEquippedRuneSlots = 10;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Layout", meta = (ClampMin = "1", AllowPrivateAccess = "true"))
-    FVector2D EquippedRuneCardSize = FVector2D(96.0f, 96.0f);
+    FVector2D EquippedRuneCardSize = FVector2D(48.0f, 48.0f);
 
     UPROPERTY(Transient, BlueprintReadOnly, Category = "Mortis|Inventory|Rune", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UMortisRuneInventorySubsystem> RuneInventorySubsystemRef = nullptr;

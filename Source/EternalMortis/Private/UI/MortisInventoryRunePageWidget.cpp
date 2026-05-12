@@ -713,6 +713,7 @@ void UMortisInventoryRunePageWidget::UpdateRightRuneDetail()
         ? RuneDatabaseSubsystemRef->GetRuneSymbolRow(SelectedRune.SymbolType)
         : nullptr;
 
+    ViewData.bHasRuneData = true;
     ViewData.RuneIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
     ViewData.RuneIconTint = GetGlyphTintBySetTag(DetailSetTag);
     ViewData.RunePresentationStyle = MortisRunePresentation::BuildStyle(SelectedRune.Grade, ViewData.RuneIconTint);
