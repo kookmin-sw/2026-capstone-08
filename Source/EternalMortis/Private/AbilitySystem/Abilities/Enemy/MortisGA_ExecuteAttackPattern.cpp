@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "AbilitySystem/Abilities/Enemy/MortisGA_ExecuteAttackPattern.h"
@@ -164,6 +164,20 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		LastWarpTargetName = Step.WarpTargetName;
 	}
 	
+	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		MortisAttackPatternConsts::HitEventTag,
+		nullptr,
+		true
+	);
+
+	if (CachedWaitHitTask.IsValid())
+	{
+		// MORTIS_LOG("Add HitEvent");
+		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
+		CachedWaitHitTask->ReadyForActivation();
+	}
+
 	CachedMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, 
 		NAME_None, 
@@ -182,20 +196,6 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 	else
 	{
 		MORTIS_LOG("Invalid Montage Task!");
-	}
-
-	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this,
-		MortisAttackPatternConsts::HitEventTag,
-		nullptr,
-		true
-	);
-
-	if (CachedWaitHitTask.IsValid())
-	{
-		MORTIS_LOG("Add HitEvent");
-		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
-		CachedWaitHitTask->ReadyForActivation();
 	}
 
 	if (Step.SpawnConfigClass)
@@ -282,7 +282,7 @@ void UMortisGA_ExecuteAttackPattern::OnStopWarpUpdateEventReceived(FGameplayEven
 
 void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Payload)
 {
-	MORTIS_LOG("OnHitEventReceived");
+	// MORTIS_LOG("OnHitEventReceived");
 	if (!AttackPattern || !AttackPattern->Steps.IsValidIndex(CurrentStepIndex))
 	{
 		MORTIS_LOG("Attack Pattern or Step is invalid");
@@ -297,7 +297,7 @@ void UMortisGA_ExecuteAttackPattern::OnHitEventReceived(FGameplayEventData Paylo
 
 	AMortisEnemyWeapon* Weapon = CombatComponent->GetCurrentEnemyWeapon();
 	const FMortisWeaponCommonData& WeaponData = Weapon ? Weapon->GetEnemyWeaponData().CommonData : CombatComponent->GetUnarmedData();
-	
+
 	NativeApplyEffectSpecHandleToTarget(Payload.Target, MakeWeaponDamageEffectSpecHandle(WeaponData));
 }
 
