@@ -9,7 +9,7 @@
 
 namespace
 {
-	FText BuildShopPickupTitleText(const FText& ItemName, int32 Price)
+	FText BuildRuneShopPickupTitleText(const FText& ItemName, int32 Price)
 	{
 		return FText::Format(
 			NSLOCTEXT("MortisShopItem", "PickupTitleWithGoldPrice", "{0}\n{1} Gold"),
@@ -173,7 +173,7 @@ bool AMortisRuneShopItem::BuildPickupPreviewData(FMortisPickupPreviewData& OutPr
 		return false;
 	}
 
-	OutPreviewData.TitleText = BuildShopPickupTitleText(OutPreviewData.TitleText, ShopState.Price);
+	OutPreviewData.TitleText = BuildRuneShopPickupTitleText(OutPreviewData.TitleText, ShopState.Price);
 	return true;
 }
 
