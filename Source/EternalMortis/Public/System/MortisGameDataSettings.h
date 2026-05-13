@@ -32,6 +32,9 @@ public:
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Drop Data")
     TSoftObjectPtr<UDataTable> DropRuleTable;
 
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Shop Data")
+    TSoftObjectPtr<UDataTable> ShopPriceRangeTable;
+
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Curse Data")
     TSoftObjectPtr<UDataTable> CurseTable;
 

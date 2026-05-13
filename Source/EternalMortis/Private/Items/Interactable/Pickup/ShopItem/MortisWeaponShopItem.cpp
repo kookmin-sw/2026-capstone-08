@@ -4,6 +4,19 @@
 #include "Items/Interactable/Pickup/ShopItem/MortisWeaponShopItem.h"
 #include "Character/Enemy/MortisShopkeeperCharacter.h"
 #include "Abilities/GameplayAbility.h"
+#include "Components/WidgetComponent.h"
+#include "UI/MortisPickupPreviewWidget.h"
+
+namespace
+{
+	FText BuildShopPickupTitleText(const FText& ItemName, int32 Price)
+	{
+		return FText::Format(
+			NSLOCTEXT("MortisShopItem", "PickupTitleWithGoldPrice", "{0}\n{1} Gold"),
+			ItemName,
+			FText::AsNumber(FMath::Max(0, Price)));
+	}
+}
 
 AMortisWeaponShopItem::AMortisWeaponShopItem()
 {
@@ -96,12 +109,13 @@ bool AMortisWeaponShopItem::TryPrepareTransaction_Implementation(APawn* Interact
 void AMortisWeaponShopItem::CancelPreparedTransaction_Implementation()
 {
 	ShopState.PendingTransaction = EMortisShopTransactionType::None;
-
+	EnableInteraction();
 }
 
 void AMortisWeaponShopItem::SetShopPrice_Implementation(int32 NewPrice)
 {
 	ShopState.Price = FMath::Max(0, NewPrice);
+	RefreshShopPreviewIfVisible();
 }
 
 TSubclassOf<UGameplayAbility> AMortisWeaponShopItem::GetStealInteractionAbility_Implementation() const
@@ -154,27 +168,64 @@ void AMortisWeaponShopItem::OnInteractionFinished(APawn* InteractingPawn, bool b
 	ShopState.bStolen = (FinishedTransaction == EMortisShopTransactionType::Steal);
 }
 
+bool AMortisWeaponShopItem::BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const
+{
+	if (!Super::BuildPickupPreviewData(OutPreviewData))
+	{
+		return false;
+	}
+
+	OutPreviewData.TitleText = BuildShopPickupTitleText(OutPreviewData.TitleText, ShopState.Price);
+	return true;
+}
+
 void AMortisWeaponShopItem::InitializeWeaponShopItem(const FMortisWeaponRow& InWeaponData, int32 InPrice, AMortisShopkeeperCharacter* InShopkeeper)
 {
 	SetWeaponData(InWeaponData);
 
 	ShopState.ResetRuntimeState();
-	ShopState.Price = InPrice;
+	ShopState.Price = FMath::Max(0, InPrice);
 
-	if (HasActorBegunPlay() && OwningShopkeeper)
+	if (OwningShopkeeper != InShopkeeper)
+	{
+		if (HasActorBegunPlay() && OwningShopkeeper)
+			OwningShopkeeper->UnregisterWeaponItem(this);
+
 		OwningShopkeeper = InShopkeeper;
+
+		if (HasActorBegunPlay() && OwningShopkeeper)
+			OwningShopkeeper->RegisterWeaponItem(this);
+	}
 
 	ShopState.PendingTransaction = EMortisShopTransactionType::None;
 
 	BP_ApplyShopWeaponData();
+	RefreshShopPreviewIfVisible();
 }
 
 void AMortisWeaponShopItem::SetOwningShopkeeper(AMortisShopkeeperCharacter* NewShopkeeper)
 {
+	if (OwningShopkeeper == NewShopkeeper)
+		return;
+
+	if (HasActorBegunPlay() && OwningShopkeeper)
+		OwningShopkeeper->UnregisterWeaponItem(this);
+
 	OwningShopkeeper = NewShopkeeper;
+
+	if (HasActorBegunPlay() && OwningShopkeeper)
+		OwningShopkeeper->RegisterWeaponItem(this);
 }
 
 void AMortisWeaponShopItem::BP_ApplyShopWeaponData_Implementation()
 {
 	// 기존 WeaponData 기준 비주얼 갱신
+}
+
+void AMortisWeaponShopItem::RefreshShopPreviewIfVisible()
+{
+	if (SelectionWidget && SelectionWidget->IsVisible())
+	{
+		RefreshPickupPreviewWidget();
+	}
 }

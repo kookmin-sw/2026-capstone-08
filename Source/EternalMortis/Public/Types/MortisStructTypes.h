@@ -188,7 +188,7 @@ struct FMortisShopItemState
 	bool bStolen = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
-	EMortisShopTransactionType PendingTransaction;
+	EMortisShopTransactionType PendingTransaction = EMortisShopTransactionType::None;
 
 	void ResetRuntimeState()
 	{
