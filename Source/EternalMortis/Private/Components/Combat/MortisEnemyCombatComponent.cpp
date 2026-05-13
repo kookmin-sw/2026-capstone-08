@@ -31,7 +31,8 @@ void UMortisEnemyCombatComponent::OnHitTargetActor(AActor* HitActor)
 		{
 			return;
 		}
-		// MORTIS_LOG("OnHitActor");
+		
+		// MORTIS_LOG("Send Hit Event to %s", *GetOwningPawn()->GetActorNameOrLabel());
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwningPawn(), MortisGameplayTags::Event_Combat_AttackHit, EventData);
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, MortisGameplayTags::Event_Action_ImpactReact, EventData);	
 	}
