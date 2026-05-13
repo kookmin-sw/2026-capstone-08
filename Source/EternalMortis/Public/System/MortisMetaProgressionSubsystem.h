@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mortis|MetaProgression|Debug")
 	void DebugClearUnlockedExperiences();
 
+	UFUNCTION(BlueprintCallable, Category = "Mortis|MetaProgression")
+	void ResetAllMetaProgression();
+
 	// 룬 슬롯 확장
 	UFUNCTION(BlueprintCallable, Category = "Mortis|MetaProgression")
 	bool UpgradeRuneSlot();

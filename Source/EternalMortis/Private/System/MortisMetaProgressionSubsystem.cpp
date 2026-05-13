@@ -139,6 +139,19 @@ void UMortisMetaProgressionSubsystem::DebugClearUnlockedExperiences()
 	SaveMetaProgression();
 }
 
+void UMortisMetaProgressionSubsystem::ResetAllMetaProgression()
+{
+	MemoryFragments = 0;
+	UnlockedExperienceTags.Reset();
+	SelectedExperienceTag = FGameplayTag();
+	RuneSlotUpgradeLevel = 0;
+	bHasCompletedTutorial = false;
+
+	SaveMetaProgression();
+
+	OnMemoryFragmentsChanged.Broadcast(MemoryFragments);
+}
+
 bool UMortisMetaProgressionSubsystem::UpgradeRuneSlot()
 {
 	if (GetUnlockedRuneSlotCount() >= MaxRuneSlotCount)
