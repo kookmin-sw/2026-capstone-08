@@ -39,24 +39,23 @@ AMortisProjectileBase::AMortisProjectileBase()
 void AMortisProjectileBase::InitializeProjectile(const FGameplayEffectSpecHandle& DamageSpecHandle)
 {
 	if (bHasInitialized)
-	{
 		return;
-	}
-	
+
 	ProjectileDamageEffectSpecHandle = DamageSpecHandle;
 
-	ProjectileCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	
-	if (bLaunchOnBeginPlay)
-	{
-		LaunchProjectile();
-	}
-	
 	if (bIgnoreInstigator && GetInstigator())
 	{
 		ProjectileCollisionBox->IgnoreActorWhenMoving(GetInstigator(), true);
+
+		if (UPrimitiveComponent* InstigatorRoot = Cast<UPrimitiveComponent>(GetInstigator()->GetRootComponent()))
+			InstigatorRoot->IgnoreActorWhenMoving(this, true);
 	}
-	
+
+	ProjectileCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	if (bLaunchOnBeginPlay)
+		LaunchProjectile();
+
 	bHasInitialized = true;
 }
 
@@ -73,7 +72,7 @@ void AMortisProjectileBase::BeginPlay()
 	ProjectileMovementComp->InitialSpeed = InitialProjectileSpeed;
 	ProjectileMovementComp->MaxSpeed = MaxProjectileSpeed;
 
-	InitialLifeSpan = LifeTime;
+	SetLifeSpan(InitialLifeSpan);
 
 	if (ProjectileDamagePolicy == EMortisProjectileDamagePolicy::OnBeginOverlap)
 	{
@@ -92,20 +91,28 @@ void AMortisProjectileBase::BeginPlay()
 
 void AMortisProjectileBase::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (ShouldIgnoreProjectileTarget(OtherActor))
+		return;
+
 	if (!Cast<APawn>(OtherActor))
 	{
 		HandleProjectileImpact(OtherActor, Hit);
 		return;
 	}
-	
+
 	if (ProjectileDamagePolicy != EMortisProjectileDamagePolicy::OnHit)
+	{
 		return;
+	}
 
 	HandleProjectileImpact(OtherActor, Hit);
 }
 
 void AMortisProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (ShouldIgnoreProjectileTarget(OtherActor))
+		return;
+
 	if (ProjectileDamagePolicy != EMortisProjectileDamagePolicy::OnBeginOverlap)
 		return;
 
@@ -122,9 +129,20 @@ bool AMortisProjectileBase::BP_HandleProjectileImpact_Implementation(APawn* HitP
 	return false;
 }
 
-void AMortisProjectileBase::HandleProjectileImpact(AActor* OtherActor, const FHitResult& HitResult)
+bool AMortisProjectileBase::ShouldIgnoreProjectileTarget(AActor* OtherActor) const
 {
 	if (!OtherActor || OtherActor == this)
+		return true;
+
+	if (bIgnoreInstigator && OtherActor == GetInstigator() || bIgnoreInstigator && OtherActor == GetOwner())
+		return true;
+
+	return false;
+}
+
+void AMortisProjectileBase::HandleProjectileImpact(AActor* OtherActor, const FHitResult& HitResult)
+{
+	if (ShouldIgnoreProjectileTarget(OtherActor))
 		return;
 
 	if (bHasImpacted)
