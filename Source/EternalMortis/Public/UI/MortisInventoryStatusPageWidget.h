@@ -10,7 +10,13 @@
 
 class AMortisPlayerWeapon;
 class AActor;
+class UImage;
+class UMaterialInstanceDynamic;
+class UMaterialInterface;
 class UMeshComponent;
+class USceneCaptureComponent2D;
+class UTextBlock;
+class UTextureRenderTarget2D;
 
 USTRUCT(BlueprintType)
 struct FMortisInventoryStatusAttributeValue
@@ -166,6 +172,9 @@ public:
 	FMortisInventoryStatusSnapshot GetStatusSnapshot() const { return CurrentStatusSnapshot; }
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Inventory|Status")
+	bool HasWeaponInfo() const;
+
+	UFUNCTION(BlueprintPure, Category = "Mortis|Inventory|Status")
 	bool FindAttributeValueByName(FName AttributeName, FMortisInventoryStatusAttributeValue& OutValue) const;
 
 	UFUNCTION(BlueprintPure, Category = "Mortis|Inventory|Status")
@@ -185,18 +194,69 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status", meta = (AllowPrivateAccess = "true"))
 	FMortisInventoryStatusSnapshot CurrentStatusSnapshot;
 
 private:
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UImage> Image_WeaponPreview = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_WeaponName = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_WeaponGrade = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_WeaponDamageValue = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_PoiseDamageValue = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_StrScalingValue = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_DexScalingValue = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mortis|Inventory|Status|Weapon", meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	TObjectPtr<UTextBlock> Text_IntScalingValue = nullptr;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AActor> SpawnedWeaponPreviewActor = nullptr;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextureRenderTarget2D> WeaponPreviewRenderTarget = nullptr;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> WeaponPreviewMaterialInstance = nullptr;
+
 	AActor* ResolvePlayerActor(AActor* ExplicitPlayerActor) const;
 	void CollectPlayerAttributes(AActor* PlayerActor, FMortisInventoryStatusSnapshot& OutSnapshot) const;
 	void CollectWeaponInfo(AActor* PlayerActor, FMortisInventoryStatusSnapshot& OutSnapshot) const;
 	void CollectRuneInfo(FMortisInventoryStatusSnapshot& OutSnapshot) const;
 
+	void RefreshWeaponPanel();
+	void RefreshWeaponPreviewImage(bool bHasWeapon);
+	bool RefreshWeaponPreviewActor();
+	void DestroyWeaponPreviewActor();
+	bool ResolveDisplayWeaponData(FMortisPlayerWeaponData& OutWeaponData) const;
+	FText ResolveWeaponNameText() const;
+	FText ResolveWeaponGradeText() const;
+	FLinearColor ResolveWeaponGradeColor() const;
+	UMeshComponent* ResolveWeaponPreviewSourceMesh() const;
+	UMeshComponent* ResolveWeaponPreviewSourceMeshFromWeaponClass(UClass* WeaponClass) const;
+	UTextureRenderTarget2D* GetOrCreateWeaponPreviewRenderTarget();
+	UMaterialInstanceDynamic* GetOrCreateWeaponPreviewMaterialInstance();
+
+	static TSubclassOf<AActor> LoadWeaponPreviewActorClass();
+	static UMaterialInterface* LoadStatusWeaponPreviewMaterial();
+	static bool FitWeaponPreviewMeshToCapture(UMeshComponent* PreviewMeshComponent, USceneCaptureComponent2D* SceneCaptureComponent);
 	static bool GetAttributeNameByRuneSymbol(EMortisRuneSymbol SymbolType, FName& OutAttributeName);
 	static bool GetResourceAttributeNamesByRuneSymbol(EMortisRuneSymbol SymbolType, FName& OutCurrentAttributeName, FName& OutMaxAttributeName);
+	static FText FormatScalingGrade(EMortisStatGrade Grade);
 	static FText FormatStatusNumber(float Value);
 	static FText FormatRuneBonus(float RuneBonusValue);
 	static FText FormatStatusValueWithRuneBonus(float Value, float RuneBonusValue);

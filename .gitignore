@@ -79,3 +79,7 @@ DerivedDataCache/*
 
 # Ignore Third Party Assets
 Content/ThirdParty/*
+
+# Local AI / MCP tooling
+/Plugins/UmgMcp/
+/.codex/
