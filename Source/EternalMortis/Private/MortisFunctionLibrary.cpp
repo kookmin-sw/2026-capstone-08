@@ -56,6 +56,25 @@ FString UMortisFunctionLibrary::GetGradeText(EMortisStatGrade Grade)
 	}
 }
 
+FText UMortisFunctionLibrary::FormatSignedRuneValue(float RawValue, int32 ValueFractionalDigits, bool bDisplayAsPercent)
+{
+	const float DisplayValue = bDisplayAsPercent ? RawValue * 100.0f : RawValue;
+	const float NormalizedValue = FMath::IsNearlyZero(DisplayValue, 0.001f) ? 0.0f : DisplayValue;
+	const float AbsoluteValue = FMath::Abs(NormalizedValue);
+
+	FNumberFormattingOptions FormattingOptions;
+	FormattingOptions.MinimumFractionalDigits = 0;
+	FormattingOptions.MaximumFractionalDigits = FMath::Clamp(ValueFractionalDigits, 0, 4);
+	FormattingOptions.UseGrouping = false;
+
+	const FText SignText = FText::FromString(NormalizedValue < 0.0f ? TEXT("-") : TEXT("+"));
+	const FText ValueText = FText::AsNumber(AbsoluteValue, &FormattingOptions);
+
+	return bDisplayAsPercent
+		? FText::Format(NSLOCTEXT("MortisFunctionLibrary", "SignedRunePercentValueFormat", "{0}{1}%"), SignText, ValueText)
+		: FText::Format(NSLOCTEXT("MortisFunctionLibrary", "SignedRuneValueFormat", "{0}{1}"), SignText, ValueText);
+}
+
 EMortisHitDirection UMortisFunctionLibrary::ComputeHitReactDirectionTag(AActor* InAttacker, AActor* InVictim, float& OutAngleDifference)
 {
 	check(InAttacker && InVictim);

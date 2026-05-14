@@ -6,6 +6,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Items/Interactable/Pickup/ShopItem/MortisWeaponShopItem.h"
 #include "Items/Interactable/Pickup/ShopItem/MortisRuneShopItem.h"
+#include "System/MortisShopPricingSubsystem.h"
 #include "System/MortisRunStateSubsystem.h"
 
 #include "MortisDebugHelper.h"
@@ -138,18 +139,86 @@ UMortisRunStateSubsystem* AMortisShopkeeperCharacter::GetRunStateSubsystem() con
 	return GetGameInstance()->GetSubsystem<UMortisRunStateSubsystem>();
 }
 
+UMortisShopPricingSubsystem* AMortisShopkeeperCharacter::GetShopPricingSubsystem() const
+{
+	if (!GetGameInstance())
+		return nullptr;
+
+	return GetGameInstance()->GetSubsystem<UMortisShopPricingSubsystem>();
+}
+
 void AMortisShopkeeperCharacter::GenerateShopStock()
 {
 	BP_GenerateShopStock();
+}
+
+bool AMortisShopkeeperCharacter::GenerateWeaponShopItemPrice(const FMortisWeaponRow& WeaponData, int32& OutPrice) const
+{
+	OutPrice = 0;
+
+	UMortisShopPricingSubsystem* PricingSubsystem = GetShopPricingSubsystem();
+	if (!PricingSubsystem)
+	{
+		return false;
+	}
+
+	return PricingSubsystem->GenerateWeaponPrice(WeaponData, OutPrice);
+}
+
+bool AMortisShopkeeperCharacter::GenerateRuneShopItemPrice(const FMortisRuneInstance& RuneInstance, int32& OutPrice) const
+{
+	OutPrice = 0;
+
+	UMortisShopPricingSubsystem* PricingSubsystem = GetShopPricingSubsystem();
+	if (!PricingSubsystem)
+	{
+		return false;
+	}
+
+	return PricingSubsystem->GenerateRunePrice(RuneInstance, OutPrice);
+}
+
+bool AMortisShopkeeperCharacter::InitializeWeaponShopItemWithGeneratedPrice(AMortisWeaponShopItem* ShopItem, const FMortisWeaponRow& WeaponData)
+{
+	if (!IsValid(ShopItem))
+	{
+		return false;
+	}
+
+	int32 GeneratedPrice = 0;
+	if (!GenerateWeaponShopItemPrice(WeaponData, GeneratedPrice))
+	{
+		return false;
+	}
+
+	ShopItem->InitializeWeaponShopItem(WeaponData, GeneratedPrice, this);
+	return true;
+}
+
+bool AMortisShopkeeperCharacter::InitializeRuneShopItemWithGeneratedPrice(AMortisRuneShopItem* ShopItem, const FMortisRuneInstance& RuneInstance)
+{
+	if (!IsValid(ShopItem))
+	{
+		return false;
+	}
+
+	int32 GeneratedPrice = 0;
+	if (!GenerateRuneShopItemPrice(RuneInstance, GeneratedPrice))
+	{
+		return false;
+	}
+
+	ShopItem->InitializeRuneShopItem(RuneInstance, GeneratedPrice, this);
+	return true;
 }
 
 void AMortisShopkeeperCharacter::BP_GenerateShopStock_Implementation()
 {
 	// C++에서 DB 연동 전엔 BP에서 처리하는 게 제일 편함.
 	// 예:
-	// WeaponSlots[0]->InitializeWeaponShopItem(RandomWeaponTagA, 300, this);
-	// WeaponSlots[1]->InitializeWeaponShopItem(RandomWeaponTagB, 450, this);
-	// RuneSlots[0]->InitializeRuneShopItem(RandomRuneA, 120, this);
+	// InitializeWeaponShopItemWithGeneratedPrice(WeaponSlots[0], RandomWeaponA);
+	// InitializeWeaponShopItemWithGeneratedPrice(WeaponSlots[1], RandomWeaponB);
+	// InitializeRuneShopItemWithGeneratedPrice(RuneSlots[0], RandomRuneA);
 }
 
 void AMortisShopkeeperCharacter::BP_OnAggroTriggered_Implementation(APawn* AggroTarget)

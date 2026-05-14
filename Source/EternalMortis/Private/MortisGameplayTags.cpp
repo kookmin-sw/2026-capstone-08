@@ -43,6 +43,7 @@ namespace MortisGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Pattern, "Ability.Action.Attack.Pattern");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Turn, "Ability.Action.Turn");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_ImpactReact, "Ability.Action.ImpactReact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Stagger, "Ability.Action.Stagger");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Sprint, "Ability.Action.Sprint");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Roll, "Ability.Action.Roll");

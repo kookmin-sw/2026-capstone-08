@@ -44,9 +44,4 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Mortis|Spawn", meta = (EditCondition = "SpawnMode == EMortisSpawnMode::FixedCustom"))
 	FDataTableRowHandle CustomEnemySpawnRowHandle;
-	
-	UPROPERTY(EditAnywhere, Category = "Mortis|Spawn")
-	bool bIsBossSpawner = false;
-private:
-	bool bHasSpawned = false;
 };

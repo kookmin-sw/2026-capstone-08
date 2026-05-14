@@ -12,7 +12,7 @@ UMortisBTS_DecideAttack::UMortisBTS_DecideAttack()
 
 	Interval = 3.f;
 
-	bAttackDecideKey.AddBoolFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, bAttackDecideKey));
+	AttackDecideKey.AddBoolFilter(this, GET_MEMBER_NAME_CHECKED(ThisClass, AttackDecideKey));
 }
 
 void UMortisBTS_DecideAttack::InitializeFromAsset(UBehaviorTree& Asset)
@@ -21,7 +21,7 @@ void UMortisBTS_DecideAttack::InitializeFromAsset(UBehaviorTree& Asset)
 
 	if (UBlackboardData* BBAsset = GetBlackboardAsset())
 	{
-		bAttackDecideKey.ResolveSelectedKey(*BBAsset);
+		AttackDecideKey.ResolveSelectedKey(*BBAsset);
 	}
 }
 
@@ -40,13 +40,13 @@ void UMortisBTS_DecideAttack::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		return;
 	}
 	
-	if (BBComp->GetValueAsBool(bAttackDecideKey.SelectedKeyName))
+	if (BBComp->GetValueAsBool(AttackDecideKey.SelectedKeyName))
 	{
 		return;
 	}
 	
 	if (FMath::FRandRange(0.f, 1.f) <= AttackProbability)
 	{
-		BBComp->SetValueAsBool(bAttackDecideKey.SelectedKeyName, true);
+		BBComp->SetValueAsBool(AttackDecideKey.SelectedKeyName, true);
 	}
 }

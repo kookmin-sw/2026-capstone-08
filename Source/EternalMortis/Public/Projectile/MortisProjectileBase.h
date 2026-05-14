@@ -109,6 +109,7 @@ protected:
 	virtual bool BP_HandleProjectileImpact_Implementation(APawn* HitPawn, const FHitResult& HitResult, const FGameplayEventData& Payload);
 
 private:
+	bool ShouldIgnoreProjectileTarget(AActor* OtherActor) const;
 	void HandleProjectileImpact(AActor* OtherActor, const FHitResult& HitResult);
 	void PrepareDestroyAfterImpact();
 

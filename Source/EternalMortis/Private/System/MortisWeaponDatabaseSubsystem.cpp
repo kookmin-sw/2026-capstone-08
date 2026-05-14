@@ -4,6 +4,7 @@
 #include "System/MortisWeaponDatabaseSubsystem.h"
 #include "System/MortisGameDataSettings.h"
 
+#include "Items/Weapons/MortisWeaponBase.h"
 #include "MortisDebugHelper.h"
 
 void UMortisWeaponDatabaseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -31,6 +32,34 @@ bool UMortisWeaponDatabaseSubsystem::GetWeaponRowByTag(FGameplayTag WeaponTag, F
     {
         OutWeaponRow = *FoundRow;
         return true;
+    }
+
+    return false;
+}
+
+bool UMortisWeaponDatabaseSubsystem::GetWeaponRowByClass(TSubclassOf<AMortisWeaponBase> WeaponClass, FMortisWeaponRow& OutWeaponRow) const
+{
+    UClass* TargetWeaponClass = WeaponClass.Get();
+    if (!TargetWeaponClass)
+    {
+        return false;
+    }
+
+    for (const TPair<FGameplayTag, FMortisWeaponRow>& WeaponRowPair : WeaponRowsByTag)
+    {
+        UClass* RowWeaponClass = WeaponRowPair.Value.WeaponClass.LoadSynchronous();
+        if (!RowWeaponClass)
+        {
+            continue;
+        }
+
+        if (RowWeaponClass == TargetWeaponClass
+            || TargetWeaponClass->IsChildOf(RowWeaponClass)
+            || RowWeaponClass->IsChildOf(TargetWeaponClass))
+        {
+            OutWeaponRow = WeaponRowPair.Value;
+            return true;
+        }
     }
 
     return false;

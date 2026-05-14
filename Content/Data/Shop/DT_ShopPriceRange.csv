@@ -1,0 +1,9 @@
+Name,ItemType,Grade,MinPrice,MaxPrice
+Weapon_Common,Weapon,Common,120,180
+Weapon_Rare,Weapon,Rare,220,320
+Weapon_Epic,Weapon,Epic,420,620
+Weapon_Legendary,Weapon,Legendary,800,1200
+Rune_Common,Rune,Common,80,120
+Rune_Rare,Rune,Rare,150,230
+Rune_Epic,Rune,Epic,300,450
+Rune_Legendary,Rune,Legendary,600,900

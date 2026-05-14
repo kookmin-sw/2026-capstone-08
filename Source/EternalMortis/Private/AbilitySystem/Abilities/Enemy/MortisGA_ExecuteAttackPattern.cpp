@@ -21,14 +21,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Spawn/MortisSpawnConfig.h"
 
-namespace MortisAttackPatternConsts
-{
-	FGameplayTag HitEventTag = MortisGameplayTags::Event_Combat_AttackHit;
-	FGameplayTag ComboTransitionEventTag = MortisGameplayTags::Event_Combat_Combo_Next;
-	FGameplayTag DamageTag = MortisGameplayTags::Data_Enemy_Stat_WeaponDamage;
-	FGameplayTag SpawnTag = MortisGameplayTags::Event_Action_Spawn;
-}
-
 UMortisGA_ExecuteAttackPattern::UMortisGA_ExecuteAttackPattern()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
@@ -163,20 +155,6 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		}
 		LastWarpTargetName = Step.WarpTargetName;
 	}
-	
-	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this,
-		MortisAttackPatternConsts::HitEventTag,
-		nullptr,
-		true
-	);
-
-	if (CachedWaitHitTask.IsValid())
-	{
-		// MORTIS_LOG("Add HitEvent");
-		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
-		CachedWaitHitTask->ReadyForActivation();
-	}
 
 	CachedMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, 
@@ -198,11 +176,25 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 		MORTIS_LOG("Invalid Montage Task!");
 	}
 
+	CachedWaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		MortisGameplayTags::Event_Combat_AttackHit,
+		nullptr,
+		false
+	);
+
+	if (CachedWaitHitTask.IsValid())
+	{
+		// MORTIS_LOG("Register Hit Event");
+		CachedWaitHitTask->EventReceived.AddDynamic(this, &ThisClass::OnHitEventReceived);
+		CachedWaitHitTask->ReadyForActivation();
+	}
+	
 	if (Step.SpawnConfigClass)
 	{
 		CachedWaitSpawnTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 			this,
-			MortisAttackPatternConsts::SpawnTag,
+			MortisGameplayTags::Event_Action_Spawn,
 			nullptr,
 			false,
 			true
@@ -218,7 +210,7 @@ void UMortisGA_ExecuteAttackPattern::ExecuteNextStep()
 	{
 		CachedComboTransitionTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 			this,
-			MortisAttackPatternConsts::ComboTransitionEventTag,
+			MortisGameplayTags::Event_Combat_Combo_Next,
 			nullptr,
 			false,
 			true
@@ -331,7 +323,7 @@ void UMortisGA_ExecuteAttackPattern::OnComboTransitionReceived(FGameplayEventDat
 
 FGameplayEffectSpecHandle UMortisGA_ExecuteAttackPattern::MakeWeaponDamageEffectSpecHandle(const FMortisWeaponCommonData& WeaponData)
 {
-	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, WeaponData, MortisAttackPatternConsts::DamageTag);
+	FGameplayEffectSpecHandle SpecHandle = MakeDamageEffectSpecHandle(DamageEffectClass, WeaponData, MortisGameplayTags::Data_Enemy_Stat_WeaponDamage);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
 		MortisGameplayTags::Data_AttackScale,

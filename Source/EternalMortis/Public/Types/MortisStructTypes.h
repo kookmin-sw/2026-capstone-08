@@ -94,7 +94,7 @@ struct FMortisAttackPatternStep
 
 	/* Motion Warping */
 	UPROPERTY(EditDefaultsOnly)
-	bool bUseMotionWarping = false;
+	bool bUseMotionWarping = true;
 
 	UPROPERTY(EditDefaultsOnly)
 	FName WarpTargetName = TEXT("AttackTarget");
@@ -106,7 +106,7 @@ struct FMortisAttackPatternStep
 	float DesiredDistance = 100.f;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bUseMotionWarping"))
-	bool bContinuousWarpUpdate = false;
+	bool bContinuousWarpUpdate = true;
 
 	/* Spawn */
 	UPROPERTY(EditDefaultsOnly)
@@ -132,10 +132,10 @@ struct FMortisAttackPattern
 	float MaxRange = 300.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MinAngle = -180.f;
+	float MinAngle = -120.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxAngle = 180.f;
+	float MaxAngle = 120.f;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTagContainer RequiredPhases;
@@ -188,7 +188,7 @@ struct FMortisShopItemState
 	bool bStolen = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shop")
-	EMortisShopTransactionType PendingTransaction;
+	EMortisShopTransactionType PendingTransaction = EMortisShopTransactionType::None;
 
 	void ResetRuntimeState()
 	{

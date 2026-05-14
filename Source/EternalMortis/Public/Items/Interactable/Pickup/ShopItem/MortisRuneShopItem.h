@@ -28,6 +28,7 @@ public:
 	virtual bool CanBeInteractionCandidate(APawn* InteractingPawn) const override;
 	virtual void OnInteractionReserved(APawn* InteractingPawn) override;
 	virtual void OnInteractionFinished(APawn* InteractingPawn, bool bSucceeded) override;
+	virtual bool BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const override;
 
 	// IMortisShopItemInterface
 	virtual FMortisShopItemState GetShopState_Implementation() const override;
@@ -47,6 +48,8 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Shop|Rune")
 	void BP_ApplyShopRuneData();
 	virtual void BP_ApplyShopRuneData_Implementation();
+
+	void RefreshShopPreviewIfVisible();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shop")

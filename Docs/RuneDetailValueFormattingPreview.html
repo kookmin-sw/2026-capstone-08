@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rune Detail Value Formatting Preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101113;
+      --panel: #191b1f;
+      --panel-2: #20242a;
+      --line: #3d414a;
+      --text: #f1ece1;
+      --muted: #aaa39a;
+      --accent: #d8b46a;
+      --good: #77d7a8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #0a0b0d;
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .frame {
+      width: min(96vw, 1280px);
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 260px 1fr 360px;
+      gap: 18px;
+      padding: 28px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .title {
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 16px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .item strong {
+      font-size: 17px;
+      color: var(--good);
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .rune {
+      min-height: 132px;
+      padding: 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      display: grid;
+      align-content: space-between;
+    }
+
+    .glyph {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .name {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .value {
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 800;
+      color: var(--good);
+    }
+
+    .detail {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+    }
+
+    .detail-card {
+      padding: 18px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .selected {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .selected .glyph {
+      width: 72px;
+      height: 72px;
+      font-size: 38px;
+    }
+
+    .detail-name {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .detail-sub {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .detail-value {
+      font-size: 52px;
+      font-weight: 900;
+      color: var(--good);
+      letter-spacing: 0;
+    }
+
+    .rule {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 11px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .rule strong {
+      color: var(--text);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <main class="frame" aria-label="Rune detail value formatting preview">
+    <section class="panel">
+      <h1 class="title">Rune Sets</h1>
+      <div class="list">
+        <div class="item"><span>All Runes</span><strong>24</strong></div>
+        <div class="item"><span>Body</span><strong>+12</strong></div>
+        <div class="item"><span>Circulation</span><strong>+0.5</strong></div>
+        <div class="item"><span>Piercing</span><strong>+5%</strong></div>
+        <div class="item"><span>Slashing</span><strong>+7.5%</strong></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="title">Inventory Examples</h2>
+      <div class="grid">
+        <div class="rune">
+          <div class="glyph">H</div>
+          <div>
+            <div class="name">Max Health Rune</div>
+            <div class="value">+12</div>
+          </div>
+        </div>
+        <div class="rune">
+          <div class="glyph">S</div>
+          <div>
+            <div class="name">Stamina Regen Rune</div>
+            <div class="value">+0.5</div>
+          </div>
+        </div>
+        <div class="rune">
+          <div class="glyph">M</div>
+          <div>
+            <div class="name">Mana Regen Rune</div>
+            <div class="value">+0.05</div>
+          </div>
+        </div>
+        <div class="rune">
+          <div class="glyph">P</div>
+          <div>
+            <div class="name">Pierce Bonus Rune</div>
+            <div class="value">+5%</div>
+          </div>
+        </div>
+        <div class="rune">
+          <div class="glyph">B</div>
+          <div>
+            <div class="name">Strike Bonus Rune</div>
+            <div class="value">+3.5%</div>
+          </div>
+        </div>
+        <div class="rune">
+          <div class="glyph">A</div>
+          <div>
+            <div class="name">Magic Bonus Rune</div>
+            <div class="value">+10%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel detail">
+      <div>
+        <h2 class="title">Right Rune Detail</h2>
+        <div class="detail-card">
+          <div class="selected">
+            <div class="glyph">P</div>
+            <div>
+              <div class="detail-name">Pierce Rune</div>
+              <div class="detail-sub">Attack type bonus uses percent display</div>
+            </div>
+          </div>
+          <div class="detail-value">+5%</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div class="rule"><span>Integer symbols</span><strong>+12</strong></div>
+        <div class="rule"><span>Decimal symbols</span><strong>+0.5</strong></div>
+        <div class="rule"><span>Small decimals</span><strong>+0.05</strong></div>
+        <div class="rule"><span>Attack type bonuses</span><strong>+5%</strong></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

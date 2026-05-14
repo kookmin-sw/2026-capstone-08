@@ -199,6 +199,12 @@ struct FMortisRuneSymbolRow : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FText DescriptionFormat;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0", ClampMax = "4"))
+    int32 ValueFractionalDigits = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    bool bDisplayAsPercent = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TSubclassOf<UGameplayEffect> StatEffect;
 

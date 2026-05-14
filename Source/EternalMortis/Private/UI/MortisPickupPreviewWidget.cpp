@@ -44,6 +44,7 @@ void UMortisPickupPreviewWidget::NativeOnInitialized()
 	{
 		//Text_Title->SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 18));
 		Text_Title->SetAutoWrapText(true);
+		Text_Title->SetJustification(ETextJustify::Center);
 		Text_Title->SetTextOverflowPolicy(ETextOverflowPolicy::Ellipsis);
 		Text_Title->SetClipping(EWidgetClipping::ClipToBounds);
 	}
@@ -100,12 +101,14 @@ void UMortisPickupPreviewWidget::BuildWidgetTreeIfNeeded()
 	{
 		Text_Title->SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 18));
 		Text_Title->SetAutoWrapText(true);
+		Text_Title->SetJustification(ETextJustify::Center);
 	}
 	if (RootVerticalBox && Text_Title)
 	{
 		if (UVerticalBoxSlot* VerticalBoxSlot = RootVerticalBox->AddChildToVerticalBox(Text_Title))
 		{
 			VerticalBoxSlot->SetPadding(FMargin(0.f, 0.f, 0.f, 4.f));
+			VerticalBoxSlot->SetHorizontalAlignment(HAlign_Fill);
 		}
 	}
 

@@ -28,7 +28,7 @@ protected:
 	//~ End UBTService Interface
 	
 	UPROPERTY(EditAnywhere)
-	FBlackboardKeySelector bAttackDecideKey;
+	FBlackboardKeySelector AttackDecideKey;
 
 	UPROPERTY(EditAnywhere, meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float AttackProbability = 0.5f;

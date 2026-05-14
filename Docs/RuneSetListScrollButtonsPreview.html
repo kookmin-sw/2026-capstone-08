@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RuneSet List Scroll Buttons Preview</title>
+  <style>
+    :root {
+      --fg: rgba(255, 255, 255, 0.94);
+      --muted: rgba(255, 255, 255, 0.48);
+      --soft: rgba(255, 255, 255, 0.16);
+      --panel: rgba(12, 12, 14, 0.52);
+      --panel-deep: rgba(5, 5, 6, 0.72);
+      --stroke: rgba(255, 255, 255, 0.12);
+      --accent: #d6d9e3;
+      --selected: rgba(255, 255, 255, 0.14);
+      --entry: 64px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: #161616;
+      color: var(--fg);
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .stage {
+      position: relative;
+      width: min(100vw - 36px, 1600px);
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.44), rgba(0, 0, 0, 0.14) 46%, rgba(0, 0, 0, 0.66)),
+        linear-gradient(180deg, rgba(18, 18, 19, 0.72), rgba(14, 14, 15, 0.86));
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52);
+    }
+
+    .world {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 34% 73%, rgba(255, 255, 255, 0.06) 0 2px, transparent 3px),
+        linear-gradient(110deg, transparent 0 45%, rgba(255, 255, 255, 0.05) 45.2% 45.6%, transparent 46%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 72px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 72px);
+      transform: perspective(900px) rotateX(58deg) translateY(-27%);
+      transform-origin: 50% 0;
+      opacity: 0.9;
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 38%, transparent 38% 64%, rgba(0, 0, 0, 0.36) 64%),
+        linear-gradient(180deg, transparent 0 54%, rgba(0, 0, 0, 0.35));
+      pointer-events: none;
+    }
+
+    .character {
+      position: absolute;
+      left: 350px;
+      bottom: 90px;
+      width: 138px;
+      height: 330px;
+      opacity: 0.58;
+      filter: drop-shadow(30px 45px 6px rgba(0, 0, 0, 0.44));
+    }
+
+    .character::before {
+      content: "";
+      position: absolute;
+      left: 43px;
+      top: 0;
+      width: 46px;
+      height: 52px;
+      border-radius: 44% 44% 40% 40%;
+      background: linear-gradient(#36363a, #111113);
+    }
+
+    .character::after {
+      content: "";
+      position: absolute;
+      left: 24px;
+      top: 46px;
+      width: 90px;
+      height: 180px;
+      border-radius: 46px 46px 22px 22px;
+      background:
+        linear-gradient(100deg, rgba(255, 255, 255, 0.12), transparent 34%),
+        linear-gradient(#222329, #09090b);
+      box-shadow:
+        -32px 42px 0 -14px #070709,
+        42px 36px 0 -17px #070709,
+        -7px 170px 0 -16px #070709,
+        39px 170px 0 -16px #070709;
+    }
+
+    .enemy-left {
+      position: absolute;
+      left: -38px;
+      top: 170px;
+      width: 185px;
+      height: 240px;
+      border-radius: 56% 44% 48% 50%;
+      background:
+        radial-gradient(circle at 66% 28%, rgba(255, 255, 255, 0.18), transparent 0 13%, transparent 14%),
+        linear-gradient(135deg, #263242, #07090d 62%);
+      opacity: 0.72;
+      transform: rotate(-18deg);
+      filter: drop-shadow(32px 36px 10px rgba(0, 0, 0, 0.6));
+    }
+
+    .tabs {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      width: 548px;
+      height: 36px;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .tab {
+      background: rgba(255, 255, 255, 0.72);
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    }
+
+    .left-block {
+      position: absolute;
+      left: 52px;
+      top: 68px;
+      width: 178px;
+      color: var(--fg);
+    }
+
+    .rune-stone {
+      width: 55px;
+      height: 55px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.34));
+      opacity: 0.76;
+    }
+
+    .set-column {
+      width: 178px;
+      display: grid;
+      grid-template-rows: 28px 378px 28px;
+      row-gap: 6px;
+    }
+
+    .scroll-button {
+      width: calc(100% - 8px);
+      height: 28px;
+      justify-self: start;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(245, 245, 245, 0.18);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 8px 22px rgba(0, 0, 0, 0.28);
+    }
+
+    .scroll-button:disabled {
+      opacity: 0.34;
+      color: rgba(255, 255, 255, 0.42);
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(180, 180, 180, 0.08);
+      box-shadow: none;
+    }
+
+    .set-list {
+      position: relative;
+      overflow: hidden;
+      padding-right: 8px;
+      mask-image: linear-gradient(180deg, transparent 0, #000 20px, #000 calc(100% - 22px), transparent 100%);
+    }
+
+    .entry {
+      height: var(--entry);
+      display: grid;
+      grid-template-columns: 55px 1fr;
+      column-gap: 12px;
+      align-items: center;
+      color: var(--fg);
+    }
+
+    .entry .icon {
+      width: 55px;
+      height: 55px;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .entry .copy {
+      min-width: 0;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+    }
+
+    .entry .owned {
+      display: block;
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.05;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .entry .name {
+      display: block;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.02;
+      white-space: nowrap;
+    }
+
+    .entry.selected {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 76%);
+    }
+
+    .entry.selected .owned,
+    .entry.selected .name {
+      color: rgba(255, 255, 255, 0.94);
+    }
+
+    .entry.dim {
+      opacity: 0.43;
+    }
+
+    .center-title {
+      position: absolute;
+      left: 182px;
+      top: 68px;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 24px;
+      font-weight: 800;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.62);
+    }
+
+    .center-title .muted {
+      color: rgba(255, 255, 255, 0.42);
+      font-weight: 600;
+    }
+
+    .rune-field {
+      position: absolute;
+      left: 540px;
+      right: 306px;
+      top: 548px;
+      height: 116px;
+      display: grid;
+      place-items: center;
+    }
+
+    .glyphs {
+      display: grid;
+      grid-template-columns: repeat(6, 26px);
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .glyph {
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 38% 36%, rgba(255, 255, 255, 0.28), transparent 34%),
+        linear-gradient(135deg, #394650, #15191e);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 180, 180, 0.85);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .equipped {
+      position: absolute;
+      left: 816px;
+      bottom: 20px;
+      width: 280px;
+      height: 96px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      opacity: 0.42;
+    }
+
+    .card {
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.26)),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0 5px, transparent 5px 12px);
+      border: 4px solid rgba(10, 10, 12, 0.58);
+    }
+
+    .right-panel {
+      position: absolute;
+      top: 72px;
+      right: 28px;
+      width: 292px;
+      min-height: 250px;
+      text-align: left;
+      color: var(--fg);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72);
+    }
+
+    .detail-value {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+      text-align: right;
+      margin-bottom: 8px;
+    }
+
+    .detail-name {
+      font-size: 30px;
+      line-height: 1.18;
+      font-weight: 900;
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .detail-mark {
+      color: rgba(255, 170, 170, 0.82);
+      font-size: 26px;
+      text-align: center;
+      margin: 2px 0 42px;
+    }
+
+    .detail-set {
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    .detail-set strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1.16;
+    }
+
+    .detail-set span {
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    .overlay-band {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 476px;
+      height: 56px;
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 10px;
+      }
+
+      .stage {
+        width: calc(100vw - 20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" aria-label="RuneSet list scroll buttons preview">
+    <div class="world"></div>
+    <div class="enemy-left"></div>
+    <div class="character"></div>
+    <div class="shade"></div>
+    <div class="overlay-band"></div>
+
+    <nav class="tabs" aria-label="Inventory tabs">
+      <div class="tab"></div>
+      <div class="tab"></div>
+      <div class="tab"></div>
+      <div class="tab"></div>
+    </nav>
+
+    <section class="left-block" aria-label="RuneSet list">
+      <div class="rune-stone"></div>
+      <div class="set-column">
+        <button class="scroll-button" type="button" disabled aria-label="Scroll RuneSet list up">^</button>
+        <div class="set-list">
+          <div class="entry dim">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 0</span>
+              <span class="name">All</span>
+            </div>
+          </div>
+          <div class="entry selected">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 6</span>
+              <span class="name">Slash Rune</span>
+            </div>
+          </div>
+          <div class="entry dim">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 0</span>
+              <span class="name">Pierce Rune</span>
+            </div>
+          </div>
+          <div class="entry dim">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 0</span>
+              <span class="name">Linked Rune</span>
+            </div>
+          </div>
+          <div class="entry dim">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 0</span>
+              <span class="name">Divine Rune</span>
+            </div>
+          </div>
+          <div class="entry dim">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 0</span>
+              <span class="name">Wisdom Rune</span>
+            </div>
+          </div>
+          <div class="entry dim">
+            <div class="icon"></div>
+            <div class="copy">
+              <span class="owned">Owned 0</span>
+              <span class="name">Impact Rune</span>
+            </div>
+          </div>
+        </div>
+        <button class="scroll-button" type="button" aria-label="Scroll RuneSet list down">v</button>
+      </div>
+    </section>
+
+    <header class="center-title">
+      <span class="muted">All</span>
+      <span>Slash Rune</span>
+      <span>0 Runes</span>
+    </header>
+
+    <section class="rune-field" aria-label="Rune inventory preview">
+      <div class="glyphs">
+        <div class="glyph">B</div>
+        <div class="glyph">N</div>
+        <div class="glyph">J</div>
+        <div class="glyph">J</div>
+        <div class="glyph">K</div>
+        <div class="glyph">T</div>
+      </div>
+    </section>
+
+    <section class="equipped" aria-label="Equipped rune slots">
+      <div class="card"></div>
+      <div class="card"></div>
+      <div class="card"></div>
+    </section>
+
+    <aside class="right-panel" aria-label="Rune detail">
+      <div class="detail-value">+0.28</div>
+      <div class="detail-name">Stamina<br>Regen<br>Rune</div>
+      <div class="detail-mark">*</div>
+      <div class="detail-set">
+        <span>Slash Rune</span>
+        <strong>Equipped 6 / all effects active</strong>
+        <span>Set Effect</span>
+      </div>
+    </aside>
+  </main>
+</body>
+</html>

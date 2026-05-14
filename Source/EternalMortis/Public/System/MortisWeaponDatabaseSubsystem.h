@@ -8,6 +8,8 @@
 #include "Types/MortisWeaponDataTypes.h"
 #include "MortisWeaponDatabaseSubsystem.generated.h"
 
+class AMortisWeaponBase;
+
 /**
  * 
  */
@@ -22,6 +24,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     bool GetWeaponRowByTag(FGameplayTag WeaponTag, FMortisWeaponRow& OutWeaponRow) const;
+
+    UFUNCTION(BlueprintCallable)
+    bool GetWeaponRowByClass(TSubclassOf<AMortisWeaponBase> WeaponClass, FMortisWeaponRow& OutWeaponRow) const;
 
     UFUNCTION(BlueprintCallable)
     bool GenerateWeaponByTag(FGameplayTag WeaponTag, FMortisWeaponRow& OutWeaponRow) const;

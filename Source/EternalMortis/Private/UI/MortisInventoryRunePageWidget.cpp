@@ -1,6 +1,9 @@
 #include "UI/MortisInventoryRunePageWidget.h"
 
+#include "MortisFunctionLibrary.h"
+#include "Components/Button.h"
 #include "Components/ScrollBox.h"
+#include "Components/ScrollBoxSlot.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
@@ -23,6 +26,7 @@ void UMortisInventoryRunePageWidget::NativeConstruct()
     InitializeReferences();
     BindInventoryDelegates();
     BindRightRuneDetailEvents();
+    BindSetListScrollControls();
     InitializeEquippedRunePanel();
     BindEquippedRunePanelEvents();
 
@@ -32,6 +36,7 @@ void UMortisInventoryRunePageWidget::NativeConstruct()
 void UMortisInventoryRunePageWidget::NativeDestruct()
 {
     UnbindEquippedRunePanelEvents();
+    UnbindSetListScrollControls();
     UnbindRightRuneDetailEvents();
     UnbindInventoryDelegates();
 
@@ -119,6 +124,21 @@ void UMortisInventoryRunePageWidget::HandleOwningRuneRemoved(const FMortisRuneIn
     RefreshAll();
 }
 
+void UMortisInventoryRunePageWidget::HandleSetListScrollUpClicked()
+{
+    ScrollSetListByStep(-1.0f);
+}
+
+void UMortisInventoryRunePageWidget::HandleSetListScrollDownClicked()
+{
+    ScrollSetListByStep(1.0f);
+}
+
+void UMortisInventoryRunePageWidget::HandleSetListUserScrolled(float)
+{
+    UpdateSetListScrollButtonState();
+}
+
 void UMortisInventoryRunePageWidget::InitializeReferences()
 {
     if (UGameInstance* GameInstance = GetGameInstance())
@@ -173,6 +193,47 @@ void UMortisInventoryRunePageWidget::UnbindRightRuneDetailEvents()
     if (UMortisRightRuneDetailWidget* RightRuneDetail = ResolveRightRuneDetailWidget())
     {
         RightRuneDetail->OnEquipRequested.RemoveDynamic(this, &ThisClass::HandleEquipButtonClicked);
+    }
+}
+
+void UMortisInventoryRunePageWidget::BindSetListScrollControls()
+{
+    if (Button_SetListScrollUp)
+    {
+        Button_SetListScrollUp->OnClicked.RemoveDynamic(this, &ThisClass::HandleSetListScrollUpClicked);
+        Button_SetListScrollUp->OnClicked.AddDynamic(this, &ThisClass::HandleSetListScrollUpClicked);
+    }
+
+    if (Button_SetListScrollDown)
+    {
+        Button_SetListScrollDown->OnClicked.RemoveDynamic(this, &ThisClass::HandleSetListScrollDownClicked);
+        Button_SetListScrollDown->OnClicked.AddDynamic(this, &ThisClass::HandleSetListScrollDownClicked);
+    }
+
+    if (ScrollBox_SetList)
+    {
+        ScrollBox_SetList->OnUserScrolled.RemoveDynamic(this, &ThisClass::HandleSetListUserScrolled);
+        ScrollBox_SetList->OnUserScrolled.AddDynamic(this, &ThisClass::HandleSetListUserScrolled);
+    }
+
+    UpdateSetListScrollButtonState();
+}
+
+void UMortisInventoryRunePageWidget::UnbindSetListScrollControls()
+{
+    if (Button_SetListScrollUp)
+    {
+        Button_SetListScrollUp->OnClicked.RemoveDynamic(this, &ThisClass::HandleSetListScrollUpClicked);
+    }
+
+    if (Button_SetListScrollDown)
+    {
+        Button_SetListScrollDown->OnClicked.RemoveDynamic(this, &ThisClass::HandleSetListScrollDownClicked);
+    }
+
+    if (ScrollBox_SetList)
+    {
+        ScrollBox_SetList->OnUserScrolled.RemoveDynamic(this, &ThisClass::HandleSetListUserScrolled);
     }
 }
 
@@ -264,6 +325,8 @@ void UMortisInventoryRunePageWidget::RefreshSetList()
         ScrollBox_SetList->AddChild(SetEntry);
         CreatedSetEntries.Add(SetEntry);
     }
+
+    UpdateSetListScrollButtonState();
 }
 
 void UMortisInventoryRunePageWidget::UpdateCenterState()
@@ -414,6 +477,69 @@ void UMortisInventoryRunePageWidget::RefreshRightPanel()
         : 0;
     WidgetSwitcher_RightState->SetActiveWidgetIndex(TargetIndex);
     UpdateRightSetDetail();
+}
+
+void UMortisInventoryRunePageWidget::ScrollSetListByStep(float Direction)
+{
+    if (!ScrollBox_SetList || FMath::IsNearlyZero(Direction))
+    {
+        return;
+    }
+
+    ScrollBox_SetList->EndInertialScrolling();
+
+    const float CurrentOffset = ScrollBox_SetList->GetScrollOffset();
+    const float MaxOffset = FMath::Max(0.0f, ScrollBox_SetList->GetScrollOffsetOfEnd());
+    const float TargetOffset = FMath::Clamp(CurrentOffset + (GetSetListScrollStep() * Direction), 0.0f, MaxOffset);
+
+    ScrollBox_SetList->SetScrollOffset(TargetOffset);
+    UpdateSetListScrollButtonState();
+}
+
+void UMortisInventoryRunePageWidget::UpdateSetListScrollButtonState()
+{
+    if (ScrollBox_SetList)
+    {
+        ScrollBox_SetList->ForceLayoutPrepass();
+    }
+
+    const float MaxOffset = ScrollBox_SetList ? FMath::Max(0.0f, ScrollBox_SetList->GetScrollOffsetOfEnd()) : 0.0f;
+    const float CurrentOffset = ScrollBox_SetList ? FMath::Clamp(ScrollBox_SetList->GetScrollOffset(), 0.0f, MaxOffset) : 0.0f;
+    const bool bCanScroll = MaxOffset > 0.5f;
+
+    if (Button_SetListScrollUp)
+    {
+        Button_SetListScrollUp->SetIsEnabled(bCanScroll && CurrentOffset > 0.5f);
+    }
+
+    if (Button_SetListScrollDown)
+    {
+        Button_SetListScrollDown->SetIsEnabled(bCanScroll && CurrentOffset < MaxOffset - 0.5f);
+    }
+}
+
+float UMortisInventoryRunePageWidget::GetSetListScrollStep() const
+{
+    if (!ScrollBox_SetList || ScrollBox_SetList->GetChildrenCount() <= 0)
+    {
+        return FMath::Max(1.0f, SetListScrollFallbackStep);
+    }
+
+    ScrollBox_SetList->ForceLayoutPrepass();
+
+    const UWidget* FirstEntry = ScrollBox_SetList->GetChildAt(0);
+    float Step = FirstEntry ? FirstEntry->GetDesiredSize().Y : 0.0f;
+
+    if (FirstEntry)
+    {
+        if (const UScrollBoxSlot* ScrollBoxSlot = Cast<UScrollBoxSlot>(FirstEntry->Slot))
+        {
+            const FMargin SlotPadding = ScrollBoxSlot->GetPadding();
+            Step += SlotPadding.Top + SlotPadding.Bottom;
+        }
+    }
+
+    return Step > 1.0f ? Step : FMath::Max(1.0f, SetListScrollFallbackStep);
 }
 
 void UMortisInventoryRunePageWidget::ClearRuneGrid()
@@ -713,6 +839,7 @@ void UMortisInventoryRunePageWidget::UpdateRightRuneDetail()
         ? RuneDatabaseSubsystemRef->GetRuneSymbolRow(SelectedRune.SymbolType)
         : nullptr;
 
+    ViewData.bHasRuneData = true;
     ViewData.RuneIcon = SymbolRow ? SymbolRow->Glyph : nullptr;
     ViewData.RuneIconTint = GetGlyphTintBySetTag(DetailSetTag);
     ViewData.RunePresentationStyle = MortisRunePresentation::BuildStyle(SelectedRune.Grade, ViewData.RuneIconTint);
@@ -806,9 +933,11 @@ FText UMortisInventoryRunePageWidget::BuildRuneStatValueText() const
         return FText::GetEmpty();
     }
 
-    return FText::Format(
-        NSLOCTEXT("MortisInventory", "RuneStatValueOnlyFormat", "+{0}"),
-        FText::AsNumber(FMath::RoundToInt(SelectedRune.RolledValue)));
+    const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef->GetRuneSymbolRow(SelectedRune.SymbolType);
+    return UMortisFunctionLibrary::FormatSignedRuneValue(
+        SelectedRune.RolledValue,
+        SymbolRow ? SymbolRow->ValueFractionalDigits : 0,
+        SymbolRow ? SymbolRow->bDisplayAsPercent : false);
 }
 
 FText UMortisInventoryRunePageWidget::GetSelectedRuneNameText() const

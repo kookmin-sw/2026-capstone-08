@@ -4,6 +4,19 @@
 #include "Items/Interactable/Pickup/ShopItem/MortisRuneShopItem.h"
 #include "Character/Enemy/MortisShopkeeperCharacter.h"
 #include "Abilities/GameplayAbility.h"
+#include "Components/WidgetComponent.h"
+#include "UI/MortisPickupPreviewWidget.h"
+
+namespace
+{
+	FText BuildRuneShopPickupTitleText(const FText& ItemName, int32 Price)
+	{
+		return FText::Format(
+			NSLOCTEXT("MortisShopItem", "PickupTitleWithGoldPrice", "{0}\n{1} Gold"),
+			ItemName,
+			FText::AsNumber(FMath::Max(0, Price)));
+	}
+}
 
 AMortisRuneShopItem::AMortisRuneShopItem()
 {
@@ -87,17 +100,20 @@ bool AMortisRuneShopItem::TryPrepareTransaction_Implementation(APawn* Interactin
 		return false;
 
 	ShopState.PendingTransaction = TransactionType;
+	DisableInteraction();
 	return true;
 }
 
 void AMortisRuneShopItem::CancelPreparedTransaction_Implementation()
 {
 	ShopState.PendingTransaction = EMortisShopTransactionType::None;
+	EnableInteraction();
 }
 
 void AMortisRuneShopItem::SetShopPrice_Implementation(int32 NewPrice)
 {
 	ShopState.Price = FMath::Max(0, NewPrice);
+	RefreshShopPreviewIfVisible();
 }
 
 TSubclassOf<UGameplayAbility> AMortisRuneShopItem::GetStealInteractionAbility_Implementation() const
@@ -150,23 +166,63 @@ void AMortisRuneShopItem::OnInteractionFinished(APawn* InteractingPawn, bool bSu
 	ShopState.bStolen = (FinishedTransaction == EMortisShopTransactionType::Steal);
 }
 
+bool AMortisRuneShopItem::BuildPickupPreviewData(FMortisPickupPreviewData& OutPreviewData) const
+{
+	if (!Super::BuildPickupPreviewData(OutPreviewData))
+	{
+		return false;
+	}
+
+	OutPreviewData.TitleText = BuildRuneShopPickupTitleText(OutPreviewData.TitleText, ShopState.Price);
+	return true;
+}
+
 void AMortisRuneShopItem::InitializeRuneShopItem(const FMortisRuneInstance& InRuneInstance, int32 InPrice, AMortisShopkeeperCharacter* InShopkeeper)
 {
-	RuneData = InRuneInstance;
-	ShopState.Price = InPrice;
+	SetRuneData(InRuneInstance);
+	ShopState.Price = FMath::Max(0, InPrice);
 	ShopState.ResetRuntimeState();
-	if (HasActorBegunPlay() && OwningShopkeeper)
+
+	if (OwningShopkeeper != InShopkeeper)
+	{
+		if (HasActorBegunPlay() && OwningShopkeeper)
+			OwningShopkeeper->UnregisterRuneItem(this);
+
 		OwningShopkeeper = InShopkeeper;
 
+		if (HasActorBegunPlay() && OwningShopkeeper)
+			OwningShopkeeper->RegisterRuneItem(this);
+	}
+
+	ShopState.PendingTransaction = EMortisShopTransactionType::None;
+
 	BP_ApplyShopRuneData();
+	RefreshShopPreviewIfVisible();
 }
 
 void AMortisRuneShopItem::SetOwningShopkeeper(AMortisShopkeeperCharacter* NewShopkeeper)
 {
+	if (OwningShopkeeper == NewShopkeeper)
+		return;
+
+	if (HasActorBegunPlay() && OwningShopkeeper)
+		OwningShopkeeper->UnregisterRuneItem(this);
+
 	OwningShopkeeper = NewShopkeeper;
+
+	if (HasActorBegunPlay() && OwningShopkeeper)
+		OwningShopkeeper->RegisterRuneItem(this);
 }
 
 void AMortisRuneShopItem::BP_ApplyShopRuneData_Implementation()
 {
 	// RuneData 기준 비주얼 갱신
+}
+
+void AMortisRuneShopItem::RefreshShopPreviewIfVisible()
+{
+	if (SelectionWidget && SelectionWidget->IsVisible())
+	{
+		RefreshPickupPreviewWidget();
+	}
 }

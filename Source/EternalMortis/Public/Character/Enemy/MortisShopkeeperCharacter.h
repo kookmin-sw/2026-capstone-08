@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Character/Enemy/MortisEnemyCharacter.h"
+#include "Types/MortisRuneDataTypes.h"
+#include "Types/MortisWeaponDataTypes.h"
 #include "MortisShopkeeperCharacter.generated.h"
 
 class AMortisWeaponShopItem;
 class AMortisRuneShopItem;
 class UMortisRunStateSubsystem;
+class UMortisShopPricingSubsystem;
 
 UCLASS()
 class ETERNALMORTIS_API AMortisShopkeeperCharacter : public AMortisEnemyCharacter
@@ -55,9 +58,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GenerateShopStock();
 
+	UFUNCTION(BlueprintCallable, Category = "Shop|Pricing")
+	bool GenerateWeaponShopItemPrice(const FMortisWeaponRow& WeaponData, int32& OutPrice) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Shop|Pricing")
+	bool GenerateRuneShopItemPrice(const FMortisRuneInstance& RuneInstance, int32& OutPrice) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Shop|Stock")
+	bool InitializeWeaponShopItemWithGeneratedPrice(AMortisWeaponShopItem* ShopItem, const FMortisWeaponRow& WeaponData);
+
+	UFUNCTION(BlueprintCallable, Category = "Shop|Stock")
+	bool InitializeRuneShopItemWithGeneratedPrice(AMortisRuneShopItem* ShopItem, const FMortisRuneInstance& RuneInstance);
+
 protected:
 	void SetAggroState(bool bNewAggroed, APawn* AggroTarget);
 	UMortisRunStateSubsystem* GetRunStateSubsystem() const;
+	UMortisShopPricingSubsystem* GetShopPricingSubsystem() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Shop|Stock")
 	void BP_GenerateShopStock();
