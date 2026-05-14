@@ -6,6 +6,16 @@
 
 #include "MortisDebugHelper.h"
 
+namespace
+{
+float RollRuneValueForSymbol(const FMortisRuneSymbolRow& SymbolRow, const FMortisRuneValueRange& Range)
+{
+    const float RolledValue = FMath::FRandRange(Range.MinValue, Range.MaxValue);
+    return (SymbolRow.ValueFractionalDigits > 0 || SymbolRow.bDisplayAsPercent)
+        ? RolledValue
+        : FMath::FloorToFloat(RolledValue);
+}
+}
 
 void UMortisRuneDatabaseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -108,7 +118,7 @@ FMortisRuneInstance UMortisRuneDatabaseSubsystem::GenerateRune(int32 CurrentFloo
     NewRune.SetTag = PickedSetTag;
     NewRune.SymbolType = PickedSymbol;
     NewRune.Grade = PickedGrade;
-    NewRune.RolledValue = FMath::FloorToFloat(FMath::FRandRange(Range.MinValue, Range.MaxValue));
+    NewRune.RolledValue = RollRuneValueForSymbol(*SymbolRow, Range);
     NewRune.GradeStyleRow.DataTable = RuneGradeStyleTable;
     NewRune.GradeStyleRow.RowName = FName(*StaticEnum<EMortisRuneGrade>()->GetNameStringByValue((int64)NewRune.Grade));
 
@@ -138,7 +148,7 @@ FMortisRuneInstance UMortisRuneDatabaseSubsystem::GenerateRuneWithTag(FGameplayT
     NewRune.SetTag = SetTag;
     NewRune.SymbolType = PickedSymbol;
     NewRune.Grade = Grade;
-    NewRune.RolledValue = FMath::FloorToFloat(FMath::FRandRange(Range.MinValue, Range.MaxValue));
+    NewRune.RolledValue = RollRuneValueForSymbol(*SymbolRow, Range);
     NewRune.GradeStyleRow.DataTable = RuneGradeStyleTable;
     NewRune.GradeStyleRow.RowName = FName(*StaticEnum<EMortisRuneGrade>()->GetNameStringByValue((int64)NewRune.Grade));
 
@@ -188,7 +198,7 @@ FMortisRuneInstance UMortisRuneDatabaseSubsystem::GenerateRuneWithTagAndSymbol(F
     NewRune.SetTag = SetTag;
     NewRune.SymbolType = SymbolType;
     NewRune.Grade = Grade;
-    NewRune.RolledValue = FMath::FloorToFloat(FMath::FRandRange(Range.MinValue, Range.MaxValue));
+    NewRune.RolledValue = RollRuneValueForSymbol(*SymbolRow, Range);
     NewRune.GradeStyleRow.DataTable = RuneGradeStyleTable;
     NewRune.GradeStyleRow.RowName = FName(*StaticEnum<EMortisRuneGrade>()->GetNameStringByValue((int64)NewRune.Grade));
 

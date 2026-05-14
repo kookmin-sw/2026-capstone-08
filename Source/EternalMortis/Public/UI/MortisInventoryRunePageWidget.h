@@ -15,6 +15,7 @@ class UMortisRuneCardWidget;
 class UMortisRightRuneDetailWidget;
 
 class UDataTable;
+class UButton;
 class UScrollBox;
 class UUniformGridPanel;
 class UWidgetSwitcher;
@@ -59,9 +60,24 @@ protected:
     UFUNCTION()
     void HandleOwningRuneRemoved(const FMortisRuneInstance& RemovedRune);
 
+    UFUNCTION()
+    void HandleSetListScrollUpClicked();
+
+    UFUNCTION()
+    void HandleSetListScrollDownClicked();
+
+    UFUNCTION()
+    void HandleSetListUserScrolled(float CurrentOffset);
+
 protected:
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
     TObjectPtr<UScrollBox> ScrollBox_SetList = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+    TObjectPtr<UButton> Button_SetListScrollUp = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+    TObjectPtr<UButton> Button_SetListScrollDown = nullptr;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
     TObjectPtr<UWidgetSwitcher> WidgetSwitcher_CenterState = nullptr;
@@ -117,6 +133,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Layout", meta = (ClampMin = "1", AllowPrivateAccess = "true"))
     FVector2D InventoryRuneCardSize = FVector2D(200.0f, 200.0f);
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Layout", meta = (ClampMin = "1", AllowPrivateAccess = "true"))
+    float SetListScrollFallbackStep = 96.0f;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mortis|Inventory|Rune|Switcher", meta = (ClampMin = "0", AllowPrivateAccess = "true"))
     int32 CenterInventoryStateIndex = 1;
 
@@ -159,6 +178,8 @@ private:
     void UnbindInventoryDelegates();
     void BindRightRuneDetailEvents();
     void UnbindRightRuneDetailEvents();
+    void BindSetListScrollControls();
+    void UnbindSetListScrollControls();
     void InitializeEquippedRunePanel();
     void BindEquippedRunePanelEvents();
     void UnbindEquippedRunePanelEvents();
@@ -169,6 +190,9 @@ private:
     void RefreshEquippedRunePanel();
     void RefreshRuneGrid();
     void RefreshRightPanel();
+    void ScrollSetListByStep(float Direction);
+    void UpdateSetListScrollButtonState();
+    float GetSetListScrollStep() const;
     void ClearRuneGrid();
     void ConfigureRuneCard(UMortisRuneCardWidget* RuneCard, const FMortisRuneInstance& RuneInstance, bool bInSelected, bool bInEquipped);
     UMortisRightRuneDetailWidget* ResolveRightRuneDetailWidget();

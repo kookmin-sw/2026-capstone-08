@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
 	static FString GetGradeText(EMortisStatGrade Grade);
 
+	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary|Text")
+	static FText FormatSignedRuneValue(float RawValue, int32 ValueFractionalDigits, bool bDisplayAsPercent);
+
 	UFUNCTION(BlueprintPure, Category = "Mortis|FunctionLibrary")
 	static EMortisHitDirection ComputeHitReactDirectionTag(AActor* InAttacker, AActor* InVictim, float& OutAngleDifference);
 

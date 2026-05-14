@@ -1,5 +1,6 @@
 #include "UI/MortisRuneUnequipWidget.h"
 
+#include "MortisFunctionLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
@@ -464,9 +465,14 @@ FText UMortisRuneUnequipWidget::BuildRuneStatValueText() const
         return FText::GetEmpty();
     }
 
-    return FText::Format(
-        NSLOCTEXT("MortisRuneUnequip", "RuneStatValueOnlyFormat", "+{0}"),
-        FText::AsNumber(FMath::RoundToInt(SelectedRune.RolledValue)));
+    const FMortisRuneSymbolRow* SymbolRow = RuneDatabaseSubsystemRef
+        ? RuneDatabaseSubsystemRef->GetRuneSymbolRow(SelectedRune.SymbolType)
+        : nullptr;
+
+    return UMortisFunctionLibrary::FormatSignedRuneValue(
+        SelectedRune.RolledValue,
+        SymbolRow ? SymbolRow->ValueFractionalDigits : 0,
+        SymbolRow ? SymbolRow->bDisplayAsPercent : false);
 }
 
 FText UMortisRuneUnequipWidget::BuildSetProgressTextBySetTag(const FGameplayTag& SetTag) const
